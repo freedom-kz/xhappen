@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package protocol.v1;
+
+option go_package = "xhappen/api/protocol/v1;v1";
+option java_multiple_files = true;
+option java_package = "protocol.v1";
+option objc_class_prefix = "ProtocolV1";
+
+enum DeviceType {
+    IOS = 0;                            //iOS
+    ANDROID = 1;                        //安卓
+    WEB = 2;                            //web端
+    MINIWECHAT = 3;                     //微信小程序
+    UNKNOW = 9;                               //未知类型
+}
+
+enum LoginType {
+    MANUAL = 0;                         //手工登录
+    AUTO = 1;                           //自动登录
+}
+
+enum RoleType{
+    ROLE_NORMAL = 0;                   //默认类型为普通用户
+    ROLE_ADMIN = 1;                    //管理员用户
+    ROLE_CUSTOMER_SERVICE = 2;         //客服用户
+}
+
+enum MsgType{
+    MSG_SINGLE = 0;                 //单聊
+    MSG_GROUP  = 1;                 //群聊
+    MSG_CHATROOM = 2;               //聊天室
+    MSG_VIRTUAL_GROUP = 3;          //虚拟组
+    MSG_APPLICATION = 4;            //应用通知类
+}
+
+enum UserType{
+    USER_NORMAL = 0;                 //普通用户
+    USER_VIRTUAL_GROUP = 1;          //虚拟组用户
+    USER_SYSTEM = 2;                 //系统用户
+    USER_APPLICATION = 3;            //应用用户
+}

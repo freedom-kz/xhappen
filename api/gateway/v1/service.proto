@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package gateway.v1;
+
+import "api/protocol/v1/message.proto";
+
+option go_package = "xhappen/api/gateway/v1;v1";
+
+service GatewaySrv {
+    //接收同步消息
+    rpc Sync(SyncRequest) returns (SyncResponse) {
+
+    }
+    //接收下行消息
+    rpc Deliver(DeliverRequest) returns (DeliverResponse) {
+
+    }
+    //强制断开连接
+    rpc DisconnectedForce(DisconnectForceRequest) returns (DisconnectForceResponse) {
+
+    }
+}
+
+//接收同步消息请求
+message SyncRequest {
+    string userid = 1;          //接收用户ID
+    string clientid = 2;        //接收的客户端标志
+    protocol.v1.Sync sync = 3;  //数据包
+}
+
+//接收同步消息响应
+message SyncResponse {
+    bool ret = 1;           //结果
+    string cause = 2;       //原因
+}
+
+//下行消息请求
+message DeliverRequest {
+    string userid = 1; //用户ID
+    string clientid = 2; //设备ID
+    protocol.v1.Deliver deliver = 3; //消息
+}
+
+//下行消息响应
+message DeliverResponse {
+    bool ret = 1; //结果
+    string cause = 2; //原因
+}
+
+//强制断开请求
+message DisconnectForceRequest {
+    string userid = 1; //用户ID
+    string clientid = 2; //设备ID
+}
+
+//强制断开响应
+message DisconnectForceResponse {
+    bool ret = 1;           //结果 
+    string cause = 2;       //原因
+}
+
+

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package basic.v1;
+
+option go_package = "xhappen/api/basic/v1;v1";
+option java_multiple_files = true;
+option java_package = "basic.v1";
+option objc_class_prefix = "BasiclV1";
+
+message User{
+    
+}
+
+message UserProfile{
+    
+}
+

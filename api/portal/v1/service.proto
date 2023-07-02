@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package portal.v1;
+
+import "google/api/annotations.proto";
+import "api/basic/v1/basic.proto";
+
+option go_package = "xhappen/api/portal/v1;v1";
+
+// The greeting service definition.
+service User {
+  // Sends SMS code
+  rpc SendSMSCode (SMSCodeRequest) returns (SMSCodeReply)  {
+        option (google.api.http) = {
+          post: "/user/smscode",
+          body: "*",
+        };
+  }
+
+  // mobile login
+  rpc LoginByMobile (LoginByMobileRequest) returns (LoginByMobileReply)  {
+        option (google.api.http) = {
+          post: "/user/login",
+          body: "*",
+        };
+  }
+}
+
+message SMSCodeRequest {
+  string name = 1;
+}
+
+message SMSCodeReply {
+
+}
+
+message LoginByMobileRequest {
+  string mobile = 1;
+  string smsCode = 2;
+}
+
+message LoginByMobileReply {
+  string token = 1;
+  basic.v1.User user = 2;
+}

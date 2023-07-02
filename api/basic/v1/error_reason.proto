@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package basic.v1;
+
+import "errors/errors.proto";
+
+option go_package = "xhappen/api/basic/v1;v1";
+option java_multiple_files = true;
+option java_package = "basic.v1";
+option objc_class_prefix = "BasiclV1";
+
+enum ErrorReason {
+  option (errors.default_code) = 500;
+
+  UNKNOWN_ERROR = 0 [(errors.code) = 410];
+  SERBER_UNAVAILABLE = 1 [(errors.code) = 411];
+}
+
+
+enum ErrorSocketBindReason {
+  option (errors.default_code) = 500;
+
+  CLIENTID_REJECTED = 0 [(errors.code) = 420];
+  UPGRADE = 1 [(errors.code) = 421];
+  LOGINED = 2 [(errors.code) = 422];
+  SWITH_HOST = 3 [(errors.code) = 423];
+  BLACK_DEVICE = 4 [(errors.code) = 424];
+}
+
+enum ErrorSocketAuthReason {
+  option (errors.default_code) = 500;
+
+  TOKEN_EXPIRE = 0 [(errors.code) = 430];
+  BLACK_USER = 1 [(errors.code) = 431];
+}
+
+

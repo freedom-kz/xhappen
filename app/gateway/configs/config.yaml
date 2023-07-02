@@ -1,0 +1,31 @@
+trace:
+  endpoint: http://127.0.0.1:14268/api/traces
+server:
+  grpc:
+    addr: 0.0.0.0:9001
+    timeout: 1s
+Main:
+  socket:
+    tls: false
+    tlsCert: 
+    tlsKey:
+    tlsRootCAFile: 
+    tcpAddress: 8001
+    wsAddress: 8002
+    minKeepAlive: 60s
+    maxKeepAlive: 300s
+    readBufferSize: 8192
+    writeBufferSize: 8192
+    writeTimeout: 5s
+  queue:
+    maxMsgSize: 65535
+    maxRdyCount: 100
+    syncEvery: 1
+    msgTimeout: 10
+data:
+  etcd:
+    address: 127.0.0.1:2379
+    dialTimeout: 1s
+    readTimeout: 1s
+    writeTimeout: 1s
+

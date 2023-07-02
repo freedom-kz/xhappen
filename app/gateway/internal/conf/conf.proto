@@ -1,0 +1,58 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "xhappen/app/gateway/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+  Trace trace = 3;
+  Main main = 4;
+}
+
+message Trace {
+    string endpoint = 1;
+}
+
+message Server {
+  message GRPC {
+    string addr = 1;
+    google.protobuf.Duration timeout = 2;
+  }
+  GRPC grpc = 1;
+}
+
+message Data {
+  message Etcd {
+        string addr = 1;
+        google.protobuf.Duration dialTimeout = 2;
+        google.protobuf.Duration readTimeout = 3;
+        google.protobuf.Duration writeTimeout = 4;
+    }
+  Etcd etcd = 1;
+}
+
+message Main {
+  message Socket {
+    bool isTls = 1;
+    string tlsCert = 2;
+    string tlsKey = 3;
+    string tlsRootCAFile = 4;
+    string tcpAddress = 5;
+    string wsAddress = 6;
+    google.protobuf.Duration minKeepAlive = 7;
+    google.protobuf.Duration maxKeepAlive = 8;
+    uint32 readBufferSize = 9;
+    uint32 writeBufferSize = 10;
+    google.protobuf.Duration writeTimeout = 11;
+  }
+  message queue {
+    uint32 maxMsgSize = 1;
+    uint32 maxRdyCount = 2;
+    google.protobuf.Duration msgTimeout = 3;
+  }      
+}
+
+
