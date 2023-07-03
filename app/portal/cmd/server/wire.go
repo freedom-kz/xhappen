@@ -9,6 +9,7 @@ import (
 	"xhappen/app/portal/internal/biz"
 	"xhappen/app/portal/internal/conf"
 	"xhappen/app/portal/internal/data"
+	"xhappen/app/portal/internal/event"
 	"xhappen/app/portal/internal/server"
 	"xhappen/app/portal/internal/service"
 
@@ -19,6 +20,6 @@ import (
 )
 
 // wireApp init kratos application.
-func wireApp(*conf.Server, *conf.Data, log.Logger, registry.Registrar) (*kratos.App, func(), error) {
+func wireApp(*conf.Server, *conf.Data, log.Logger, registry.Registrar, event.Sender) (*kratos.App, func(), error) {
 	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, newApp))
 }

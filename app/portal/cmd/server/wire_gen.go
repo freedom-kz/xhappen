@@ -13,6 +13,7 @@ import (
 	"xhappen/app/portal/internal/biz"
 	"xhappen/app/portal/internal/conf"
 	"xhappen/app/portal/internal/data"
+	"xhappen/app/portal/internal/event"
 	"xhappen/app/portal/internal/server"
 	"xhappen/app/portal/internal/service"
 )
@@ -24,13 +25,13 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, registrar registry.Registrar) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, registrar registry.Registrar, sender event.Sender) (*kratos.App, func(), error) {
 	dataData, cleanup, err := data.NewData(confData, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	userRepo := data.NewUserRepo(dataData, logger)
-	userUseCase := biz.NewUserUseCase(userRepo, logger)
+	userUseCase := biz.NewUserUseCase(userRepo, sender, logger)
 	userService := service.NewUserService(userUseCase, logger)
 	grpcServer := server.NewGRPCServer(confServer, userService, logger)
 	httpServer := server.NewHTTPServer(confServer, userService, logger)

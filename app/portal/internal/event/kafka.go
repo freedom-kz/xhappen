@@ -43,10 +43,7 @@ func (s *kafkaSender) Send(ctx context.Context, message Event) error {
 		Key:   []byte(message.Key()),
 		Value: message.Value(),
 	})
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (s *kafkaSender) Close() error {
@@ -106,7 +103,6 @@ func NewKafkaReceiver(address []string, topic string) (Receiver, error) {
 		Brokers:  address,
 		GroupID:  "group-a",
 		Topic:    topic,
-		MinBytes: 10e3, // 10KB
 		MaxBytes: 10e6, // 10MB
 	})
 	return &kafkaReceiver{reader: r, topic: topic}, nil

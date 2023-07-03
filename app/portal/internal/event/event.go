@@ -18,3 +18,7 @@ type Receiver interface {
 	Receive(ctx context.Context, handler Handler) error
 	Close() error
 }
+
+type SMSCode struct {
+	Authcode string
+}

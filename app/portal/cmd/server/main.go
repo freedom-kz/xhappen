@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"xhappen/app/portal/internal/conf"
+	"xhappen/app/portal/internal/event"
 
 	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/v2"
@@ -89,7 +90,12 @@ func main() {
 
 	r := etcd.New(client)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, logger, r)
+	smsCodeSender, err := event.NewKafkaSender([]string{bc.Data.Kafka.Addr}, bc.Data.Kafka.SmsCodeTopic)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	app, cleanup, err := wireApp(bc.Server, bc.Data, logger, r, smsCodeSender)
 	if err != nil {
 		panic(err)
 	}

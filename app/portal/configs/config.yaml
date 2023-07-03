@@ -23,3 +23,6 @@ data:
     dialTimeout: 1s
     readTimeout: 1s
     writeTimeout: 1s
+  kafka:
+    addr: 192.168.71.18:9092
+    smsCodeTopic: smscode

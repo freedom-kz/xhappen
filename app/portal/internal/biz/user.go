@@ -2,11 +2,13 @@ package biz
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 	"time"
 
 	basic "xhappen/api/basic/v1"
 	"xhappen/app/portal/internal/common"
+	"xhappen/app/portal/internal/event"
 	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -30,12 +32,17 @@ type UserRepo interface {
 }
 
 type UserUseCase struct {
-	repo UserRepo
-	log  *log.Helper
+	repo   UserRepo
+	sender event.Sender
+	log    *log.Helper
 }
 
-func NewUserUseCase(repo UserRepo, logger log.Logger) *UserUseCase {
-	return &UserUseCase{repo: repo, log: log.NewHelper(log.With(logger, "module", "usecase/user"))}
+func NewUserUseCase(repo UserRepo, sender event.Sender, logger log.Logger) *UserUseCase {
+	return &UserUseCase{
+		repo:   repo,
+		sender: sender,
+		log:    log.NewHelper(log.With(logger, "module", "usecase/user")),
+	}
 }
 
 func (u *UserUseCase) SendSMSCode(ctx context.Context, mobile string, clientId string) error {
@@ -52,7 +59,7 @@ func (u *UserUseCase) SendSMSCode(ctx context.Context, mobile string, clientId s
 		if err != nil {
 			return err
 		}
-		if utils.TimeFromMillis(int64(createAt)).Add(time.Minute).After(time.Now()) {
+		if utils.TimeFromMillis(int64(createAt)).After(time.Now().Add(4 * time.Minute)) {
 			return basic.ErrorRequestTooFast("mobile %s request too fast", mobile)
 		}
 	}
@@ -60,7 +67,11 @@ func (u *UserUseCase) SendSMSCode(ctx context.Context, mobile string, clientId s
 	authCode := utils.GenerateAuthCode(6)
 	u.log.Debugf("generate authCode %v", authCode)
 
-	return u.repo.GenerateLoginAuthCode(ctx, mobile, clientId, authCode)
+	err = u.repo.GenerateLoginAuthCode(ctx, mobile, clientId, authCode)
+	if err != nil {
+		return err
+	}
+	return u.sendAuthCodeToKafka(ctx, mobile, authCode)
 }
 
 func (u *UserUseCase) LoginByMobile(ctx context.Context) error {
@@ -72,5 +83,21 @@ func (u *UserUseCase) Logout(ctx context.Context) error {
 }
 
 func (u *UserUseCase) Deregister(ctx context.Context) error {
+	return nil
+}
+
+func (u *UserUseCase) sendAuthCodeToKafka(ctx context.Context, mobile string, authcode string) error {
+	smscodeMsg := &event.SMSCode{
+		Authcode: authcode,
+	}
+
+	value, err := json.Marshal(smscodeMsg)
+
+	if err != nil {
+		return err
+	}
+
+	msg := event.NewMessage(mobile, value)
+	go u.sender.Send(ctx, msg)
 	return nil
 }
