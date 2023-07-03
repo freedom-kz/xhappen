@@ -6,13 +6,16 @@ import (
 
 	"xhappen/app/portal/internal/conf"
 
+	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	etcdclient "go.etcd.io/etcd/client/v3"
 
 	_ "go.uber.org/automaxprocs"
 )
@@ -33,7 +36,7 @@ func init() {
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
 }
 
-func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
+func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, r registry.Registrar) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -44,6 +47,7 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 			gs,
 			hs,
 		),
+		kratos.Registrar(r),
 	)
 }
 
@@ -76,14 +80,22 @@ func main() {
 
 	logger.Log(log.LevelInfo, "config", bc)
 
-	// app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer cleanup()
+	client, err := etcdclient.New(etcdclient.Config{
+		Endpoints: []string{bc.Data.Etcd.Addr},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// start and wait for stop signal
-	// if err := app.Run(); err != nil {
-	// 	panic(err)
-	// }
+	r := etcd.New(client)
+
+	app, cleanup, err := wireApp(bc.Server, bc.Data, logger, r)
+	if err != nil {
+		panic(err)
+	}
+	defer cleanup()
+
+	if err := app.Run(); err != nil {
+		panic(err)
+	}
 }
