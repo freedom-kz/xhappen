@@ -8,7 +8,7 @@ import (
 
 type User struct {
 	Id          int64
-	UId         int64
+	UId         string
 	Roles       string
 	Props       string
 	NotifyProps string

@@ -4,6 +4,7 @@ package portal.v1;
 
 import "google/api/annotations.proto";
 import "api/basic/v1/basic.proto";
+import "validate/validate.proto";
 
 option go_package = "xhappen/api/portal/v1;v1";
 
@@ -27,7 +28,10 @@ service User {
 }
 
 message SMSCodeRequest {
-  string name = 1;
+  string name = 1 [(validate.rules).string = {
+    pattern: "^1(3\\d|4[5-9]|5[0-35-9]|6[567]|7[0-8]|8\\d|9[0-35-9])\\d{8}$",
+    len: 11, 
+  }];
 }
 
 message SMSCodeReply {

@@ -9,6 +9,7 @@ require (
 	github.com/google/wire v0.5.0
 	github.com/segmentio/kafka-go v0.4.40
 	github.com/sirupsen/logrus v1.9.3
+	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c
 	go.uber.org/automaxprocs v1.5.1
 	go.uber.org/zap v1.24.0
 	google.golang.org/genproto v0.0.0-20220524023933-508584e28198
