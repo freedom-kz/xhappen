@@ -14,6 +14,7 @@ enum ErrorReason {
 
   UNKNOWN_ERROR = 0 [(errors.code) = 410];
   SERBER_UNAVAILABLE = 1 [(errors.code) = 411];
+  REQUEST_TOO_FAST = 2 [(errors.code) = 412];
 }
 
 

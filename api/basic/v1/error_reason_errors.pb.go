@@ -35,6 +35,18 @@ func ErrorSerberUnavailable(format string, args ...interface{}) *errors.Error {
 	return errors.New(411, ErrorReason_SERBER_UNAVAILABLE.String(), fmt.Sprintf(format, args...))
 }
 
+func IsRequestTooFast(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_REQUEST_TOO_FAST.String() && e.Code == 412
+}
+
+func ErrorRequestTooFast(format string, args ...interface{}) *errors.Error {
+	return errors.New(412, ErrorReason_REQUEST_TOO_FAST.String(), fmt.Sprintf(format, args...))
+}
+
 func IsClientidRejected(err error) bool {
 	if err == nil {
 		return false

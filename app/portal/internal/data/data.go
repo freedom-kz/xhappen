@@ -7,15 +7,15 @@ import (
 	"xhappen/app/portal/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-redis/redis/extra/redisotel"
-	"github.com/go-redis/redis/v8"
 	"github.com/google/wire"
+	"github.com/redis/go-redis/extra/redisotel/v9"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData)
+var ProviderSet = wire.NewSet(NewData, NewUserRepo)
 
 // Data .
 type Data struct {
@@ -24,7 +24,7 @@ type Data struct {
 	log *log.Helper
 }
 
-func NewDB(conf *conf.Data, logger log.Logger) *gorm.DB {
+func newDB(conf *conf.Data, logger log.Logger) *gorm.DB {
 	log := log.NewHelper(log.With(logger, "module", "order-service/data/gorm"))
 
 	db, err := gorm.Open(mysql.Open(conf.Database.Source), &gorm.Config{})
@@ -48,7 +48,7 @@ func NewDB(conf *conf.Data, logger log.Logger) *gorm.DB {
 	return db
 }
 
-func NewRDB(conf *conf.Data, logger log.Logger) *redis.Client {
+func newRDB(conf *conf.Data, logger log.Logger) *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:         conf.Redis.Addr,
 		Password:     conf.Redis.Password,
@@ -57,17 +57,20 @@ func NewRDB(conf *conf.Data, logger log.Logger) *redis.Client {
 		WriteTimeout: conf.Redis.WriteTimeout.AsDuration(),
 		ReadTimeout:  conf.Redis.ReadTimeout.AsDuration(),
 	})
-	rdb.AddHook(redisotel.TracingHook{})
+
+	if err := redisotel.InstrumentTracing(rdb); err != nil {
+		logger.Log(log.LevelError, "msg", "redis otel init error.", "err", err)
+	}
 	return rdb
 }
 
 // NewData .
-func NewData(db *gorm.DB, rdb *redis.Client, logger log.Logger) (*Data, func(), error) {
+func NewData(conf *conf.Data, logger log.Logger) (*Data, func(), error) {
 	loggger := log.NewHelper(log.With(logger, "module", "order-service/data"))
 
 	d := &Data{
-		db:  db,
-		rdb: rdb,
+		db:  newDB(conf, logger),
+		rdb: newRDB(conf, logger),
 		log: loggger,
 	}
 

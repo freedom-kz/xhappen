@@ -26,6 +26,10 @@ type UserClient interface {
 	SendSMSCode(ctx context.Context, in *SMSCodeRequest, opts ...grpc.CallOption) (*SMSCodeReply, error)
 	// mobile login
 	LoginByMobile(ctx context.Context, in *LoginByMobileRequest, opts ...grpc.CallOption) (*LoginByMobileReply, error)
+	// mobile login
+	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutReply, error)
+	// mobile login
+	DeRegister(ctx context.Context, in *DeRegisterRequest, opts ...grpc.CallOption) (*DeRegisterReply, error)
 }
 
 type userClient struct {
@@ -54,6 +58,24 @@ func (c *userClient) LoginByMobile(ctx context.Context, in *LoginByMobileRequest
 	return out, nil
 }
 
+func (c *userClient) Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutReply, error) {
+	out := new(LogoutReply)
+	err := c.cc.Invoke(ctx, "/portal.v1.User/Logout", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) DeRegister(ctx context.Context, in *DeRegisterRequest, opts ...grpc.CallOption) (*DeRegisterReply, error) {
+	out := new(DeRegisterReply)
+	err := c.cc.Invoke(ctx, "/portal.v1.User/DeRegister", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
@@ -62,6 +84,10 @@ type UserServer interface {
 	SendSMSCode(context.Context, *SMSCodeRequest) (*SMSCodeReply, error)
 	// mobile login
 	LoginByMobile(context.Context, *LoginByMobileRequest) (*LoginByMobileReply, error)
+	// mobile login
+	Logout(context.Context, *LogoutRequest) (*LogoutReply, error)
+	// mobile login
+	DeRegister(context.Context, *DeRegisterRequest) (*DeRegisterReply, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -74,6 +100,12 @@ func (UnimplementedUserServer) SendSMSCode(context.Context, *SMSCodeRequest) (*S
 }
 func (UnimplementedUserServer) LoginByMobile(context.Context, *LoginByMobileRequest) (*LoginByMobileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginByMobile not implemented")
+}
+func (UnimplementedUserServer) Logout(context.Context, *LogoutRequest) (*LogoutReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
+}
+func (UnimplementedUserServer) DeRegister(context.Context, *DeRegisterRequest) (*DeRegisterReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeRegister not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 
@@ -124,6 +156,42 @@ func _User_LoginByMobile_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_Logout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LogoutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).Logout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/portal.v1.User/Logout",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).Logout(ctx, req.(*LogoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_DeRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeRegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).DeRegister(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/portal.v1.User/DeRegister",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).DeRegister(ctx, req.(*DeRegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -138,6 +206,14 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LoginByMobile",
 			Handler:    _User_LoginByMobile_Handler,
+		},
+		{
+			MethodName: "Logout",
+			Handler:    _User_Logout_Handler,
+		},
+		{
+			MethodName: "DeRegister",
+			Handler:    _User_DeRegister_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

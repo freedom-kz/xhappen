@@ -57,9 +57,9 @@ func (m *SMSCodeRequest) validate(all bool) error {
 
 	var errors []error
 
-	if utf8.RuneCountInString(m.GetName()) != 11 {
+	if utf8.RuneCountInString(m.GetMobile()) != 11 {
 		err := SMSCodeRequestValidationError{
-			field:  "Name",
+			field:  "Mobile",
 			reason: "value length must be 11 runes",
 		}
 		if !all {
@@ -69,16 +69,18 @@ func (m *SMSCodeRequest) validate(all bool) error {
 
 	}
 
-	if !_SMSCodeRequest_Name_Pattern.MatchString(m.GetName()) {
+	if !_SMSCodeRequest_Mobile_Pattern.MatchString(m.GetMobile()) {
 		err := SMSCodeRequestValidationError{
-			field:  "Name",
-			reason: "value does not match regex pattern \"^1(3\\\\d|4[5-9]|5[0-35-9]|6[567]|7[0-8]|8\\\\d|9[0-35-9])\\\\d{8}$\"",
+			field:  "Mobile",
+			reason: "value does not match regex pattern \"^1(3\\\\d|4[0-14-9]|5[0-35-9]|6[2567]|7[0-8]|8\\\\d|9[0-35-9])\\\\d{8}$\"",
 		}
 		if !all {
 			return err
 		}
 		errors = append(errors, err)
 	}
+
+	// no validation rules for ClientId
 
 	if len(errors) > 0 {
 		return SMSCodeRequestMultiError(errors)
@@ -158,7 +160,7 @@ var _ interface {
 	ErrorName() string
 } = SMSCodeRequestValidationError{}
 
-var _SMSCodeRequest_Name_Pattern = regexp.MustCompile("^1(3\\d|4[5-9]|5[0-35-9]|6[567]|7[0-8]|8\\d|9[0-35-9])\\d{8}$")
+var _SMSCodeRequest_Mobile_Pattern = regexp.MustCompile("^1(3\\d|4[0-14-9]|5[0-35-9]|6[2567]|7[0-8]|8\\d|9[0-35-9])\\d{8}$")
 
 // Validate checks the field values on SMSCodeReply with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
@@ -282,6 +284,8 @@ func (m *LoginByMobileRequest) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for Mobile
+
+	// no validation rules for ClientId
 
 	// no validation rules for SmsCode
 
@@ -497,3 +501,406 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = LoginByMobileReplyValidationError{}
+
+// Validate checks the field values on LogoutRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *LogoutRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on LogoutRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in LogoutRequestMultiError, or
+// nil if none found.
+func (m *LogoutRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *LogoutRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return LogoutRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// LogoutRequestMultiError is an error wrapping multiple validation errors
+// returned by LogoutRequest.ValidateAll() if the designated constraints
+// aren't met.
+type LogoutRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m LogoutRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m LogoutRequestMultiError) AllErrors() []error { return m }
+
+// LogoutRequestValidationError is the validation error returned by
+// LogoutRequest.Validate if the designated constraints aren't met.
+type LogoutRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e LogoutRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e LogoutRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e LogoutRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e LogoutRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e LogoutRequestValidationError) ErrorName() string { return "LogoutRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e LogoutRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sLogoutRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = LogoutRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = LogoutRequestValidationError{}
+
+// Validate checks the field values on LogoutReply with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *LogoutReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on LogoutReply with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in LogoutReplyMultiError, or
+// nil if none found.
+func (m *LogoutReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *LogoutReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return LogoutReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// LogoutReplyMultiError is an error wrapping multiple validation errors
+// returned by LogoutReply.ValidateAll() if the designated constraints aren't met.
+type LogoutReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m LogoutReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m LogoutReplyMultiError) AllErrors() []error { return m }
+
+// LogoutReplyValidationError is the validation error returned by
+// LogoutReply.Validate if the designated constraints aren't met.
+type LogoutReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e LogoutReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e LogoutReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e LogoutReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e LogoutReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e LogoutReplyValidationError) ErrorName() string { return "LogoutReplyValidationError" }
+
+// Error satisfies the builtin error interface
+func (e LogoutReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sLogoutReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = LogoutReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = LogoutReplyValidationError{}
+
+// Validate checks the field values on DeRegisterRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *DeRegisterRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeRegisterRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeRegisterRequestMultiError, or nil if none found.
+func (m *DeRegisterRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeRegisterRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for SmsCode
+
+	if len(errors) > 0 {
+		return DeRegisterRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeRegisterRequestMultiError is an error wrapping multiple validation errors
+// returned by DeRegisterRequest.ValidateAll() if the designated constraints
+// aren't met.
+type DeRegisterRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeRegisterRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeRegisterRequestMultiError) AllErrors() []error { return m }
+
+// DeRegisterRequestValidationError is the validation error returned by
+// DeRegisterRequest.Validate if the designated constraints aren't met.
+type DeRegisterRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeRegisterRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeRegisterRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeRegisterRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeRegisterRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeRegisterRequestValidationError) ErrorName() string {
+	return "DeRegisterRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeRegisterRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeRegisterRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeRegisterRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeRegisterRequestValidationError{}
+
+// Validate checks the field values on DeRegisterReply with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *DeRegisterReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeRegisterReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeRegisterReplyMultiError, or nil if none found.
+func (m *DeRegisterReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeRegisterReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return DeRegisterReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeRegisterReplyMultiError is an error wrapping multiple validation errors
+// returned by DeRegisterReply.ValidateAll() if the designated constraints
+// aren't met.
+type DeRegisterReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeRegisterReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeRegisterReplyMultiError) AllErrors() []error { return m }
+
+// DeRegisterReplyValidationError is the validation error returned by
+// DeRegisterReply.Validate if the designated constraints aren't met.
+type DeRegisterReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeRegisterReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeRegisterReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeRegisterReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeRegisterReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeRegisterReplyValidationError) ErrorName() string { return "DeRegisterReplyValidationError" }
+
+// Error satisfies the builtin error interface
+func (e DeRegisterReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeRegisterReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeRegisterReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeRegisterReplyValidationError{}

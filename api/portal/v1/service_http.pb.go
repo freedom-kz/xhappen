@@ -18,7 +18,9 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 type UserHTTPServer interface {
+	DeRegister(context.Context, *DeRegisterRequest) (*DeRegisterReply, error)
 	LoginByMobile(context.Context, *LoginByMobileRequest) (*LoginByMobileReply, error)
+	Logout(context.Context, *LogoutRequest) (*LogoutReply, error)
 	SendSMSCode(context.Context, *SMSCodeRequest) (*SMSCodeReply, error)
 }
 
@@ -26,6 +28,8 @@ func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r := s.Route("/")
 	r.POST("/user/smscode", _User_SendSMSCode0_HTTP_Handler(srv))
 	r.POST("/user/login", _User_LoginByMobile0_HTTP_Handler(srv))
+	r.POST("/user/logout", _User_Logout0_HTTP_Handler(srv))
+	r.POST("/user/deregister", _User_DeRegister0_HTTP_Handler(srv))
 }
 
 func _User_SendSMSCode0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
@@ -66,8 +70,48 @@ func _User_LoginByMobile0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context
 	}
 }
 
+func _User_Logout0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in LogoutRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, "/portal.v1.User/Logout")
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.Logout(ctx, req.(*LogoutRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*LogoutReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_DeRegister0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DeRegisterRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, "/portal.v1.User/DeRegister")
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeRegister(ctx, req.(*DeRegisterRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DeRegisterReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserHTTPClient interface {
+	DeRegister(ctx context.Context, req *DeRegisterRequest, opts ...http.CallOption) (rsp *DeRegisterReply, err error)
 	LoginByMobile(ctx context.Context, req *LoginByMobileRequest, opts ...http.CallOption) (rsp *LoginByMobileReply, err error)
+	Logout(ctx context.Context, req *LogoutRequest, opts ...http.CallOption) (rsp *LogoutReply, err error)
 	SendSMSCode(ctx context.Context, req *SMSCodeRequest, opts ...http.CallOption) (rsp *SMSCodeReply, err error)
 }
 
@@ -79,11 +123,37 @@ func NewUserHTTPClient(client *http.Client) UserHTTPClient {
 	return &UserHTTPClientImpl{client}
 }
 
+func (c *UserHTTPClientImpl) DeRegister(ctx context.Context, in *DeRegisterRequest, opts ...http.CallOption) (*DeRegisterReply, error) {
+	var out DeRegisterReply
+	pattern := "/user/deregister"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation("/portal.v1.User/DeRegister"))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
 func (c *UserHTTPClientImpl) LoginByMobile(ctx context.Context, in *LoginByMobileRequest, opts ...http.CallOption) (*LoginByMobileReply, error) {
 	var out LoginByMobileReply
 	pattern := "/user/login"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation("/portal.v1.User/LoginByMobile"))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *UserHTTPClientImpl) Logout(ctx context.Context, in *LogoutRequest, opts ...http.CallOption) (*LogoutReply, error) {
+	var out LogoutReply
+	pattern := "/user/logout"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation("/portal.v1.User/Logout"))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
