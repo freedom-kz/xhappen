@@ -15,6 +15,7 @@ message Trace {
     string endpoint = 1;
 }
 
+
 message Server {
   message HTTP {
     string addr = 2;
@@ -34,17 +35,25 @@ message Data {
     string source = 2;
   }
   message Redis {
-    string addr = 2;
-    google.protobuf.Duration read_timeout = 3;
-    google.protobuf.Duration write_timeout = 4;
+    string addr = 1;
+    string password = 2;
+    int32 db = 3;
+    google.protobuf.Duration dialTimeout = 4;
+    google.protobuf.Duration readTimeout = 5;
+    google.protobuf.Duration writeTimeout = 6;
   }
   message Etcd {
         string addr = 1;
         google.protobuf.Duration dialTimeout = 2;
         google.protobuf.Duration readTimeout = 3;
         google.protobuf.Duration writeTimeout = 4;
-    }
+  }
+
+  message Kafka {
+        string addr = 1;
+  }
   Database database = 1;
   Redis redis = 2;
   Etcd etcd = 3;
+  Kafka kafka = 4;
 }

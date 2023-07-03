@@ -13,8 +13,11 @@ data:
     source: root:pwd9527@tcp(127.0.0.1:3306)/xhappen?charset=utf8mb4&parseTime=True
   redis:
     addr: 127.0.0.1:6379
-    read_timeout: 0.2s
-    write_timeout: 0.2s
+    password: pwd9527
+    db: 1
+    dialTimeout: 0.3s
+    readTimeout: 0.3s
+    writeTimeout: 0.3s
   etcd:
     address: 127.0.0.1:2379
     dialTimeout: 1s
