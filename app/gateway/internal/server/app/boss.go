@@ -1,4 +1,4 @@
-package protocol
+package app
 
 import (
 	"context"
@@ -7,10 +7,15 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 )
 
-type Hub struct {
+type Boss struct {
 	ctx       context.Context
 	ctxCancel context.CancelFunc
 	loggger   log.Logger
 
 	tcpListener net.Listener
+
+	hubs []*Hub
+
+	exitChan  chan int
+	waitGroup util.WaitGroupWrapper
 }

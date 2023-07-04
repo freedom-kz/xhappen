@@ -13,7 +13,7 @@ import (
 
 const (
 	DEFAULT_SEPARATOR = ":"
-	LOGIN_PREFIX      = "login:sms:"
+	LOGIN_PREFIX      = "authcode:"
 
 	EXPIRE_AFTER_5_MINUTE = time.Minute * 5
 	EXPIRE_AFTER_1_DAY    = time.Hour * 24
