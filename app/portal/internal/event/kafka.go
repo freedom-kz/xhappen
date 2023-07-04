@@ -101,7 +101,6 @@ func (k *kafkaReceiver) Close() error {
 func NewKafkaReceiver(address []string, topic string) (Receiver, error) {
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:  address,
-		GroupID:  "group-a",
 		Topic:    topic,
 		MaxBytes: 10e6, // 10MB
 	})

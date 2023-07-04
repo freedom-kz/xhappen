@@ -20,5 +20,6 @@ type Receiver interface {
 }
 
 type SMSCode struct {
+	Mobile   string
 	Authcode string
 }

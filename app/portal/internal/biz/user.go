@@ -88,6 +88,7 @@ func (u *UserUseCase) Deregister(ctx context.Context) error {
 
 func (u *UserUseCase) sendAuthCodeToKafka(ctx context.Context, mobile string, authcode string) error {
 	smscodeMsg := &event.SMSCode{
+		Mobile:   mobile,
 		Authcode: authcode,
 	}
 
@@ -98,6 +99,7 @@ func (u *UserUseCase) sendAuthCodeToKafka(ctx context.Context, mobile string, au
 	}
 
 	msg := event.NewMessage(mobile, value)
+
 	go u.sender.Send(ctx, msg)
 	return nil
 }
