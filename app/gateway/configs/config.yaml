@@ -3,12 +3,13 @@ trace:
 server:
   grpc:
     addr: 0.0.0.0:9001
-    timeout: 1s
-Main:
-  socket:
+    timeout: 3s
+socket:
+  main:
     tls: false
     tlsCert: 
     tlsKey:
+    tlsClientAuthPolicy:
     tlsRootCAFile: 
     tcpAddress: 8001
     wsAddress: 8002
@@ -21,10 +22,10 @@ Main:
     maxMsgSize: 65535
     maxRdyCount: 100
     syncEvery: 1
-    msgTimeout: 10
+    msgTimeout: 5s
 data:
   etcd:
-    address: 127.0.0.1:2379
+    address: 192.168.71.18:2379
     dialTimeout: 1s
     readTimeout: 1s
     writeTimeout: 1s

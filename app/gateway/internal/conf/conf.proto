@@ -9,7 +9,7 @@ message Bootstrap {
   Server server = 1;
   Data data = 2;
   Trace trace = 3;
-  Main main = 4;
+  Socket socket = 4;
 }
 
 message Trace {
@@ -34,25 +34,29 @@ message Data {
   Etcd etcd = 1;
 }
 
-message Main {
-  message Socket {
+message Socket {
+  message Main {
     bool isTls = 1;
     string tlsCert = 2;
     string tlsKey = 3;
-    string tlsRootCAFile = 4;
-    string tcpAddress = 5;
-    string wsAddress = 6;
-    google.protobuf.Duration minKeepAlive = 7;
-    google.protobuf.Duration maxKeepAlive = 8;
-    uint32 readBufferSize = 9;
-    uint32 writeBufferSize = 10;
-    google.protobuf.Duration writeTimeout = 11;
+    string tlsClientAuthPolicy = 4;
+    string tlsRootCAFile = 5;
+    string tcpAddress = 6;
+    string wsAddress = 7;
+    google.protobuf.Duration minKeepAlive = 8;
+    google.protobuf.Duration maxKeepAlive = 9;
+    uint32 readBufferSize = 10;
+    uint32 writeBufferSize = 11;
+    google.protobuf.Duration writeTimeout = 12;
   }
-  message queue {
+  message Queue {
     uint32 maxMsgSize = 1;
     uint32 maxRdyCount = 2;
     google.protobuf.Duration msgTimeout = 3;
-  }      
+  }
+
+  Main main = 1;
+  Queue queue = 2;      
 }
 
 
