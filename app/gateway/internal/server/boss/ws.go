@@ -66,7 +66,6 @@ type WsConn struct {
 	Writer *bufio.Writer
 }
 
-//这里需要完成ws读取字节切片，到通用io.read的转换
 func (wsConn *WsConn) Read(b []byte) (n int, err error) {
 	if wsConn.Reader == nil {
 		err := wsConn.SetReader()

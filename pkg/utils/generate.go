@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"hash/fnv"
 	"math/rand"
 	"strings"
 	"time"
@@ -29,4 +30,20 @@ func GenerateAuthCode(width int) string {
 		fmt.Fprintf(&sb, "%d", numeric[rand.Intn(r)])
 	}
 	return sb.String()
+}
+
+func Hash(s string) uint64 {
+	h := fnv.New64a()
+	h.Write([]byte(s))
+	return h.Sum64()
+}
+
+func HashWith2String(first string, second string) uint64 {
+	hf := Hash(first)
+	hs := Hash(second)
+	if hf <= hs {
+		return Hash(first + second)
+	} else {
+		return Hash(second + first)
+	}
 }

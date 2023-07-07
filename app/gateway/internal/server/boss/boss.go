@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"xhappen/app/gateway/internal/conf"
-	"xhappen/app/gateway/internal/util"
+	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -32,7 +32,7 @@ type Boss struct {
 	tlsConfig   *tls.Config
 	hubs        []*Hub
 	exitChan    chan int
-	waitGroup   util.WaitGroupWrapper
+	waitGroup   utils.WaitGroupWrapper
 	isExiting   int32
 }
 
@@ -43,7 +43,7 @@ func NewBoss(ctx context.Context, cfg *conf.Socket) *Boss {
 	}
 
 	boss.ctx, boss.ctxCancel = context.WithCancel(ctx)
-	boss.swapOpts(cfg)
+	boss.SwapOpts(cfg)
 	boss.errValue.Store(errStore{})
 	boss.hubStart()
 
@@ -123,7 +123,7 @@ func (boss *Boss) Stop(ctx context.Context) {
 }
 
 func (boss *Boss) hubStart() {
-	numberOfHubs := runtime.NumCPU() * 2
+	numberOfHubs := runtime.NumCPU() * 4
 	boss.loggger.Log(log.LevelInfo, "hubs", numberOfHubs)
 
 	hubs := make([]*Hub, numberOfHubs)
@@ -165,11 +165,11 @@ func (boss *Boss) GetStartTime() time.Time {
 	return boss.startTime
 }
 
-func (n *Boss) getConfig() *conf.Socket {
+func (n *Boss) GetConfig() *conf.Socket {
 	return n.opts.Load().(*conf.Socket)
 }
 
-func (n *Boss) swapOpts(opts *conf.Socket) {
+func (n *Boss) SwapOpts(opts *conf.Socket) {
 	n.opts.Store(opts)
 }
 
@@ -216,4 +216,10 @@ func buildTLSConfig(cfg *conf.Socket_Main) (*tls.Config, error) {
 	tlsConfig.BuildNameToCertificate()
 
 	return tlsConfig, nil
+}
+
+func (boss *Boss) GetHubForUserId(userID string) *Hub {
+	hash := utils.Hash(userID)
+	index := hash % uint64(len(boss.hubs))
+	return boss.hubs[int(index)]
 }

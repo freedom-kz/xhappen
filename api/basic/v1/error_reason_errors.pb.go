@@ -47,6 +47,30 @@ func ErrorRequestTooFast(format string, args ...interface{}) *errors.Error {
 	return errors.New(412, ErrorReason_REQUEST_TOO_FAST.String(), fmt.Sprintf(format, args...))
 }
 
+func IsAuthCodeInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorUserReason_AUTH_CODE_INVALID.String() && e.Code == 440
+}
+
+func ErrorAuthCodeInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(440, ErrorUserReason_AUTH_CODE_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
+func IsBlackUser(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorUserReason_BLACK_USER.String() && e.Code == 441
+}
+
+func ErrorBlackUser(format string, args ...interface{}) *errors.Error {
+	return errors.New(441, ErrorUserReason_BLACK_USER.String(), fmt.Sprintf(format, args...))
+}
+
 func IsClientidRejected(err error) bool {
 	if err == nil {
 		return false
@@ -117,16 +141,4 @@ func IsTokenExpire(err error) bool {
 
 func ErrorTokenExpire(format string, args ...interface{}) *errors.Error {
 	return errors.New(430, ErrorSocketAuthReason_TOKEN_EXPIRE.String(), fmt.Sprintf(format, args...))
-}
-
-func IsBlackUser(err error) bool {
-	if err == nil {
-		return false
-	}
-	e := errors.FromError(err)
-	return e.Reason == ErrorSocketAuthReason_BLACK_USER.String() && e.Code == 431
-}
-
-func ErrorBlackUser(format string, args ...interface{}) *errors.Error {
-	return errors.New(431, ErrorSocketAuthReason_BLACK_USER.String(), fmt.Sprintf(format, args...))
 }

@@ -22,10 +22,10 @@ func (bossServer *BossServer) Handle(conn net.Conn) {
 }
 
 func (bossServer *BossServer) newConnection(conn net.Conn) *Connection {
-	cli := &Connection{
+	connection := &Connection{
 		Conn:   conn,
-		boss:   bossServer.boss,
-		exitCh: make(chan bool),
+		Boss:   bossServer.boss,
+		ExitCh: make(chan bool),
 	}
-	return cli
+	return connection
 }

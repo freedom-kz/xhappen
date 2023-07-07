@@ -17,6 +17,14 @@ enum ErrorReason {
   REQUEST_TOO_FAST = 2 [(errors.code) = 412];
 }
 
+enum ErrorUserReason {
+  option (errors.default_code) = 500;
+
+  AUTH_CODE_INVALID = 0 [(errors.code) = 440];
+  BLACK_USER = 1 [(errors.code) = 441];
+}
+
+
 
 enum ErrorSocketBindReason {
   option (errors.default_code) = 500;
@@ -32,7 +40,7 @@ enum ErrorSocketAuthReason {
   option (errors.default_code) = 500;
 
   TOKEN_EXPIRE = 0 [(errors.code) = 430];
-  BLACK_USER = 1 [(errors.code) = 431];
+  
 }
 
 

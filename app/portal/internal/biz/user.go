@@ -15,8 +15,15 @@ import (
 )
 
 type User struct {
-	Id          int64
+	Id          int64 `gorm:"primaryKey"`
 	UId         string
+	Phone       string
+	Nickname    string
+	Icon        string
+	Birth       time.Time
+	Gender      int
+	Sign        string
+	State       int
 	Roles       string
 	Props       string
 	NotifyProps string
@@ -26,9 +33,11 @@ type User struct {
 }
 
 type UserRepo interface {
-	Save(ctx context.Context, g *User) (*User, error)
+	GetUserByPhone(ctx context.Context, phone string) (*User, bool, error)
+	SaveUser(ctx context.Context, g *User) (*User, error)
 	GenerateLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (err error)
 	GetAuthInfo(ctx context.Context, mobile string) (map[string]string, error)
+	VerifyLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (bool, error)
 }
 
 type UserUseCase struct {
@@ -74,8 +83,41 @@ func (u *UserUseCase) SendSMSCode(ctx context.Context, mobile string, clientId s
 	return u.sendAuthCodeToKafka(ctx, mobile, authCode)
 }
 
-func (u *UserUseCase) LoginByMobile(ctx context.Context) error {
-	return nil
+func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, clienrId string, smsCode string) (*User, error) {
+	//验证authcode
+	authRet, err := u.repo.VerifyLoginAuthCode(ctx, mobile, clienrId, smsCode)
+	if err != nil {
+		return nil, err
+	}
+
+	if !authRet {
+		return nil, basic.ErrorAuthCodeInvalid("auth code invalid")
+	}
+
+	//查找用户，不存在则新建返回
+	user, exist, err := u.repo.GetUserByPhone(ctx, mobile)
+	if err != nil {
+		return nil, err
+	}
+
+	if exist {
+		return user, nil
+	}
+
+	if !exist {
+		user.Phone = mobile
+		user.UId = utils.GenerateId()
+		user.Nickname = "用户" + mobile[len(mobile)-6:len(mobile)]
+		user.Gender = 0
+		user, err = u.repo.SaveUser(ctx, user)
+		if err != nil {
+			return user, err
+		} else {
+			return user, nil
+		}
+	}
+
+	return user, nil
 }
 
 func (u *UserUseCase) Logout(ctx context.Context) error {
