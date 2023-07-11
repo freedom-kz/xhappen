@@ -8,11 +8,11 @@ socket:
   main:
     tls: false
     tlsCert: 
-    tlsKey:
-    tlsClientAuthPolicy:
+    tlsKey: 
+    tlsClientAuthPolicy:  
     tlsRootCAFile: 
-    tcpAddress: 8001
-    wsAddress: 8002
+    tcpAddress: ':8001'
+    wsAddress: ':8002'
     minKeepAlive: 60s
     maxKeepAlive: 300s
     readBufferSize: 8192
@@ -25,7 +25,7 @@ socket:
     msgTimeout: 5s
 data:
   etcd:
-    address: 192.168.71.18:2379
+    addr: 192.168.71.18:2379
     dialTimeout: 1s
     readTimeout: 1s
     writeTimeout: 1s

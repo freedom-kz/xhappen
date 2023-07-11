@@ -21,7 +21,7 @@ message Bind{
 }
 
 message BindAck{
-    bool ackRet = 1;                //响应码
+    bool bindRet = 1;                //响应码
     uint64 serverTimeStamp = 2;     //服务器时间戳
     errors.Status err = 3;          //kratos通用错误
 }
@@ -33,8 +33,9 @@ message Auth{
 }
 
 message AuthAck{
-    bool authRet = 1;        //响应码
+    bool authRet = 1;               //响应码
     string uid = 2;                 //用户ID
+    errors.Status err = 3;          //kratos通用错误
 }
 
 message Sync{

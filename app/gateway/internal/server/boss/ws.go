@@ -10,21 +10,20 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/gobwas/ws"
 )
 
-const (
-	DEFAULT_READ_TIMEOUT = time.Second * 10 //默认读超时
-	HandshakeTimeout     = time.Second * 10 //websocket握手超时
-)
-
 func WsServe(listener net.Listener, handler ConnHandler, logger log.Logger) error {
 	logger.Log(log.LevelInfo, "ws.listener.addr", listener.Addr())
+	var wg sync.WaitGroup
 
 	http.HandleFunc("/im", func(w http.ResponseWriter, r *http.Request) {
+		wg.Add(1)
+		defer wg.Done()
 		handle(w, r, handler, logger)
 	})
 
@@ -41,6 +40,7 @@ func WsServe(listener net.Listener, handler ConnHandler, logger log.Logger) erro
 	} else {
 		logger.Log(log.LevelError, "err", err)
 	}
+	wg.Wait()
 	return nil
 }
 

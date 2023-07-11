@@ -5,14 +5,18 @@ import (
 	"os"
 
 	"xhappen/app/gateway/internal/conf"
+	"xhappen/app/gateway/internal/server/boss"
 	plog "xhappen/pkg/log"
 
+	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
+	etcdclient "go.etcd.io/etcd/client/v3"
 	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -32,9 +36,11 @@ var (
 
 func init() {
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
+	Name = "portal"
+	Version = "1.0.0"
 }
 
-func newApp(logger log.Logger, gs *grpc.Server) *kratos.App {
+func newApp(logger log.Logger, gs *grpc.Server, bs *boss.Boss, r registry.Registrar) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -43,12 +49,15 @@ func newApp(logger log.Logger, gs *grpc.Server) *kratos.App {
 		kratos.Logger(logger),
 		kratos.Server(
 			gs,
+			bs,
 		),
+		kratos.Registrar(r),
 	)
 }
 
 func main() {
 	flag.Parse()
+
 	logger := log.With(log.NewStdLogger(os.Stdout),
 		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,
@@ -73,8 +82,18 @@ func main() {
 	if err := c.Scan(&bc); err != nil {
 		panic(err)
 	}
+	logger.Log(log.LevelInfo, "config", bc)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
+	client, err := etcdclient.New(etcdclient.Config{
+		Endpoints: []string{bc.Data.Etcd.Addr},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r := etcd.New(client)
+
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Socket, r, logger)
 	if err != nil {
 		panic(err)
 	}

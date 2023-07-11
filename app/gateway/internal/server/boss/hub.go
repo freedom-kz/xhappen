@@ -13,6 +13,9 @@ type Hub struct {
 	index int
 
 	directDeliverMessage chan *DirectDeliverMessage
+
+	addConn    chan *Connection
+	removeConn chan *Connection
 }
 
 type DirectDeliverMessage struct {
@@ -22,28 +25,28 @@ type DirectDeliverMessage struct {
 
 func newHub(boss *Boss) *Hub {
 	return &Hub{
-		boss: boss,
+		boss:       boss,
+		addConn:    make(chan *Connection, 0),
+		removeConn: make(chan *Connection, 0),
 	}
 }
 
 func (h *Hub) Start() {
-	connIndex := newConnectionIndex()
 
-	for {
-		select {
-		case directDeliver := <-h.directDeliverMessage:
-			if !connIndex.Has(directDeliver.conn) {
-				continue
-			}
+	go func() {
+		connIndex := newConnectionIndex()
 
+		for {
 			select {
-			// case directMsg.conn.send <- directDeliver.deliver:
-			// default:
-			// 	close(directMsg.conn.send)
-			// 	connIndex.Remove(directMsg.conn)
+			case connection := <-h.addConn:
+				connIndex.Add(connection)
+
+			case connection := <-h.removeConn:
+				connIndex.Remove(connection)
 			}
 		}
-	}
+	}()
+
 }
 
 func (h *Hub) Stop() {
@@ -71,6 +74,7 @@ func (i *ConnectionIndex) Add(connection *Connection) {
 }
 
 func (i *ConnectionIndex) Remove(connection *Connection) {
+
 	userConnIndex, ok := i.byConnection[connection]
 	if !ok {
 		return

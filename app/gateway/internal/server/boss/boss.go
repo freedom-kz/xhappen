@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"xhappen/app/gateway/internal/conf"
+	"xhappen/app/gateway/internal/service"
 	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -27,22 +28,26 @@ type Boss struct {
 	errValue    atomic.Value
 	opts        atomic.Value
 	startTime   time.Time
+	serverId    string
 	tcpListener net.Listener
 	wsListener  net.Listener
 	tlsConfig   *tls.Config
 	hubs        []*Hub
+	passClient  *service.PassClient
 	exitChan    chan int
 	waitGroup   utils.WaitGroupWrapper
 	isExiting   int32
 }
 
-func NewBoss(ctx context.Context, cfg *conf.Socket) *Boss {
+func NewBoss(cfg *conf.Socket, loggger log.Logger, passClient *service.PassClient) *Boss {
 	boss := &Boss{
-		startTime: time.Now(),
-		exitChan:  make(chan int),
+		startTime:  time.Now(),
+		loggger:    loggger,
+		exitChan:   make(chan int),
+		passClient: passClient,
 	}
 
-	boss.ctx, boss.ctxCancel = context.WithCancel(ctx)
+	boss.ctx, boss.ctxCancel = context.WithCancel(context.Background())
 	boss.SwapOpts(cfg)
 	boss.errValue.Store(errStore{})
 	boss.hubStart()
@@ -69,7 +74,7 @@ func NewBoss(ctx context.Context, cfg *conf.Socket) *Boss {
 	return boss
 }
 
-func (boss *Boss) Start(ctx context.Context) error {
+func (boss *Boss) Start(context.Context) error {
 	exitCh := make(chan error)
 	var once sync.Once
 	exitFunc := func(err error) {
@@ -95,10 +100,10 @@ func (boss *Boss) Start(ctx context.Context) error {
 	return err
 }
 
-func (boss *Boss) Stop(ctx context.Context) {
+func (boss *Boss) Stop(context.Context) error {
 	//退出中，直接返回
 	if !atomic.CompareAndSwapInt32(&boss.isExiting, 0, 1) {
-		return
+		return fmt.Errorf("boss have exited.")
 	}
 
 	//关闭TCP监听器
@@ -120,6 +125,7 @@ func (boss *Boss) Stop(ctx context.Context) {
 	boss.loggger.Log(log.LevelInfo, "stop", "success")
 	//取消函数调用
 	boss.ctxCancel()
+	return nil
 }
 
 func (boss *Boss) hubStart() {

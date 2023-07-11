@@ -23,11 +23,15 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GatewaySrvClient interface {
 	//接收同步消息
-	Sync(ctx context.Context, in *SyncRequest, opts ...grpc.CallOption) (*SyncResponse, error)
+	Sync(ctx context.Context, in *SyncRequest, opts ...grpc.CallOption) (*SyncReply, error)
 	//接收下行消息
-	Deliver(ctx context.Context, in *DeliverRequest, opts ...grpc.CallOption) (*DeliverResponse, error)
+	Deliver(ctx context.Context, in *DeliverRequest, opts ...grpc.CallOption) (*DeliverReply, error)
+	//广播
+	Broadcast(ctx context.Context, in *BroadcastRequest, opts ...grpc.CallOption) (*BroadcastReply, error)
+	//指令
+	Action(ctx context.Context, in *ActionRequest, opts ...grpc.CallOption) (*ActionReply, error)
 	//强制断开连接
-	DisconnectedForce(ctx context.Context, in *DisconnectForceRequest, opts ...grpc.CallOption) (*DisconnectForceResponse, error)
+	DisconnectedForce(ctx context.Context, in *DisconnectForceRequest, opts ...grpc.CallOption) (*DisconnectForceReply, error)
 }
 
 type gatewaySrvClient struct {
@@ -38,8 +42,8 @@ func NewGatewaySrvClient(cc grpc.ClientConnInterface) GatewaySrvClient {
 	return &gatewaySrvClient{cc}
 }
 
-func (c *gatewaySrvClient) Sync(ctx context.Context, in *SyncRequest, opts ...grpc.CallOption) (*SyncResponse, error) {
-	out := new(SyncResponse)
+func (c *gatewaySrvClient) Sync(ctx context.Context, in *SyncRequest, opts ...grpc.CallOption) (*SyncReply, error) {
+	out := new(SyncReply)
 	err := c.cc.Invoke(ctx, "/gateway.v1.GatewaySrv/Sync", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -47,8 +51,8 @@ func (c *gatewaySrvClient) Sync(ctx context.Context, in *SyncRequest, opts ...gr
 	return out, nil
 }
 
-func (c *gatewaySrvClient) Deliver(ctx context.Context, in *DeliverRequest, opts ...grpc.CallOption) (*DeliverResponse, error) {
-	out := new(DeliverResponse)
+func (c *gatewaySrvClient) Deliver(ctx context.Context, in *DeliverRequest, opts ...grpc.CallOption) (*DeliverReply, error) {
+	out := new(DeliverReply)
 	err := c.cc.Invoke(ctx, "/gateway.v1.GatewaySrv/Deliver", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -56,8 +60,26 @@ func (c *gatewaySrvClient) Deliver(ctx context.Context, in *DeliverRequest, opts
 	return out, nil
 }
 
-func (c *gatewaySrvClient) DisconnectedForce(ctx context.Context, in *DisconnectForceRequest, opts ...grpc.CallOption) (*DisconnectForceResponse, error) {
-	out := new(DisconnectForceResponse)
+func (c *gatewaySrvClient) Broadcast(ctx context.Context, in *BroadcastRequest, opts ...grpc.CallOption) (*BroadcastReply, error) {
+	out := new(BroadcastReply)
+	err := c.cc.Invoke(ctx, "/gateway.v1.GatewaySrv/Broadcast", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gatewaySrvClient) Action(ctx context.Context, in *ActionRequest, opts ...grpc.CallOption) (*ActionReply, error) {
+	out := new(ActionReply)
+	err := c.cc.Invoke(ctx, "/gateway.v1.GatewaySrv/Action", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gatewaySrvClient) DisconnectedForce(ctx context.Context, in *DisconnectForceRequest, opts ...grpc.CallOption) (*DisconnectForceReply, error) {
+	out := new(DisconnectForceReply)
 	err := c.cc.Invoke(ctx, "/gateway.v1.GatewaySrv/DisconnectedForce", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -70,11 +92,15 @@ func (c *gatewaySrvClient) DisconnectedForce(ctx context.Context, in *Disconnect
 // for forward compatibility
 type GatewaySrvServer interface {
 	//接收同步消息
-	Sync(context.Context, *SyncRequest) (*SyncResponse, error)
+	Sync(context.Context, *SyncRequest) (*SyncReply, error)
 	//接收下行消息
-	Deliver(context.Context, *DeliverRequest) (*DeliverResponse, error)
+	Deliver(context.Context, *DeliverRequest) (*DeliverReply, error)
+	//广播
+	Broadcast(context.Context, *BroadcastRequest) (*BroadcastReply, error)
+	//指令
+	Action(context.Context, *ActionRequest) (*ActionReply, error)
 	//强制断开连接
-	DisconnectedForce(context.Context, *DisconnectForceRequest) (*DisconnectForceResponse, error)
+	DisconnectedForce(context.Context, *DisconnectForceRequest) (*DisconnectForceReply, error)
 	mustEmbedUnimplementedGatewaySrvServer()
 }
 
@@ -82,13 +108,19 @@ type GatewaySrvServer interface {
 type UnimplementedGatewaySrvServer struct {
 }
 
-func (UnimplementedGatewaySrvServer) Sync(context.Context, *SyncRequest) (*SyncResponse, error) {
+func (UnimplementedGatewaySrvServer) Sync(context.Context, *SyncRequest) (*SyncReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sync not implemented")
 }
-func (UnimplementedGatewaySrvServer) Deliver(context.Context, *DeliverRequest) (*DeliverResponse, error) {
+func (UnimplementedGatewaySrvServer) Deliver(context.Context, *DeliverRequest) (*DeliverReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Deliver not implemented")
 }
-func (UnimplementedGatewaySrvServer) DisconnectedForce(context.Context, *DisconnectForceRequest) (*DisconnectForceResponse, error) {
+func (UnimplementedGatewaySrvServer) Broadcast(context.Context, *BroadcastRequest) (*BroadcastReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Broadcast not implemented")
+}
+func (UnimplementedGatewaySrvServer) Action(context.Context, *ActionRequest) (*ActionReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Action not implemented")
+}
+func (UnimplementedGatewaySrvServer) DisconnectedForce(context.Context, *DisconnectForceRequest) (*DisconnectForceReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DisconnectedForce not implemented")
 }
 func (UnimplementedGatewaySrvServer) mustEmbedUnimplementedGatewaySrvServer() {}
@@ -140,6 +172,42 @@ func _GatewaySrv_Deliver_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GatewaySrv_Broadcast_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BroadcastRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewaySrvServer).Broadcast(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gateway.v1.GatewaySrv/Broadcast",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewaySrvServer).Broadcast(ctx, req.(*BroadcastRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GatewaySrv_Action_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GatewaySrvServer).Action(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/gateway.v1.GatewaySrv/Action",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GatewaySrvServer).Action(ctx, req.(*ActionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _GatewaySrv_DisconnectedForce_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DisconnectForceRequest)
 	if err := dec(in); err != nil {
@@ -172,6 +240,14 @@ var GatewaySrv_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Deliver",
 			Handler:    _GatewaySrv_Deliver_Handler,
+		},
+		{
+			MethodName: "Broadcast",
+			Handler:    _GatewaySrv_Broadcast_Handler,
+		},
+		{
+			MethodName: "Action",
+			Handler:    _GatewaySrv_Action_Handler,
 		},
 		{
 			MethodName: "DisconnectedForce",

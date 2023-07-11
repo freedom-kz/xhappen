@@ -20,18 +20,17 @@ func TCPServe(listener net.Listener, handler ConnHandler, logger log.Logger) err
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			if !strings.Contains(err.Error(), "use of closed network connection") {
-				return fmt.Errorf("listener.Accept() error - %s", err)
-			}
-
-			if _, ok := err.(net.Error); ok {
-				logger.Log(log.LevelWarn, "temporary Accept() failure - %s", err)
+			if te, ok := err.(interface{ Temporary() bool }); ok && te.Temporary() {
+				logger.Log(log.LevelWarn, "listener.Accept() error - %s", err)
 				runtime.Gosched()
 				continue
-			} else {
-				break
 			}
-
+			// theres no direct way to detect this error because it is not exposed
+			if !strings.Contains(err.Error(), "use of closed network connection") {
+				logger.Log(log.LevelWarn, "listener.Accept() error - %s", err)
+				return fmt.Errorf("listener.Accept() error - %s", err)
+			}
+			break
 		}
 		reader := bufio.NewReaderSize(conn, ReadBufferSize)
 		writer := bufio.NewWriterSize(conn, WriteBufferSize)

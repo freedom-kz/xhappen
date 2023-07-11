@@ -2,30 +2,83 @@ syntax = "proto3";
 
 package chatnormal.v1;
 
-import "google/api/annotations.proto";
+import "api/protocol/v1/message.proto";
+import "api/protocol/v1/common.proto";
+import "errors/errors.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/go-kratos/examples/helloworld/helloworld";
 
-// The greeting service definition.
-service Greeter {
-  // Sends a greeting
-  rpc SayHello (HelloRequest) returns (HelloReply)  {
-        option (google.api.http) = {
-            get: "/helloworld/{name}",
-            additional_bindings {
-                post: "/say_hello",
-                body: "*",
-            }
-        };
-  }
+
+
+service Pass {
+  rpc Bind (BindRequest) returns (BindReply)  {}
+  rpc Auth (AuthRequest) returns (AuthReply)  {}
+  rpc Submit(SubmitRequest) returns (SubmitReply) {}
+  rpc Action(ActionRequest) returns (ActionReply) {}
+  rpc Quit(QuitRequest) returns (QuitReply) {}
 }
 
-// The request message containing the user's name.
-message HelloRequest {
-  string name = 1;
+message BindRequest {
+  protocol.v1.Bind bindInfo = 1;
+  string serverID = 2;
 }
 
-// The response message containing the greetings
-message HelloReply {
-  string message = 1;
+message BindReply {
+  bool ret = 1;
+  errors.Status err = 2;          //kratos通用错误
+}
+
+message AuthRequest {
+  string clientId = 1;
+  protocol.v1.Auth authInfo = 2;
+}
+
+message AuthReply {
+  bool ret = 1;
+  string uid = 2;
+  google.protobuf.Timestamp token_expire = 3;
+  repeated uint64 sessions = 4;
+  protocol.v1.RoleType role = 5;
+  protocol.v1.UserType uType = 6;
+  errors.Status err = 7;          //kratos通用错误
+}
+
+message SubmitRequest {
+  string userid = 1; //用户ID
+  string clientid = 2; //设备ID
+  protocol.v1.Submit submit = 3;
+}
+
+message SubmitReply {
+  bool ret = 1;
+  errors.Status err = 2;          //kratos通用错误
+  uint64 sessionId = 3;
+  uint64 sequence = 4;
+  uint64 timestamp = 5;
+}
+
+
+message ActionRequest {
+  string uid = 1;
+  string clientId = 2;
+  protocol.v1.Action action = 3;
+}
+
+message ActionReply {
+  bool ret = 1;
+  errors.Status err = 2;          //kratos通用错误
+  uint64 timestamp = 3;
+  bytes payload =4;
+}
+
+message QuitRequest {
+  string userId = 1;
+  string clientId = 2;
+  protocol.v1.DeviceType deviceType = 3;
+}
+
+message QuitReply {
+  bool ret = 1;
+  errors.Status err = 2;          //kratos通用错误
 }

@@ -2,6 +2,8 @@ package boss
 
 import (
 	"net"
+
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 const (
@@ -18,7 +20,17 @@ type BossServer struct {
 }
 
 func (bossServer *BossServer) Handle(conn net.Conn) {
+	connnection := newConnection(conn, bossServer.boss)
+	err := connnection.IOLoop()
 
+	if err != nil {
+		bossServer.boss.loggger.Log(log.LevelInfo, "msg", "socket io err.", "err", err, "hosname", connnection.String())
+	}
+	err = connnection.Close()
+
+	if err != nil {
+		bossServer.boss.loggger.Log(log.LevelInfo, "msg", "socket closed err.", "err", err, "hosname", connnection.String())
+	}
 }
 
 func (bossServer *BossServer) newConnection(conn net.Conn) *Connection {

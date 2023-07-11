@@ -14,12 +14,24 @@ func NewGatewaySrvService() *GatewaySrvService {
 	return &GatewaySrvService{}
 }
 
-func (s *GatewaySrvService) Sync(ctx context.Context, req *pb.SyncRequest) (*pb.SyncResponse, error) {
-	return &pb.SyncResponse{}, nil
+func (s *GatewaySrvService) Sync(ctx context.Context, req *pb.SyncRequest) (*pb.SyncReply, error) {
+	return &pb.SyncReply{}, nil
 }
-func (s *GatewaySrvService) Deliver(ctx context.Context, req *pb.DeliverRequest) (*pb.DeliverResponse, error) {
-	return &pb.DeliverResponse{}, nil
+
+func (s *GatewaySrvService) Deliver(ctx context.Context, req *pb.DeliverRequest) (*pb.DeliverReply, error) {
+	return &pb.DeliverReply{}, nil
 }
-func (s *GatewaySrvService) Disconnectedforce(ctx context.Context, req *pb.DisconnectForceRequest) (*pb.DisconnectForceResponse, error) {
-	return &pb.DisconnectForceResponse{}, nil
+
+//广播
+func Broadcast(ctx context.Context, req *pb.BroadcastRequest) (*pb.BroadcastReply, error) {
+	return &pb.BroadcastReply{}, nil
+}
+
+//指令
+func Action(ctx context.Context, req *pb.ActionRequest) (*pb.ActionReply, error) {
+	return &pb.ActionReply{}, nil
+}
+
+func (s *GatewaySrvService) Disconnectedforce(ctx context.Context, req *pb.DisconnectForceRequest) (*pb.DisconnectForceReply, error) {
+	return &pb.DisconnectForceReply{}, nil
 }
