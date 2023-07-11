@@ -21,13 +21,13 @@ func TCPServe(listener net.Listener, handler ConnHandler, logger log.Logger) err
 		conn, err := listener.Accept()
 		if err != nil {
 			if te, ok := err.(interface{ Temporary() bool }); ok && te.Temporary() {
-				logger.Log(log.LevelWarn, "listener.Accept() error - %s", err)
+				logger.Log(log.LevelWarn, "listener.Accept() error", err)
 				runtime.Gosched()
 				continue
 			}
 			// theres no direct way to detect this error because it is not exposed
 			if !strings.Contains(err.Error(), "use of closed network connection") {
-				logger.Log(log.LevelWarn, "listener.Accept() error - %s", err)
+				logger.Log(log.LevelWarn, "listener.Accept() error", err)
 				return fmt.Errorf("listener.Accept() error - %s", err)
 			}
 			break
@@ -46,7 +46,7 @@ func TCPServe(listener net.Listener, handler ConnHandler, logger log.Logger) err
 	// wait to return until all handler goroutines complete
 	wg.Wait()
 
-	logger.Log(log.LevelInfo, "TCP: closing %s", listener.Addr())
+	logger.Log(log.LevelInfo, "TCP: closing", listener.Addr())
 
 	return nil
 }
