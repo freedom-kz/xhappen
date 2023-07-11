@@ -14,8 +14,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"xhappen/app/gateway/internal/client"
 	"xhappen/app/gateway/internal/conf"
-	"xhappen/app/gateway/internal/service"
 	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -33,13 +33,13 @@ type Boss struct {
 	wsListener  net.Listener
 	tlsConfig   *tls.Config
 	hubs        []*Hub
-	passClient  *service.PassClient
+	passClient  *client.PassClient
 	exitChan    chan int
 	waitGroup   utils.WaitGroupWrapper
 	isExiting   int32
 }
 
-func NewBoss(cfg *conf.Socket, loggger log.Logger, passClient *service.PassClient) *Boss {
+func NewBoss(cfg *conf.Socket, loggger log.Logger, passClient *client.PassClient) *Boss {
 	boss := &Boss{
 		startTime:  time.Now(),
 		loggger:    loggger,

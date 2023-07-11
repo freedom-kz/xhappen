@@ -4,14 +4,18 @@ import (
 	"context"
 
 	pb "xhappen/api/gateway/v1"
+	"xhappen/app/gateway/internal/server/boss"
 )
 
 type GatewaySrvService struct {
 	pb.UnimplementedGatewaySrvServer
+	boss *boss.Boss
 }
 
-func NewGatewaySrvService() *GatewaySrvService {
-	return &GatewaySrvService{}
+func NewGatewaySrvService(boss *boss.Boss) *GatewaySrvService {
+	return &GatewaySrvService{
+		boss: boss,
+	}
 }
 
 func (s *GatewaySrvService) Sync(ctx context.Context, req *pb.SyncRequest) (*pb.SyncReply, error) {

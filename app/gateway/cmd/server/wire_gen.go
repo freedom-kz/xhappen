@@ -10,6 +10,7 @@ import (
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
+	"xhappen/app/gateway/internal/client"
 	"xhappen/app/gateway/internal/conf"
 	"xhappen/app/gateway/internal/server"
 	"xhappen/app/gateway/internal/server/boss"
@@ -24,13 +25,13 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, data *conf.Data, socket *conf.Socket, registrar registry.Registrar, logger log.Logger) (*kratos.App, func(), error) {
-	gatewaySrvService := service.NewGatewaySrvService()
-	grpcServer := server.NewGRPCServer(confServer, gatewaySrvService, logger)
-	passClient, cleanup, err := service.NewPassClient(data, logger)
+	passClient, cleanup, err := client.NewPassClient(data, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	bossBoss := boss.NewBoss(socket, logger, passClient)
+	gatewaySrvService := service.NewGatewaySrvService(bossBoss)
+	grpcServer := server.NewGRPCServer(confServer, gatewaySrvService, logger)
 	app := newApp(logger, grpcServer, bossBoss, registrar)
 	return app, func() {
 		cleanup()
