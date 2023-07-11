@@ -383,9 +383,9 @@ func (connection *Connection) Flush() error {
 
 	switch s := connection.Conn.(type) {
 	case *TcpConn:
-		return s.Writer.Flush()
+		return s.Flush()
 	case *WsConn:
-		return s.Writer.Flush()
+		return s.Flush()
 	}
 	return nil
 }

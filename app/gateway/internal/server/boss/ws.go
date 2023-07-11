@@ -48,35 +48,38 @@ func handle(w http.ResponseWriter, r *http.Request, handler ConnHandler, logger 
 	upgrader := ws.HTTPUpgrader{
 		Timeout: HandshakeTimeout,
 	}
-	conn, _, _, err := upgrader.Upgrade(r, w)
+	conn, rwf, _, err := upgrader.Upgrade(r, w)
 	if err != nil {
 		logger.Log(log.LevelInfo, "msg", "upgrader ws fail", "err", err)
 		return
 	}
 	//conn.SetReadLimit(MaxMessageSize)
 	conn.SetReadDeadline(time.Now().Add(DEFAULT_READ_TIMEOUT))
-	writer := bufio.NewWriterSize(conn, WriteBufferSize)
-	wsConn := &WsConn{Conn: conn, Writer: writer}
+	rwf = bufio.NewReadWriter(
+		bufio.NewReaderSize(rwf, ReadBufferSize),
+		bufio.NewWriterSize(rwf, WriteBufferSize),
+	)
+	wsConn := &WsConn{Conn: conn, RWB: rwf}
 	handler.Handle(wsConn)
 }
 
 type WsConn struct {
 	net.Conn
-	Reader io.Reader
-	Writer *bufio.Writer
+	Transform io.Reader
+	RWB       *bufio.ReadWriter
 }
 
 func (wsConn *WsConn) Read(b []byte) (n int, err error) {
-	if wsConn.Reader == nil {
+	if wsConn.Transform == nil {
 		err := wsConn.SetReader()
 		if err != nil {
 			return 0, err
 		}
 	}
 
-	n, err = wsConn.Reader.Read(b)
+	n, err = wsConn.Transform.Read(b)
 	if err == io.EOF {
-		wsConn.Reader = nil
+		wsConn.Transform = nil
 		return wsConn.Read(b)
 	} else {
 		return n, err
@@ -84,7 +87,7 @@ func (wsConn *WsConn) Read(b []byte) (n int, err error) {
 }
 
 func (wsConn *WsConn) SetReader() (err error) {
-	frame, err := ws.ReadFrame(wsConn.Conn)
+	frame, err := ws.ReadFrame(wsConn.RWB)
 	if err != nil {
 		return err
 	}
@@ -93,13 +96,13 @@ func (wsConn *WsConn) SetReader() (err error) {
 	}
 	frame = ws.UnmaskFrameInPlace(frame)
 	bts := frame.Payload
-	wsConn.Reader = bytes.NewReader(bts)
+	wsConn.Transform = bytes.NewReader(bts)
 	return nil
 }
 
 func (wsConn *WsConn) Write(bts []byte) (n int, err error) {
 	frame := ws.NewBinaryFrame(bts)
-	err = ws.WriteFrame(wsConn.Writer, frame)
+	err = ws.WriteFrame(wsConn.RWB, frame)
 	if err != nil {
 		return 0, err
 	}
@@ -132,4 +135,8 @@ func (ws *WsConn) SetReadDeadline(t time.Time) error {
 
 func (ws *WsConn) SetWriteDeadline(t time.Time) error {
 	return ws.Conn.SetWriteDeadline(t)
+}
+
+func (ws *WsConn) Flush() error {
+	return ws.RWB.Flush()
 }

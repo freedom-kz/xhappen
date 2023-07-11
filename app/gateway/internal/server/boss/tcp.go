@@ -80,3 +80,7 @@ func (tc *TcpConn) RemoteAddr() net.Addr {
 func (tc *TcpConn) SetDeadline(t time.Time) error {
 	return tc.Conn.SetDeadline(t)
 }
+
+func (tc *TcpConn) Flush() error {
+	return tc.Writer.Flush()
+}
