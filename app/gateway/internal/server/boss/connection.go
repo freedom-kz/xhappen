@@ -157,7 +157,7 @@ func (connection *Connection) processBind() error {
 		connection.logger.Log(log.LevelDebug, "socket write fail", "clientId", connection.ClientId, "err", err)
 		return err
 	}
-	if bindAck.BindRet == false {
+	if !bindAck.BindRet {
 		connection.logger.Log(log.LevelDebug, "msg", "Bind reply fail", "clientId", connection.ClientId, "err", reply.Err)
 		connection.Flush()
 		return fmt.Errorf(bindAck.Err.Reason)
@@ -218,7 +218,7 @@ func (connection *Connection) processAuth() error {
 		connection.logger.Log(log.LevelDebug, "socket write fail", "clientId", connection.ClientId, "err", err)
 		return err
 	}
-	if ack.AuthRet == false {
+	if !ack.AuthRet {
 		connection.logger.Log(log.LevelDebug, "msg", "auth reply fail", "clientId", connection.ClientId, "err", reply.Err)
 		connection.Flush()
 		return fmt.Errorf(ack.Err.Reason)
@@ -228,6 +228,7 @@ func (connection *Connection) processAuth() error {
 	connection.RoleType = reply.Role
 	connection.UserType = reply.UType
 	connection.tokenExpire = reply.TokenExpire.AsTime()
+	connection.Boss.AddConnToHub(connection)
 	return nil
 }
 
@@ -302,7 +303,7 @@ func (connection *Connection) exec(packet packets.ControlPacket) error {
 	case *packets.PingPacket:
 	case *packets.QuitPacket:
 	default:
-		err = fmt.Errorf("invalid message type %s.", pkt.String())
+		err = fmt.Errorf("invalid message type %s", pkt.String())
 	}
 	return err
 }

@@ -11,16 +11,16 @@ import (
 // is compatible with the kratos package it is being compiled against.
 const _ = errors.SupportPackageIsVersion1
 
-func IsUnknownError(err error) bool {
+func IsUnknown(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorReason_UNKNOWN_ERROR.String() && e.Code == 410
+	return e.Reason == ErrorReason_UNKNOWN.String() && e.Code == 410
 }
 
-func ErrorUnknownError(format string, args ...interface{}) *errors.Error {
-	return errors.New(410, ErrorReason_UNKNOWN_ERROR.String(), fmt.Sprintf(format, args...))
+func ErrorUnknown(format string, args ...interface{}) *errors.Error {
+	return errors.New(410, ErrorReason_UNKNOWN.String(), fmt.Sprintf(format, args...))
 }
 
 func IsSerberUnavailable(err error) bool {
@@ -45,6 +45,18 @@ func IsRequestTooFast(err error) bool {
 
 func ErrorRequestTooFast(format string, args ...interface{}) *errors.Error {
 	return errors.New(412, ErrorReason_REQUEST_TOO_FAST.String(), fmt.Sprintf(format, args...))
+}
+
+func IsTimeOut(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_TIME_OUT.String() && e.Code == 413
+}
+
+func ErrorTimeOut(format string, args ...interface{}) *errors.Error {
+	return errors.New(413, ErrorReason_TIME_OUT.String(), fmt.Sprintf(format, args...))
 }
 
 func IsAuthCodeInvalid(err error) bool {

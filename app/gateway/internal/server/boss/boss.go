@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -14,10 +13,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	pb "xhappen/api/gateway/v1"
 	"xhappen/app/gateway/internal/client"
 	"xhappen/app/gateway/internal/conf"
 	"xhappen/pkg/utils"
 
+	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -103,7 +104,7 @@ func (boss *Boss) Start(context.Context) error {
 func (boss *Boss) Stop(context.Context) error {
 	//退出中，直接返回
 	if !atomic.CompareAndSwapInt32(&boss.isExiting, 0, 1) {
-		return fmt.Errorf("boss have exited.")
+		return fmt.Errorf("boss have exited")
 	}
 
 	//关闭TCP监听器
@@ -140,6 +141,55 @@ func (boss *Boss) hubStart() {
 		hubs[i].Start()
 	}
 	boss.hubs = hubs
+}
+
+func (boss *Boss) HubStop() {
+	boss.loggger.Log(log.LevelInfo, "msg", "stopping websocket hub connections")
+	for _, hub := range boss.hubs {
+		hub.Stop()
+	}
+}
+
+func (boss *Boss) getHubForUserId(userID string) *Hub {
+	hash := utils.Hash(userID)
+	index := hash % uint64(len(boss.hubs))
+	return boss.hubs[int(index)]
+}
+
+func (boss *Boss) AddConnToHub(conn *Connection) {
+	hub := boss.getHubForUserId(conn.UserId)
+	hub.AddConn(conn)
+}
+
+func (boss *Boss) RemoveConnFromHub(conn *Connection) {
+	hub := boss.getHubForUserId(conn.UserId)
+	hub.RemoveConn(conn)
+}
+
+func (boss *Boss) SendDeliverToHubConn(done chan *errors.Error, deliver *pb.DeliverRequest) {
+	hub := boss.getHubForUserId(deliver.Userid)
+	hub.SendDeliverToConn(done, deliver)
+}
+
+func (boss *Boss) SendSyncToHubConn(done chan *errors.Error, sync *pb.SyncRequest) {
+	hub := boss.getHubForUserId(sync.Userid)
+	hub.SendSyncToConn(done, sync)
+}
+
+func (boss *Boss) SendBroadcastToHubConn(done chan *errors.Error, broadcast *pb.BroadcastRequest) {
+	for _, hub := range boss.hubs {
+		hub.SendBroadcastToConn(done, broadcast)
+	}
+}
+
+func (boss *Boss) SendActionToHubConn(done chan *errors.Error, action *pb.ActionRequest) {
+	hub := boss.getHubForUserId(action.Uid)
+	hub.SendActionToConn(done, action)
+}
+
+func (boss *Boss) DisconnectedConn(done chan *errors.Error, disconnectForce *pb.DisconnectForceRequest) {
+	hub := boss.getHubForUserId(disconnectForce.Userid)
+	hub.DisconnectedConn(done, disconnectForce)
 }
 
 type errStore struct {
@@ -214,18 +264,11 @@ func buildTLSConfig(cfg *conf.Socket_Main) (*tls.Config, error) {
 			return nil, err
 		}
 		if !tlsCertPool.AppendCertsFromPEM(caCertFile) {
-			return nil, errors.New("failed to append certificate to pool")
+			return nil, fmt.Errorf("failed to append certificate to pool")
 		}
 		tlsConfig.ClientCAs = tlsCertPool
 	}
-
 	tlsConfig.BuildNameToCertificate()
 
 	return tlsConfig, nil
-}
-
-func (boss *Boss) GetHubForUserId(userID string) *Hub {
-	hash := utils.Hash(userID)
-	index := hash % uint64(len(boss.hubs))
-	return boss.hubs[int(index)]
 }

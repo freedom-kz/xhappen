@@ -12,9 +12,10 @@ option objc_class_prefix = "BasiclV1";
 enum ErrorReason {
   option (errors.default_code) = 500;
 
-  UNKNOWN_ERROR = 0 [(errors.code) = 410];
+  UNKNOWN = 0 [(errors.code) = 410];
   SERBER_UNAVAILABLE = 1 [(errors.code) = 411];
   REQUEST_TOO_FAST = 2 [(errors.code) = 412];
+  TIME_OUT = 3 [(errors.code) = 413];
 }
 
 enum ErrorUserReason {
