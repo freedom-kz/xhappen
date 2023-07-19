@@ -5,7 +5,6 @@ package gateway.v1;
 import "api/protocol/v1/message.proto";
 import "api/protocol/v1/common.proto";
 import "errors/errors.proto";
-import "google/protobuf/timestamp.proto";
 
 option go_package = "xhappen/api/gateway/v1;v1";
 
@@ -38,7 +37,8 @@ service GatewaySrv {
 message SyncRequest {
     string userid = 1;          //接收用户ID
     string clientid = 2;        //接收的客户端标志
-    protocol.v1.Sync sync = 3;  //数据包
+    uint64 bindVersion = 3;     //连接时间戳，作为连接版本过滤重复登录同步数据
+    protocol.v1.Sync sync = 4;  //数据包
 }
 
 message SyncReply {
@@ -72,7 +72,8 @@ message DeliverReply {
 message ActionRequest {
   string uid = 1;
   string clientId = 2;
-  protocol.v1.Action action = 3;
+  repeated string omitClientids = 3; //忽略设备ID
+  protocol.v1.Action action = 4;
 }
 
 message ActionReply {

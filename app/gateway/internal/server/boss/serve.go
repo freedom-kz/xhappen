@@ -24,20 +24,6 @@ func (bossServer *BossServer) Handle(conn net.Conn) {
 	err := connnection.IOLoop()
 
 	if err != nil {
-		bossServer.boss.loggger.Log(log.LevelInfo, "msg", "socket io err.", "err", err, "hosname", connnection.String())
+		bossServer.boss.logger.Log(log.LevelInfo, "msg", "socket io err.", "err", err, "hosname", connnection.String())
 	}
-	err = connnection.Close()
-
-	if err != nil {
-		bossServer.boss.loggger.Log(log.LevelInfo, "msg", "socket closed err.", "err", err, "hosname", connnection.String())
-	}
-}
-
-func (bossServer *BossServer) newConnection(conn net.Conn) *Connection {
-	connection := &Connection{
-		Conn:   conn,
-		Boss:   bossServer.boss,
-		ExitCh: make(chan bool),
-	}
-	return connection
 }

@@ -88,11 +88,11 @@ func IsClientidRejected(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorSocketBindReason_CLIENTID_REJECTED.String() && e.Code == 420
+	return e.Reason == ErrorSocketReason_CLIENTID_REJECTED.String() && e.Code == 420
 }
 
 func ErrorClientidRejected(format string, args ...interface{}) *errors.Error {
-	return errors.New(420, ErrorSocketBindReason_CLIENTID_REJECTED.String(), fmt.Sprintf(format, args...))
+	return errors.New(420, ErrorSocketReason_CLIENTID_REJECTED.String(), fmt.Sprintf(format, args...))
 }
 
 func IsUpgrade(err error) bool {
@@ -100,11 +100,11 @@ func IsUpgrade(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorSocketBindReason_UPGRADE.String() && e.Code == 421
+	return e.Reason == ErrorSocketReason_UPGRADE.String() && e.Code == 421
 }
 
 func ErrorUpgrade(format string, args ...interface{}) *errors.Error {
-	return errors.New(421, ErrorSocketBindReason_UPGRADE.String(), fmt.Sprintf(format, args...))
+	return errors.New(421, ErrorSocketReason_UPGRADE.String(), fmt.Sprintf(format, args...))
 }
 
 func IsLogined(err error) bool {
@@ -112,11 +112,11 @@ func IsLogined(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorSocketBindReason_LOGINED.String() && e.Code == 422
+	return e.Reason == ErrorSocketReason_LOGINED.String() && e.Code == 422
 }
 
 func ErrorLogined(format string, args ...interface{}) *errors.Error {
-	return errors.New(422, ErrorSocketBindReason_LOGINED.String(), fmt.Sprintf(format, args...))
+	return errors.New(422, ErrorSocketReason_LOGINED.String(), fmt.Sprintf(format, args...))
 }
 
 func IsSwithHost(err error) bool {
@@ -124,11 +124,11 @@ func IsSwithHost(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorSocketBindReason_SWITH_HOST.String() && e.Code == 423
+	return e.Reason == ErrorSocketReason_SWITH_HOST.String() && e.Code == 423
 }
 
 func ErrorSwithHost(format string, args ...interface{}) *errors.Error {
-	return errors.New(423, ErrorSocketBindReason_SWITH_HOST.String(), fmt.Sprintf(format, args...))
+	return errors.New(423, ErrorSocketReason_SWITH_HOST.String(), fmt.Sprintf(format, args...))
 }
 
 func IsBlackDevice(err error) bool {
@@ -136,11 +136,11 @@ func IsBlackDevice(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorSocketBindReason_BLACK_DEVICE.String() && e.Code == 424
+	return e.Reason == ErrorSocketReason_BLACK_DEVICE.String() && e.Code == 424
 }
 
 func ErrorBlackDevice(format string, args ...interface{}) *errors.Error {
-	return errors.New(424, ErrorSocketBindReason_BLACK_DEVICE.String(), fmt.Sprintf(format, args...))
+	return errors.New(424, ErrorSocketReason_BLACK_DEVICE.String(), fmt.Sprintf(format, args...))
 }
 
 func IsTokenExpire(err error) bool {
@@ -148,9 +148,33 @@ func IsTokenExpire(err error) bool {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorSocketAuthReason_TOKEN_EXPIRE.String() && e.Code == 430
+	return e.Reason == ErrorSocketReason_TOKEN_EXPIRE.String() && e.Code == 425
 }
 
 func ErrorTokenExpire(format string, args ...interface{}) *errors.Error {
-	return errors.New(430, ErrorSocketAuthReason_TOKEN_EXPIRE.String(), fmt.Sprintf(format, args...))
+	return errors.New(425, ErrorSocketReason_TOKEN_EXPIRE.String(), fmt.Sprintf(format, args...))
+}
+
+func IsNoDeviceOnline(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorDeviceReason_NO_DEVICE_ONLINE.String() && e.Code == 460
+}
+
+func ErrorNoDeviceOnline(format string, args ...interface{}) *errors.Error {
+	return errors.New(460, ErrorDeviceReason_NO_DEVICE_ONLINE.String(), fmt.Sprintf(format, args...))
+}
+
+func IsDeviceNoPair(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorDeviceReason_DEVICE_NO_PAIR.String() && e.Code == 461
+}
+
+func ErrorDeviceNoPair(format string, args ...interface{}) *errors.Error {
+	return errors.New(461, ErrorDeviceReason_DEVICE_NO_PAIR.String(), fmt.Sprintf(format, args...))
 }

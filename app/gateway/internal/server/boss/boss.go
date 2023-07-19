@@ -25,7 +25,7 @@ import (
 type Boss struct {
 	ctx         context.Context
 	ctxCancel   context.CancelFunc
-	loggger     log.Logger
+	logger      log.Logger
 	errValue    atomic.Value
 	opts        atomic.Value
 	startTime   time.Time
@@ -40,10 +40,10 @@ type Boss struct {
 	isExiting   int32
 }
 
-func NewBoss(cfg *conf.Socket, loggger log.Logger, passClient *client.PassClient) *Boss {
+func NewBoss(cfg *conf.Socket, logger log.Logger, passClient *client.PassClient) *Boss {
 	boss := &Boss{
 		startTime:  time.Now(),
-		loggger:    loggger,
+		logger:     logger,
 		exitChan:   make(chan int),
 		passClient: passClient,
 	}
@@ -55,7 +55,7 @@ func NewBoss(cfg *conf.Socket, loggger log.Logger, passClient *client.PassClient
 
 	tlsConfig, err := buildTLSConfig(cfg.Main)
 	if err != nil {
-		boss.loggger.Log(log.LevelFatal, "buildTLSConfig", err)
+		boss.logger.Log(log.LevelFatal, "buildTLSConfig", err)
 		os.Exit(1)
 	}
 
@@ -63,13 +63,13 @@ func NewBoss(cfg *conf.Socket, loggger log.Logger, passClient *client.PassClient
 
 	boss.tcpListener, err = net.Listen("tcp", cfg.Main.TcpAddress)
 	if err != nil {
-		boss.loggger.Log(log.LevelFatal, "buildTcpListener", err)
+		boss.logger.Log(log.LevelFatal, "buildTcpListener", err)
 		os.Exit(1)
 	}
 
 	boss.wsListener, err = net.Listen("tcp", cfg.Main.WsAddress)
 	if err != nil {
-		boss.loggger.Log(log.LevelFatal, "buildTcpListener", err)
+		boss.logger.Log(log.LevelFatal, "buildTcpListener", err)
 		os.Exit(1)
 	}
 	return boss
@@ -81,7 +81,7 @@ func (boss *Boss) Start(context.Context) error {
 	exitFunc := func(err error) {
 		once.Do(func() {
 			if err != nil {
-				boss.loggger.Log(log.LevelFatal, "exitFunc", err)
+				boss.logger.Log(log.LevelFatal, "exitFunc", err)
 			}
 			exitCh <- err
 		})
@@ -90,11 +90,11 @@ func (boss *Boss) Start(context.Context) error {
 	bossServer := &BossServer{boss: boss}
 
 	boss.waitGroup.Wrap(func() {
-		exitFunc(TCPServe(boss.tcpListener, bossServer, boss.loggger))
+		exitFunc(TCPServe(boss.tcpListener, bossServer, boss.logger))
 	})
 
 	boss.waitGroup.Wrap(func() {
-		exitFunc(WsServe(boss.tcpListener, bossServer, boss.loggger))
+		exitFunc(WsServe(boss.tcpListener, bossServer, boss.logger))
 	})
 
 	err := <-exitCh
@@ -111,7 +111,7 @@ func (boss *Boss) Stop(context.Context) error {
 	if boss.tcpListener != nil {
 		err := boss.tcpListener.Close()
 		if err != nil {
-			boss.loggger.Log(log.LevelError, "tcpListener.Close", err)
+			boss.logger.Log(log.LevelError, "tcpListener.Close", err)
 		}
 	}
 
@@ -123,7 +123,7 @@ func (boss *Boss) Stop(context.Context) error {
 	close(boss.exitChan)
 	//等待关闭
 	boss.waitGroup.Wait()
-	boss.loggger.Log(log.LevelInfo, "stop", "success")
+	boss.logger.Log(log.LevelInfo, "stop", "success")
 	//取消函数调用
 	boss.ctxCancel()
 	return nil
@@ -131,7 +131,7 @@ func (boss *Boss) Stop(context.Context) error {
 
 func (boss *Boss) hubStart() {
 	numberOfHubs := runtime.NumCPU() * 4
-	boss.loggger.Log(log.LevelInfo, "hubs", numberOfHubs)
+	boss.logger.Log(log.LevelInfo, "hubs", numberOfHubs)
 
 	hubs := make([]*Hub, numberOfHubs)
 
@@ -144,7 +144,7 @@ func (boss *Boss) hubStart() {
 }
 
 func (boss *Boss) HubStop() {
-	boss.loggger.Log(log.LevelInfo, "msg", "stopping websocket hub connections")
+	boss.logger.Log(log.LevelInfo, "msg", "stopping websocket hub connections")
 	for _, hub := range boss.hubs {
 		hub.Stop()
 	}

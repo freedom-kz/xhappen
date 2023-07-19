@@ -27,7 +27,7 @@ enum ErrorUserReason {
 
 
 
-enum ErrorSocketBindReason {
+enum ErrorSocketReason {
   option (errors.default_code) = 500;
 
   CLIENTID_REJECTED = 0 [(errors.code) = 420];
@@ -35,13 +35,14 @@ enum ErrorSocketBindReason {
   LOGINED = 2 [(errors.code) = 422];
   SWITH_HOST = 3 [(errors.code) = 423];
   BLACK_DEVICE = 4 [(errors.code) = 424];
+  TOKEN_EXPIRE = 5 [(errors.code) = 425];
 }
 
-enum ErrorSocketAuthReason {
+enum ErrorDeviceReason {
   option (errors.default_code) = 500;
 
-  TOKEN_EXPIRE = 0 [(errors.code) = 430];
-  
+  NO_DEVICE_ONLINE = 0 [(errors.code) = 460];
+  DEVICE_NO_PAIR = 1 [(errors.code) = 461];
 }
 
 

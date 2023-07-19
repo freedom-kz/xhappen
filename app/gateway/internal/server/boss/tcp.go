@@ -25,7 +25,6 @@ func TCPServe(listener net.Listener, handler ConnHandler, logger log.Logger) err
 				runtime.Gosched()
 				continue
 			}
-			// theres no direct way to detect this error because it is not exposed
 			if !strings.Contains(err.Error(), "use of closed network connection") {
 				logger.Log(log.LevelWarn, "listener.Accept() error", err)
 				return fmt.Errorf("listener.Accept() error - %s", err)

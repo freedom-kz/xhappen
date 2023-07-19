@@ -22,6 +22,16 @@ const (
 	DEFAULT_RESEND_TICKER = 10 * time.Second
 	DEFAULT_READ_TIMEOUT  = 10 * time.Second //默认读超时
 	HandshakeTimeout      = 10 * time.Second //websocket握手超时
+
+	MESSAGE_RETRY_MAX = 3
+)
+
+const (
+	STATE_BIND = iota
+	STATE_AUTH
+	STATE_SYNC
+	STATE_NORMAL
+	STATE_QUIT
 )
 
 type Connection struct {
@@ -39,10 +49,19 @@ type Connection struct {
 	RoleType    protocol.RoleType
 	LoginType   protocol.LoginType
 	Version     string
+	state       int
 
-	deliver chan *protocol.Deliver
-	sync    chan *protocol.Sync
-	action  chan *protocol.Action
+	deliverCh chan *protocol.Deliver
+	syncCh    chan *protocol.Sync
+	actionCh  chan *protocol.Action
+
+	expectNextSequence uint64
+	syncSessions       map[uint64]struct{}
+	inFlightMutex      sync.Mutex
+	inFlightMessages   map[uint64]*Message
+	inFlightPQ         inFlightPqueue
+	toFlightMessages   map[uint64]*Message
+	toFlightPQ         inFlightPqueue
 
 	KeepAlive    time.Duration
 	DailTimeout  time.Duration
@@ -72,32 +91,37 @@ func newConnection(conn net.Conn, boss *Boss) *Connection {
 	if conn != nil {
 		host, _, _ = net.SplitHostPort(conn.RemoteAddr().String())
 	}
+
 	connection := &Connection{
-		Conn:           conn,
-		Boss:           boss,
-		logger:         boss.loggger,
-		Hostname:       host,
-		ConnectTime:    time.Now(),
-		KeepAlive:      conf.Main.MinKeepAlive.AsDuration(),
-		DailTimeout:    DEFAULT_DAIL_TIMEOUT,
-		WriteTimeout:   conf.Main.WriteTimeout.AsDuration(),
-		ReadTimeout:    conf.Main.MinKeepAlive.AsDuration(),
-		MsgTimeout:     conf.Queue.MsgTimeout.AsDuration(),
-		FlushEvery:     conf.Queue.MsgTimeout.AsDuration(),
-		ReadyStateChan: make(chan int),
-		ExitCh:         make(chan bool),
+		Conn:             conn,
+		Boss:             boss,
+		logger:           boss.logger,
+		state:            STATE_BIND,
+		Hostname:         host,
+		ConnectTime:      time.Now(),
+		syncSessions:     make(map[uint64]struct{}),
+		inFlightMessages: make(map[uint64]*Message),
+		inFlightPQ:       newInFlightPqueue(100),
+		toFlightMessages: make(map[uint64]*Message),
+		toFlightPQ:       newInFlightPqueue(100),
+		KeepAlive:        conf.Main.MinKeepAlive.AsDuration(),
+		DailTimeout:      DEFAULT_DAIL_TIMEOUT,
+		WriteTimeout:     conf.Main.WriteTimeout.AsDuration(),
+		ReadTimeout:      conf.Main.MinKeepAlive.AsDuration(),
+		MsgTimeout:       conf.Queue.MsgTimeout.AsDuration(),
+		FlushEvery:       conf.Queue.MsgTimeout.AsDuration(),
+		ReadyStateChan:   make(chan int),
+		ExitCh:           make(chan bool),
 	}
 
 	return connection
 }
 
 func (connection *Connection) IOLoop() error {
-
 	err := connection.processBind()
 	if err != nil {
 		return err
 	}
-
 	err = connection.processAuth()
 	if err != nil {
 		return err
@@ -106,11 +130,12 @@ func (connection *Connection) IOLoop() error {
 	messagePumpStartedChan := make(chan bool)
 	go connection.messagePump(messagePumpStartedChan)
 	<-messagePumpStartedChan
-	connection.packetProcess()
-	return nil
+	err = connection.packetProcess()
+	return err
 }
 
 func (connection *Connection) processBind() error {
+	connection.state = STATE_BIND
 	if connection.DailTimeout > 0 {
 		connection.SetReadDeadline(time.Now().Add(connection.DailTimeout))
 	} else {
@@ -120,13 +145,13 @@ func (connection *Connection) processBind() error {
 	packet, err := connection.ReadPacket()
 
 	if err != nil {
-		connection.Boss.loggger.Log(log.LevelError, "msg", "read packet err", "err", err)
+		connection.logger.Log(log.LevelError, "msg", "read packet err", "err", err)
 		return err
 	}
 
 	bind, ok := packet.(*packets.BindPacket)
 	if !ok {
-		connection.Boss.loggger.Log(log.LevelError, "msg", "read packet not bind", "body", packet.String())
+		connection.logger.Log(log.LevelError, "msg", "read packet not bind", "body", packet.String())
 		return err
 	}
 
@@ -134,7 +159,7 @@ func (connection *Connection) processBind() error {
 		FixedHeader: packets.FixedHeader{MessageType: packets.BINDACK},
 		BindAck: protocol.BindAck{
 			BindRet:         true,
-			ServerTimeStamp: uint64(time.Millisecond),
+			ServerTimeStamp: uint64(time.Now().UnixMilli()),
 		},
 	}
 
@@ -172,6 +197,8 @@ func (connection *Connection) processBind() error {
 }
 
 func (connection *Connection) processAuth() error {
+	connection.state = STATE_AUTH
+	connection.state = STATE_AUTH
 	if connection.ReadTimeout > 0 {
 		connection.SetReadDeadline(time.Now().Add(connection.ReadTimeout))
 	} else {
@@ -181,13 +208,13 @@ func (connection *Connection) processAuth() error {
 	packet, err := connection.ReadPacket()
 
 	if err != nil {
-		connection.Boss.loggger.Log(log.LevelError, "msg", "read packet err", "err", err)
+		connection.Boss.logger.Log(log.LevelError, "msg", "read packet err", "err", err)
 		return err
 	}
 
 	auth, ok := packet.(*packets.AUTHPacket)
 	if !ok {
-		connection.Boss.loggger.Log(log.LevelError, "msg", "read packet not bind", "body", packet.String())
+		connection.Boss.logger.Log(log.LevelError, "msg", "read packet not bind", "body", packet.String())
 		return err
 	}
 
@@ -199,8 +226,9 @@ func (connection *Connection) processAuth() error {
 	}
 
 	in := &pb.AuthRequest{
-		ClientId: connection.ClientId,
-		AuthInfo: &auth.Auth,
+		ClientId:    connection.ClientId,
+		BindVersion: uint64(connection.ConnectTime.UnixNano()),
+		AuthInfo:    &auth.Auth,
 	}
 
 	reply, err := connection.Boss.passClient.Auth(context.Background(), in)
@@ -228,8 +256,96 @@ func (connection *Connection) processAuth() error {
 	connection.RoleType = reply.Role
 	connection.UserType = reply.UType
 	connection.tokenExpire = reply.TokenExpire.AsTime()
+	for _, sid := range reply.Sessions {
+		connection.syncSessions[sid] = struct{}{}
+	}
+	if len(connection.syncSessions) == 0 {
+		connection.state = STATE_NORMAL
+	} else {
+		connection.state = STATE_SYNC
+	}
+
 	connection.Boss.AddConnToHub(connection)
 	return nil
+}
+
+func (connection *Connection) processSubmit(submit *protocol.Submit) error {
+	in := &pb.SubmitRequest{
+		Userid:   connection.UserId,
+		Clientid: connection.ClientId,
+		Submit:   submit,
+	}
+	reply, err := connection.Boss.passClient.Submit(context.Background(), in)
+
+	ack := &packets.SubmitAckPacket{
+		FixedHeader: packets.FixedHeader{MessageType: packets.SUBMITACK},
+		SubmitAck: protocol.SubmitAck{
+			SubmitRet: true,
+			Id:        submit.Id,
+			Timestamp: uint64(time.Now().UnixMilli()),
+		},
+	}
+	if err != nil {
+		ack.SubmitRet = false
+		ack.Err = &errors.FromError(err).Status
+	} else {
+		ack.SubmitRet = reply.Ret
+		ack.Sequence = reply.Sequence
+		ack.SessionId = reply.Sequence
+		ack.Err = reply.Err
+	}
+
+	return nil
+}
+
+func (connection *Connection) processSyncAck(syncAck *protocol.SyncAck) error {
+	connection.logger.Log(log.LevelDebug, "msg", "process SyncAck", "id", syncAck.Id)
+	delete(connection.syncSessions, uint64(syncAck.Id))
+	if len(connection.syncSessions) == 0 {
+		packet := &packets.SyncConfirmPacket{FixedHeader: packets.FixedHeader{MessageType: packets.SYNCCONFIRM}}
+		connection.Write(packet)
+		connection.Flush()
+	}
+	//TODO,
+	return nil
+}
+
+func (connection *Connection) processDeliverAck(deliverAck *protocol.DeliverAck) error {
+	connection.logger.Log(log.LevelDebug, "msg", "process deliver ack")
+	err := connection.FinishDeliver(deliverAck.Sequence)
+	connection.logger.Log(log.LevelError, "msg", "process deliver ack", "error", err)
+	return nil
+}
+
+func (connection *Connection) processAction(action *protocol.Action) error {
+	return nil
+}
+
+func (connection *Connection) processActionAck(actionAck *protocol.ActionAck) error {
+	connection.logger.Log(log.LevelDebug, "msg", "process action ack")
+	err := connection.FinishAction(uint64(actionAck.Id))
+	connection.logger.Log(log.LevelError, "msg", "process action ack", "error", err)
+	return nil
+}
+
+func (connection *Connection) processPing(ping *protocol.Ping) error {
+	pong := &packets.PongPacket{
+		FixedHeader: packets.FixedHeader{MessageType: packets.SUBMITACK},
+		Pong:        protocol.Pong{},
+	}
+	err := connection.Write(pong)
+	if err != nil {
+		return err
+	}
+	err = connection.Flush()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (connection *Connection) processQuit(quit *protocol.Quit) error {
+	return fmt.Errorf("not error normal exit")
 }
 
 func (connection *Connection) messagePump(startedChan chan bool) {
@@ -237,9 +353,10 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 	var flusherChan <-chan time.Time
 	var reSendChan <-chan time.Time
 
-	dChan := connection.deliver
-	aChan := connection.action
-	sChan := connection.sync
+	var dChan chan *protocol.Deliver = nil
+
+	aChan := connection.actionCh
+	sChan := connection.syncCh
 
 	reSendTicker := time.NewTicker(DEFAULT_RESEND_TICKER)
 	outputBufferTicker := time.NewTicker(connection.FlushEvery)
@@ -247,18 +364,36 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 	flushed := true
 	close(startedChan)
 	for {
-		if flushed {
+		if !connection.IsReadyForMessages() {
+			dChan = nil
+		} else if flushed {
 			flusherChan = nil
+			dChan = connection.deliverCh
 		} else {
 			flusherChan = outputBufferTicker.C
+			dChan = connection.deliverCh
 		}
 
 		select {
 		case <-flusherChan:
-		case <-dChan:
+			err = connection.Flush()
+			connection.logger.Log(log.LevelError, "msg", "socket flush err")
+		case d := <-dChan:
+			msg := NewMessage(d)
+			err := connection.StartInflight(msg)
+			if err != nil {
+				connection.logger.Log(log.LevelError, "msg", "in startInflight", "err", err)
+			}
+			err = connection.WriteDeliver(msg)
+			if err != nil {
+				goto exit
+			}
+			flushed = false
 		case <-aChan:
 		case <-sChan:
+
 		case <-reSendChan:
+		case <-connection.ReadyStateChan:
 		case <-connection.ExitCh:
 			goto exit
 		}
@@ -276,32 +411,43 @@ func (connection *Connection) packetProcess() error {
 	var err error
 	var packet packets.ControlPacket
 	for {
-		packet, err = connection.ReadPacket()
-		if err != nil {
-			break
-		}
+		select {
+		case <-connection.ExitCh:
+			goto exit
+		default:
+			packet, err = connection.ReadPacket()
+			if err != nil {
+				break
+			}
 
-		err = connection.exec(packet)
-		if err != nil {
-			break
+			err = connection.exec(packet)
+			if err != nil {
+				goto exit
+			}
 		}
 	}
-
-	close(connection.ExitCh)
+exit:
 	connection.Shutdown(true)
-	return nil
+	return err
 }
 
 func (connection *Connection) exec(packet packets.ControlPacket) error {
 	var err error
 	switch pkt := packet.(type) {
 	case *packets.SubmitPacket:
+		err = connection.processSubmit(&pkt.Submit)
 	case *packets.SyncAckPacket:
+		err = connection.processSyncAck(&pkt.SyncAck)
 	case *packets.DeliverAckPacket:
+		err = connection.processDeliverAck(&pkt.DeliverAck)
 	case *packets.ActionPacket:
+		err = connection.processAction(&pkt.Action)
 	case *packets.ActionAckPacket:
+		err = connection.processActionAck(&pkt.ActionAck)
 	case *packets.PingPacket:
+		err = connection.processPing(&pkt.Ping)
 	case *packets.QuitPacket:
+		err = connection.processQuit(&pkt.Quit)
 	default:
 		err = fmt.Errorf("invalid message type %s", pkt.String())
 	}
@@ -318,6 +464,13 @@ func (connection *Connection) String() string {
 }
 
 func (connection *Connection) IsReadyForMessages() bool {
+
+	select {
+	case <-connection.ExitCh:
+		return false
+	default:
+	}
+
 	readyCount := atomic.LoadInt64(&connection.ReadyCount)
 	inFlightCount := atomic.LoadInt64(&connection.InFlightCount)
 
@@ -328,6 +481,75 @@ func (connection *Connection) IsReadyForMessages() bool {
 	return true
 }
 
+func (connection *Connection) StartInflight(msg *Message) error {
+	msg.pri = time.Now().UnixNano()
+	err := connection.pushInFlightMessage(msg)
+	if err != nil {
+		return err
+	}
+	connection.addToInFlightPQ(msg)
+	return nil
+}
+
+func (connection *Connection) addToInFlightPQ(msg *Message) {
+	connection.inFlightMutex.Lock()
+	connection.inFlightPQ.Push(msg)
+	connection.inFlightMutex.Unlock()
+}
+
+func (connection *Connection) popInFlightMessage(sequence uint64) (*Message, error) {
+	connection.inFlightMutex.Lock()
+	msg, ok := connection.inFlightMessages[sequence]
+	if !ok {
+		connection.inFlightMutex.Unlock()
+		return nil, fmt.Errorf("sequence not in flight")
+	}
+	delete(connection.inFlightMessages, sequence)
+	connection.inFlightMutex.Unlock()
+	return msg, nil
+}
+
+func (connection *Connection) removeFromInFlight(msg *Message) {
+	connection.inFlightMutex.Lock()
+	if msg.index == -1 {
+		// this item has already been popped off the pqueue
+		connection.inFlightMutex.Unlock()
+		return
+	}
+	connection.inFlightPQ.Remove(msg.index)
+	connection.inFlightMutex.Unlock()
+}
+
+func (connection *Connection) pushInFlightMessage(msg *Message) error {
+	connection.inFlightMutex.Lock()
+	_, ok := connection.inFlightMessages[msg.Sequence]
+	if ok {
+		connection.inFlightMutex.Unlock()
+		return fmt.Errorf("sequence already in flight")
+	}
+	connection.inFlightMessages[msg.Sequence] = msg
+	connection.inFlightMutex.Unlock()
+	return nil
+}
+
+func (connection *Connection) WriteDeliver(message *Message) error {
+	message.Attempts++
+	message.pri = message.deliveryTS.Add(connection.MsgTimeout).UnixNano()
+	if message.Attempts > MESSAGE_RETRY_MAX {
+		return fmt.Errorf("messgae send > %d", MESSAGE_RETRY_MAX)
+	}
+
+	if message.Attempts > 1 {
+		connection.logger.Log(log.LevelInfo, "msg", "message retry")
+	}
+
+	packet := &packets.DeliverPacket{
+		FixedHeader: packets.FixedHeader{MessageType: packets.DELIVER},
+		Deliver:     *message.Deliver,
+	}
+	return connection.Write(packet)
+}
+
 func (connection *Connection) tryUpdateReadyState() {
 	// you can always *try* to write to ReadyStateChan because in the cases
 	// where you cannot the message pump loop would have iterated anyway.
@@ -336,6 +558,32 @@ func (connection *Connection) tryUpdateReadyState() {
 	case connection.ReadyStateChan <- 1:
 	default:
 	}
+}
+
+func (connection *Connection) SendDeliverCh(deliver *protocol.Deliver) {
+	connection.deliverCh <- deliver
+}
+
+func (connection *Connection) SendSyncCh(sync *protocol.Sync) {
+	connection.syncCh <- sync
+}
+
+func (connection *Connection) SendActionCh(action *protocol.Action) {
+	connection.actionCh <- action
+}
+
+func (connection *Connection) FinishDeliver(sequence uint64) error {
+	msg, err := connection.popInFlightMessage(sequence)
+	if err != nil {
+		return err
+	}
+	connection.removeFromInFlight(msg)
+	connection.FinishedMessage()
+	return nil
+}
+func (connection *Connection) FinishAction(sequence uint64) error {
+	//TODO
+	return nil
 }
 
 func (connection *Connection) FinishedMessage() {
@@ -391,8 +639,20 @@ func (connection *Connection) Flush() error {
 	return nil
 }
 
-func (connection *Connection) Shutdown(push bool) {
+//业务关闭
+func (connection *Connection) Shutdown(initiative bool) {
 	connection.Closer.Do(func() {
-		connection.Conn.Close()
+		connection.Flush()
+		if !initiative && connection.RoleType != protocol.RoleType_ROLE_CUSTOMER_SERVICE {
+			//TODO,离线消息推送
+		}
+
+		connection.state = STATE_QUIT
+		close(connection.ExitCh)
+		err := connection.Conn.Close()
+
+		if err != nil {
+			connection.logger.Log(log.LevelInfo, "msg", "socket closed err.", "err", err, "hosname", connection.String())
+		}
 	})
 }

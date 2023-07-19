@@ -2,6 +2,7 @@ package boss
 
 import (
 	pb "xhappen/api/gateway/v1"
+	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
@@ -53,8 +54,8 @@ type disconnectedforceToHub struct {
 func newHub(boss *Boss) *Hub {
 	return &Hub{
 		boss:                   boss,
-		addConn:                make(chan *Connection, 0),
-		removeConn:             make(chan *Connection, 0),
+		addConn:                make(chan *Connection),
+		removeConn:             make(chan *Connection),
 		syncToHub:              make(chan *syncToHub, 1000),
 		deliverToHub:           make(chan *deliverToHub, 1000),
 		broadcastToHub:         make(chan *broadcastToHub, 1000),
@@ -73,25 +74,66 @@ func (h *Hub) Start() {
 				connIndex.Add(connection)
 			case connection := <-h.removeConn:
 				connIndex.Remove(connection)
-			case <-h.deliverToHub:
-
-			case <-h.syncToHub:
-
-			case <-h.actionToHub:
-
-			case <-h.broadcastToHub:
+			case deliverToHub := <-h.deliverToHub:
+				if deliverToHub.deliverMessage.Clientid != "" {
+					conn := connIndex.ForClientId(deliverToHub.deliverMessage.Clientid)
+					if conn.UserId != deliverToHub.deliverMessage.Userid {
+						deliverToHub.done <- errors.New(460, "NO_DEVICE_ONLINE", "NO_DEVICE_ONLINE")
+					} else {
+						conn.SendDeliverCh(deliverToHub.deliverMessage.Deliver)
+					}
+				} else {
+					conns := connIndex.ForUser(deliverToHub.deliverMessage.Userid)
+					for _, conn := range conns {
+						if utils.StringInSlice(conn.ClientId, deliverToHub.deliverMessage.OmitClientids) {
+							continue
+						}
+						conn.SendDeliverCh(deliverToHub.deliverMessage.Deliver)
+					}
+				}
+			case syncToHub := <-h.syncToHub:
+				conn := connIndex.ForClientId(syncToHub.syncMessage.Clientid)
+				if conn.UserId != syncToHub.syncMessage.Userid || uint64(conn.ConnectTime.UnixNano()) != syncToHub.syncMessage.BindVersion {
+					syncToHub.done <- errors.New(461, "DEVICE_NO_PAIR", "DEVICE_NO_PAIR")
+				}
+				conn.SendSyncCh(syncToHub.syncMessage.Sync)
+			case actionToHub := <-h.actionToHub:
+				if actionToHub.actionMessage.ClientId != "" {
+					conn := connIndex.ForClientId(actionToHub.actionMessage.ClientId)
+					if conn.UserId != actionToHub.actionMessage.Uid {
+						actionToHub.done <- errors.New(460, "NO_DEVICE_ONLINE", "NO_DEVICE_ONLINE")
+					} else {
+						conn.SendActionCh(actionToHub.actionMessage.Action)
+					}
+				} else {
+					conns := connIndex.ForUser(actionToHub.actionMessage.Uid)
+					for _, conn := range conns {
+						if utils.StringInSlice(conn.ClientId, actionToHub.actionMessage.OmitClientids) {
+							continue
+						}
+						conn.SendActionCh(actionToHub.actionMessage.Action)
+					}
+				}
+			case broadcastToHub := <-h.broadcastToHub:
+				for conn := range connIndex.All() {
+					if utils.StringInSlice(conn.UserId, broadcastToHub.broadcastMessage.OmitUserIds) ||
+						utils.StringInSlice(conn.ClientId, broadcastToHub.broadcastMessage.OmitClientids) {
+						continue
+					}
+					conn.SendDeliverCh(broadcastToHub.broadcastMessage.Deliver)
+				}
 
 			case dicconnectforce := <-h.disconnectedforceToHub:
 				conns := connIndex.ForUser(dicconnectforce.disconnectForceMessage.Userid)
 				if dicconnectforce.disconnectForceMessage.Clientid != "" {
 					for _, conn := range conns {
 						if conn.ClientId == dicconnectforce.disconnectForceMessage.Clientid {
-							conn.Close()
+							conn.Shutdown(false)
 						}
 					}
 				} else {
 					for _, conn := range conns {
-						conn.Close()
+						conn.Shutdown(false)
 					}
 				}
 				dicconnectforce.done <- nil
@@ -222,12 +264,14 @@ func (i *ConnectionIndex) Has(connection *Connection) bool {
 	return ok
 }
 
-// ForUser returns all connections for a user ID.
 func (i *ConnectionIndex) ForUser(id string) []*Connection {
 	return i.byUserId[id]
 }
 
-// All returns the full webConn index.
+func (i *ConnectionIndex) ForClientId(clientId string) *Connection {
+	return i.byClientId[clientId]
+}
+
 func (i *ConnectionIndex) All() map[*Connection]int {
 	return i.byConnection
 }

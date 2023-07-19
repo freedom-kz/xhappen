@@ -31,7 +31,8 @@ message BindReply {
 
 message AuthRequest {
   string clientId = 1;
-  protocol.v1.Auth authInfo = 2;
+  uint64 bindVersion = 2;
+  protocol.v1.Auth authInfo = 3;
 }
 
 message AuthReply {

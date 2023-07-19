@@ -32,5 +32,11 @@ func NewHTTPServer(c *conf.Server, user *service.UserService, logger log.Logger)
 	}
 	srv := http.NewServer(opts...)
 	v1.RegisterUserHTTPServer(srv, user)
+
+	// mw := jwt.Server(func(token *jwtv4.Token) (interface{}, error) {
+	// 	return []byte("testKey"), nil
+	// })
+
+	// srv.Route("/").Group("/auth", jwt.Server())
 	return srv
 }
