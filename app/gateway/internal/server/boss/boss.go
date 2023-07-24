@@ -94,7 +94,7 @@ func (boss *Boss) Start(context.Context) error {
 	})
 
 	boss.waitGroup.Wrap(func() {
-		exitFunc(WsServe(boss.tcpListener, bossServer, boss.logger))
+		exitFunc(WsServe(boss.wsListener, bossServer, boss.logger))
 	})
 
 	err := <-exitCh

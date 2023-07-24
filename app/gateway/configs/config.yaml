@@ -17,7 +17,7 @@ socket:
     maxKeepAlive: 300s
     readBufferSize: 8192
     writeBufferSize: 8192
-    writeTimeout: 5s
+    writeTimeout: 3s
   queue:
     maxMsgSize: 65535
     maxRdyCount: 100
@@ -25,7 +25,7 @@ socket:
     msgTimeout: 5s
 data:
   etcd:
-    addr: 192.168.71.18:2379
+    addr: 192.168.71.69:2379
     dialTimeout: 1s
     readTimeout: 1s
     writeTimeout: 1s
