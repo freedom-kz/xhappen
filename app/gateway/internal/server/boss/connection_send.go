@@ -16,8 +16,11 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 		err         error
 		flusherChan <-chan time.Time
 		reSendChan  <-chan time.Time
+		timeoutChan <-chan time.Time
 		dChan       chan *protocol.Deliver = nil
 		aChan       chan *protocol.Action  = nil
+
+		timeoutTicker *time.Ticker
 	)
 	sChan := connection.syncCh
 
@@ -83,12 +86,33 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 					}
 					flushed = false
 				}
-
+				//这里在连续出现空缺的时候，可能超时不准确，待优化
+				if len(connection.toFlightMessages) == 0 {
+					timeoutChan = nil
+					if timeoutTicker != nil {
+						timeoutTicker.Stop()
+					}
+				} else {
+					timeoutTicker.Stop()
+					msg := connection.toFlightPQ[0]
+					gap := time.Until(msg.deliveryTS.Add(-connection.MsgTimeout))
+					if gap > connection.MsgTimeout {
+						connection.logger.Log(log.LevelError, "msg", "wait expect sequence timeout")
+						goto exit
+					}
+					timeoutTicker = time.NewTicker(gap)
+					timeoutChan = timeoutTicker.C
+				}
 			} else {
 				msg := NewMessage(d, int64(d.Sequence))
 				err := connection.StartToflight(msg)
 				if err != nil {
 					connection.logger.Log(log.LevelError, "msg", "in startToflight", "err", err)
+				}
+
+				if timeoutTicker == nil {
+					timeoutTicker = time.NewTicker(connection.MsgTimeout * 3)
+					timeoutChan = timeoutTicker.C
 				}
 			}
 
@@ -124,6 +148,9 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 			if err != nil {
 				goto exit
 			}
+		case <-timeoutChan:
+			connection.logger.Log(log.LevelError, "msg", "wait expect sequence timeout")
+			goto exit
 		case <-connection.ReadyStateChan:
 		case state, closed := <-connection.StateChan:
 			if !closed {
@@ -143,6 +170,9 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 exit:
 	reSendTicker.Stop()
 	outputBufferTicker.Stop()
+	if timeoutTicker != nil {
+		timeoutTicker.Stop()
+	}
 	connection.Shutdown(true)
 	if err != nil {
 		connection.logger.Log(log.LevelError, "msg", "send goroutine exit", "clientId", connection.ClientId, "userId", connection.UserId, "err", err)
