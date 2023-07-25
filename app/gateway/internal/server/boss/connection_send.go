@@ -12,14 +12,13 @@ import (
 )
 
 func (connection *Connection) messagePump(startedChan chan bool) {
-	var err error
-	var flusherChan <-chan time.Time
-	var reSendChan <-chan time.Time
-	actionPri := 1
-
-	var dChan chan *protocol.Deliver = nil
-
-	aChan := connection.actionCh
+	var (
+		err         error
+		flusherChan <-chan time.Time
+		reSendChan  <-chan time.Time
+		dChan       chan *protocol.Deliver = nil
+		aChan       chan *protocol.Action  = nil
+	)
 	sChan := connection.syncCh
 
 	reSendTicker := time.NewTicker(DEFAULT_RESEND_TICKER)
@@ -47,19 +46,54 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 			err = connection.Flush()
 			connection.logger.Log(log.LevelError, "msg", "socket flush err")
 		case d := <-dChan:
-			msg := NewMessage(d, int64(d.Sequence))
-			err := connection.StartInflight(msg)
-			if err != nil {
-				connection.logger.Log(log.LevelError, "msg", "in startInflight", "err", err)
+			//如果是期待sequence，则进行发送处理，否则进入等待队列
+			if d.Sequence == connection.expectNextSequence {
+				//判断真实deliver，如是则进行进行发送
+				if len(d.Payload) != 0 {
+					msg := NewMessage(d, int64(d.Sequence))
+					err := connection.StartInflight(msg)
+					if err != nil {
+						connection.logger.Log(log.LevelError, "msg", "in startInflight", "err", err)
+					}
+					err = connection.WriteDeliver(msg)
+					if err != nil {
+						goto exit
+					}
+					flushed = false
+				}
+				connection.expectNextSequence++
+				for i := 0; ; i++ {
+					msg, _ := connection.toFlightPQ.PeekAndShift(int64(connection.expectNextSequence))
+					if msg == nil {
+						break
+					}
+					connection.removeFromToFlight(msg)
+					connection.expectNextSequence++
+					//过滤掉ghost deliver
+					if len(msg.Payload) == 0 {
+						continue
+					}
+					err := connection.StartInflight(msg)
+					if err != nil {
+						connection.logger.Log(log.LevelError, "msg", "in startInflight", "err", err)
+					}
+					err = connection.WriteDeliver(msg)
+					if err != nil {
+						goto exit
+					}
+					flushed = false
+				}
+
+			} else {
+				msg := NewMessage(d, int64(d.Sequence))
+				err := connection.StartToflight(msg)
+				if err != nil {
+					connection.logger.Log(log.LevelError, "msg", "in startToflight", "err", err)
+				}
 			}
-			err = connection.WriteDeliver(msg)
-			if err != nil {
-				goto exit
-			}
-			flushed = false
+
 		case a := <-aChan:
-			actionPri++
-			msg := NewAMessage(a, int64(actionPri))
+			msg := NewAMessage(a, time.Now().UnixNano())
 			err := connection.StartActionInflight(msg)
 			if err != nil {
 				connection.logger.Log(log.LevelError, "msg", "in startInflight", "err", err)
@@ -71,7 +105,7 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 			flushed = false
 		case sync := <-sChan:
 			ln := len(sync.Delivers)
-			connection.processExpectSequence(uint64(ln))
+			connection.processExpectSequence(sync.Delivers[ln].Sequence)
 			packet := &packets.SyncPacket{
 				FixedHeader: packets.FixedHeader{MessageType: packets.SYNC},
 				Sync:        *sync,
@@ -153,6 +187,8 @@ func (connection *Connection) processActionReSend() error {
 	}
 	if len(msgs) != 0 {
 		for _, msg := range msgs {
+			//重新设置优先级
+			msg.pri = time.Now().UnixNano()
 			connection.inFlightAPQ.Push(msg)
 			err = connection.WriteAction(msg)
 			if err != nil {

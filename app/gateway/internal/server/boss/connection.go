@@ -59,6 +59,7 @@ type Connection struct {
 	inFlightAMutex     sync.Mutex
 	inFlightAMessages  map[uint64]*AMessage
 	inFlightPQ         inFlightPqueue //发送队列
+	toFlightMutex      sync.Mutex
 	toFlightMessages   map[uint64]*Message
 	toFlightPQ         inFlightPqueue //缓冲队列
 
@@ -190,9 +191,11 @@ func (connection *Connection) SetSampleRate(sampleRate int32) error {
 }
 
 func (connection *Connection) processExpectSequence(sequence uint64) {
-	if sequence > connection.expectNextSequence {
+	if sequence >= connection.expectNextSequence {
 		connection.expectNextSequence = sequence
 	}
+	connection.expectNextSequence++
+
 }
 
 func (connection *Connection) Write(packet packets.ControlPacket) error {

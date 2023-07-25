@@ -56,6 +56,57 @@ func (connection *Connection) pushInFlightMessage(msg *Message) error {
 	return nil
 }
 
+func (connection *Connection) StartToflight(msg *Message) error {
+	msg.pri = time.Now().UnixNano()
+	err := connection.pushToFlightMessage(msg)
+	if err != nil {
+		return err
+	}
+	connection.addToToFlightPQ(msg)
+	return nil
+}
+
+func (connection *Connection) addToToFlightPQ(msg *Message) {
+	connection.toFlightMutex.Lock()
+	connection.toFlightPQ.Push(msg)
+	connection.toFlightMutex.Unlock()
+}
+
+func (connection *Connection) popToFlightMessage(sequence uint64) (*Message, error) {
+	connection.toFlightMutex.Lock()
+	msg, ok := connection.toFlightMessages[sequence]
+	if !ok {
+		connection.toFlightMutex.Unlock()
+		return nil, fmt.Errorf("sequence not in flight")
+	}
+	delete(connection.toFlightMessages, sequence)
+	connection.toFlightMutex.Unlock()
+	return msg, nil
+}
+
+func (connection *Connection) removeFromToFlight(msg *Message) {
+	connection.toFlightMutex.Lock()
+	if msg.index == -1 {
+		// this item has already been popped off the pqueue
+		connection.toFlightMutex.Unlock()
+		return
+	}
+	connection.toFlightPQ.Remove(msg.index)
+	connection.toFlightMutex.Unlock()
+}
+
+func (connection *Connection) pushToFlightMessage(msg *Message) error {
+	connection.toFlightMutex.Lock()
+	_, ok := connection.toFlightMessages[msg.Sequence]
+	if ok {
+		connection.toFlightMutex.Unlock()
+		return fmt.Errorf("sequence already in flight")
+	}
+	connection.toFlightMessages[msg.Sequence] = msg
+	connection.toFlightMutex.Unlock()
+	return nil
+}
+
 func (connection *Connection) StartActionInflight(msg *AMessage) error {
 	msg.pri = time.Now().UnixNano()
 	err := connection.pushActionInFlightMessage(msg)
@@ -100,7 +151,7 @@ func (connection *Connection) pushActionInFlightMessage(msg *AMessage) error {
 	_, ok := connection.inFlightMessages[uint64(msg.Id)]
 	if ok {
 		connection.inFlightAMutex.Unlock()
-		return fmt.Errorf("pri already in flight")
+		return fmt.Errorf("action id already in flight")
 	}
 	connection.inFlightAMessages[uint64(msg.Id)] = msg
 	connection.inFlightAMutex.Unlock()

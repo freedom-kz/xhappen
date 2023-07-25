@@ -234,6 +234,11 @@ func (connection *Connection) processSubmit(submit *protocol.Submit) error {
 	if err != nil {
 		return err
 	}
+	//这里往发送协程发送一个假的deliver,用来处理按sequence发送deliver逻辑
+	deliverGhost := &protocol.Deliver{
+		Sequence: ack.Sequence,
+	}
+	connection.SendDeliverCh(deliverGhost)
 	return nil
 }
 
