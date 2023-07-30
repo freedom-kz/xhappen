@@ -7,6 +7,10 @@ server:
   grpc:
     addr: 0.0.0.0:9000
     timeout: 3s
+auth:
+  jwt:
+    secret: signkey
+    expiration: 3153600
 data:
   database:
     driver: mysql

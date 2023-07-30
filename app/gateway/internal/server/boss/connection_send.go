@@ -149,8 +149,14 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 				goto exit
 			}
 		case <-timeoutChan:
-			connection.logger.Log(log.LevelError, "msg", "wait expect sequence timeout")
-			goto exit
+			if len(connection.toFlightMessages) != 0 {
+				msg := connection.toFlightPQ[0]
+				gap := time.Until(msg.deliveryTS.Add(-connection.MsgTimeout))
+				if gap > connection.MsgTimeout {
+					connection.logger.Log(log.LevelError, "msg", "wait expect sequence timeout")
+					goto exit
+				}
+			}
 		case <-connection.ReadyStateChan:
 		case state, closed := <-connection.StateChan:
 			if !closed {

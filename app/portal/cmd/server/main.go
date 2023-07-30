@@ -97,7 +97,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, logger, r, smsCodeSender)
+	app, cleanup, err := wireApp(&bc, logger, r, smsCodeSender)
 	if err != nil {
 		panic(err)
 	}

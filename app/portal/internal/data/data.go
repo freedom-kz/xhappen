@@ -24,10 +24,10 @@ type Data struct {
 	log *log.Helper
 }
 
-func newDB(conf *conf.Data, logger log.Logger) *gorm.DB {
+func newDB(conf *conf.Bootstrap, logger log.Logger) *gorm.DB {
 	log := log.NewHelper(log.With(logger, "module", "order-service/data/gorm"))
 
-	db, err := gorm.Open(mysql.Open(conf.Database.Source), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(conf.Data.Database.Source), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed opening connection to mysql: %v", err)
 	}
@@ -48,14 +48,14 @@ func newDB(conf *conf.Data, logger log.Logger) *gorm.DB {
 	return db
 }
 
-func newRDB(conf *conf.Data, logger log.Logger) *redis.Client {
+func newRDB(conf *conf.Bootstrap, logger log.Logger) *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:         conf.Redis.Addr,
-		Password:     conf.Redis.Password,
-		DB:           int(conf.Redis.Db),
-		DialTimeout:  conf.Redis.DialTimeout.AsDuration(),
-		WriteTimeout: conf.Redis.WriteTimeout.AsDuration(),
-		ReadTimeout:  conf.Redis.ReadTimeout.AsDuration(),
+		Addr:         conf.Data.Redis.Addr,
+		Password:     conf.Data.Redis.Password,
+		DB:           int(conf.Data.Redis.Db),
+		DialTimeout:  conf.Data.Redis.DialTimeout.AsDuration(),
+		WriteTimeout: conf.Data.Redis.WriteTimeout.AsDuration(),
+		ReadTimeout:  conf.Data.Redis.ReadTimeout.AsDuration(),
 	})
 
 	if err := redisotel.InstrumentTracing(rdb); err != nil {
@@ -65,7 +65,7 @@ func newRDB(conf *conf.Data, logger log.Logger) *redis.Client {
 }
 
 // NewData .
-func NewData(conf *conf.Data, logger log.Logger) (*Data, func(), error) {
+func NewData(conf *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	loggger := log.NewHelper(log.With(logger, "module", "order-service/data"))
 
 	d := &Data{

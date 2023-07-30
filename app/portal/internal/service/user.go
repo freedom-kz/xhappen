@@ -26,8 +26,6 @@ func NewUserService(user *biz.UserUseCase, logger log.Logger) *UserService {
 }
 
 func (s *UserService) SendSMSCode(ctx context.Context, req *pb.SMSCodeRequest) (*pb.SMSCodeReply, error) {
-	s.log.Debugf("input data %v", req)
-
 	err := s.user.SendSMSCode(ctx, req.Mobile, req.ClientId)
 
 	if err != nil {
@@ -37,8 +35,6 @@ func (s *UserService) SendSMSCode(ctx context.Context, req *pb.SMSCodeRequest) (
 	return &pb.SMSCodeReply{}, nil
 }
 func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRequest) (*pb.LoginByMobileReply, error) {
-	s.log.Debugf("input data %v", req)
-
 	user, err := s.user.LoginByMobile(ctx, req.Mobile, req.ClientId, req.SmsCode)
 	if err != nil {
 		return nil, err
