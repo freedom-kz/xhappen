@@ -19,14 +19,18 @@ import (
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Bootstrap, user *service.UserService, logger log.Logger) *http.Server {
 
+	keyFunc := func(token *jwtv4.Token) (interface{}, error) {
+		return []byte(c.Auth.Jwt.Secret), nil
+	}
+
+	jwtOption := jwt.WithClaims(func() jwtv4.Claims { return jwtv4.RegisteredClaims{} })
+
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
 			validate.Validator(),
 			logging.Server(logger),
-			jwt.Server(func(token *jwtv4.Token) (interface{}, error) {
-				return []byte(c.Auth.Jwt.Secret), nil
-			}),
+			jwt.Server(keyFunc, user.VerifyToken, jwtOption),
 		),
 		http.Filter(handlers.CORS(
 			handlers.AllowedOrigins([]string{"*"}),

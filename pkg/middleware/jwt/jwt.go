@@ -77,7 +77,7 @@ func WithTokenHeader(header map[string]interface{}) Option {
 }
 
 // Server is a server auth middleware. Check the token and extract the info from token.
-func Server(keyFunc jwt.Keyfunc, opts ...Option) middleware.Middleware {
+func Server(keyFunc jwt.Keyfunc, verifyToken func(ctx context.Context, token string) (string, error), opts ...Option) middleware.Middleware {
 	o := &options{
 		signingMethod: jwt.SigningMethodHS256,
 	}
@@ -125,6 +125,14 @@ func Server(keyFunc jwt.Keyfunc, opts ...Option) middleware.Middleware {
 					if tokenInfo.Method != o.signingMethod {
 						return nil, ErrUnSupportSigningMethod
 					}
+					uid, err := verifyToken(ctx, jwtToken)
+					if err != nil {
+						return nil, ErrTokenExpired
+					}
+					if claims, ok := tokenInfo.Claims.(*jwt.RegisteredClaims); !ok || uid != claims.ID {
+						return nil, ErrTokenInvalid
+					}
+
 					ctx = NewContext(ctx, tokenInfo.Claims)
 					return handler(ctx, req)
 				} else {
@@ -162,10 +170,9 @@ func Server(keyFunc jwt.Keyfunc, opts ...Option) middleware.Middleware {
 
 // Client is a client jwt middleware.
 func Client(keyProvider jwt.Keyfunc, opts ...Option) middleware.Middleware {
-	claims := jwt.RegisteredClaims{}
 	o := &options{
 		signingMethod: jwt.SigningMethodHS256,
-		claims:        func() jwt.Claims { return claims },
+		claims:        func() jwt.Claims { return jwt.RegisteredClaims{} },
 	}
 	for _, opt := range opts {
 		opt(o)

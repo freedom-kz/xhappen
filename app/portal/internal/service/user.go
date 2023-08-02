@@ -14,13 +14,15 @@ import (
 type UserService struct {
 	pb.UnimplementedUserServer
 	user *biz.UserUseCase
+	jwt  *biz.JwtUseCase
 
 	log *log.Helper
 }
 
-func NewUserService(user *biz.UserUseCase, logger log.Logger) *UserService {
+func NewUserService(user *biz.UserUseCase, jwt *biz.JwtUseCase, logger log.Logger) *UserService {
 	return &UserService{
 		user: user,
+		jwt:  jwt,
 		log:  log.NewHelper(logger),
 	}
 }
@@ -44,8 +46,14 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 		return nil, v1.ErrorBlackUser("state %d", user.State)
 	}
 
+	tokenStr, err := s.jwt.GenerateToken(ctx, user.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &pb.LoginByMobileReply{
-		Token: "",
+		Token: tokenStr,
 		User: &v1.User{
 			Id:       uint64(user.Id),
 			HId:      user.UId,
@@ -64,4 +72,8 @@ func (s *UserService) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Lo
 }
 func (s *UserService) DeRegister(ctx context.Context, req *pb.DeRegisterRequest) (*pb.DeRegisterReply, error) {
 	return &pb.DeRegisterReply{}, nil
+}
+
+func (s *UserService) VerifyToken(ctx context.Context, token string) (string, error) {
+	return s.jwt.VerifyToken(ctx, token)
 }

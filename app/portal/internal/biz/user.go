@@ -107,7 +107,7 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, clienrId
 	if !exist {
 		user.Phone = mobile
 		user.UId = utils.GenerateId()
-		user.Nickname = "用户" + mobile[len(mobile)-6:len(mobile)]
+		user.Nickname = "用户" + mobile[len(mobile)-6:]
 		user.Gender = 0
 		user, err = u.repo.SaveUser(ctx, user)
 		if err != nil {
