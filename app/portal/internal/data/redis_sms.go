@@ -8,7 +8,7 @@ import (
 	"xhappen/app/portal/internal/common"
 	"xhappen/pkg/utils"
 
-	"github.com/redis/go-redis/v9"
+	"github.com/go-kratos/kratos/v2/log"
 )
 
 const (
@@ -52,26 +52,28 @@ func (user *userRepo) VerifyLoginAuthCode(ctx context.Context, mobile string, cl
 
 	kvs, err := user.data.rdb.HGetAll(ctx, key).Result()
 
-	if err == redis.Nil {
-		return false, REDIS_KEY_NOTFOUND
-	}
-
 	if err != nil {
 		return false, err
 	}
 
 	ev := kvs[common.EXPIRE_KEY]
-	expire, err := strconv.Atoi(ev)
-	if err != nil || expire < int(utils.MillisFromTime(time.Now())) {
-		return false, err
+	if ev != "" {
+		expire, err := strconv.Atoi(ev)
+		if err != nil || expire < int(utils.MillisFromTime(time.Now())) {
+			return false, errors.New("smsCode expire")
+		}
+	} else {
+		return false, errors.New("smsCode expire")
 	}
 
 	if kvs[common.CLIENTID_KEY] != clientId || kvs[common.SMSCODE_KEY] != smsCode {
-		return false, errors.New("data not match")
+		return false, errors.New("smsCode not match")
 	}
 
 	//验证成功则删除，仅一次使用
-	user.data.rdb.Del(ctx, key)
+	if user.data.rdb.Del(ctx, key).Err() != nil {
+		user.log.Log(log.LevelError, "msg", "redis user del err", "key", key)
+	}
 
 	return true, nil
 }

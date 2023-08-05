@@ -47,7 +47,7 @@ func (useCase *JwtUseCase) GenerateToken(ctx context.Context, id int64) (string,
 		Issuer:    "xhappen",
 		Subject:   "xhappen",
 		ID:        idStr,
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(useCase.option.expire)),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(useCase.option.expire * time.Second)),
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	}
 

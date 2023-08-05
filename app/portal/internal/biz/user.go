@@ -74,7 +74,7 @@ func (u *UserUseCase) SendSMSCode(ctx context.Context, mobile string, clientId s
 	}
 	//生成authcode并存储
 	authCode := utils.GenerateAuthCode(6)
-	u.log.Debugf("generate authCode %v", authCode)
+	u.log.Debugf("%s generate authCode %v", mobile, authCode)
 
 	err = u.repo.GenerateLoginAuthCode(ctx, mobile, clientId, authCode)
 	if err != nil {
@@ -109,6 +109,7 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, clienrId
 		user.UId = utils.GenerateId()
 		user.Nickname = "用户" + mobile[len(mobile)-6:]
 		user.Gender = 0
+		user.Birth = time.Now()
 		user, err = u.repo.SaveUser(ctx, user)
 		if err != nil {
 			return user, err

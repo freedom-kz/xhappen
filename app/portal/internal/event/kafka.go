@@ -56,9 +56,11 @@ func (s *kafkaSender) Close() error {
 
 func NewKafkaSender(address []string, topic string) (Sender, error) {
 	w := &kafka.Writer{
-		Topic:    topic,
-		Addr:     kafka.TCP(address...),
-		Balancer: &kafka.LeastBytes{},
+		Topic:        topic,
+		Addr:         kafka.TCP(address...),
+		Balancer:     &kafka.LeastBytes{},
+		RequiredAcks: kafka.RequireOne,
+		Async:        true,
 	}
 	return &kafkaSender{writer: w, topic: topic}, nil
 }

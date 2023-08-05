@@ -19,7 +19,6 @@ message User{
     int32 gender = 7;
     string sign = 8;
     int32 state   = 9 ;
-
 }
 
 message UserProfile{

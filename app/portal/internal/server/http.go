@@ -4,7 +4,7 @@ import (
 	v1 "xhappen/api/portal/v1"
 	"xhappen/app/portal/internal/conf"
 	"xhappen/app/portal/internal/service"
-	"xhappen/pkg/middleware/jwt"
+	"xhappen/pkg/filter/jwt"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
@@ -23,19 +23,21 @@ func NewHTTPServer(c *conf.Bootstrap, user *service.UserService, logger log.Logg
 		return []byte(c.Auth.Jwt.Secret), nil
 	}
 
-	jwtOption := jwt.WithClaims(func() jwtv4.Claims { return jwtv4.RegisteredClaims{} })
+	jwtOption := jwt.WithClaims(func() jwtv4.Claims { return &jwtv4.RegisteredClaims{} })
 
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
 			validate.Validator(),
 			logging.Server(logger),
+		),
+		http.Filter(
+			handlers.CORS(
+				handlers.AllowedOrigins([]string{"*"}),
+				handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS"}),
+			),
 			jwt.Server(keyFunc, user.VerifyToken, jwtOption),
 		),
-		http.Filter(handlers.CORS(
-			handlers.AllowedOrigins([]string{"*"}),
-			handlers.AllowedMethods([]string{"GET", "POST", "OPTIONS"}),
-		)),
 	}
 	if c.Server.Http.Addr != "" {
 		opts = append(opts, http.Address(c.Server.Http.Addr))

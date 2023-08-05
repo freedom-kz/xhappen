@@ -28,8 +28,8 @@ func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r := s.Route("/")
 	r.POST("/user/smscode", _User_SendSMSCode0_HTTP_Handler(srv))
 	r.POST("/user/login", _User_LoginByMobile0_HTTP_Handler(srv))
-	r.POST("/user/logout", _User_Logout0_HTTP_Handler(srv))
-	r.POST("/user/deregister", _User_DeRegister0_HTTP_Handler(srv))
+	r.POST("/auth/user/logout", _User_Logout0_HTTP_Handler(srv))
+	r.POST("/auth/user/deregister", _User_DeRegister0_HTTP_Handler(srv))
 }
 
 func _User_SendSMSCode0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
@@ -125,7 +125,7 @@ func NewUserHTTPClient(client *http.Client) UserHTTPClient {
 
 func (c *UserHTTPClientImpl) DeRegister(ctx context.Context, in *DeRegisterRequest, opts ...http.CallOption) (*DeRegisterReply, error) {
 	var out DeRegisterReply
-	pattern := "/user/deregister"
+	pattern := "/auth/user/deregister"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation("/portal.v1.User/DeRegister"))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -151,7 +151,7 @@ func (c *UserHTTPClientImpl) LoginByMobile(ctx context.Context, in *LoginByMobil
 
 func (c *UserHTTPClientImpl) Logout(ctx context.Context, in *LogoutRequest, opts ...http.CallOption) (*LogoutReply, error) {
 	var out LogoutReply
-	pattern := "/user/logout"
+	pattern := "/auth/user/logout"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation("/portal.v1.User/Logout"))
 	opts = append(opts, http.PathTemplate(pattern))
