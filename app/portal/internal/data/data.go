@@ -3,7 +3,6 @@ package data
 import (
 	"time"
 
-	"xhappen/app/portal/internal/biz"
 	"xhappen/app/portal/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -41,10 +40,6 @@ func newDB(conf *conf.Bootstrap, logger log.Logger) *gorm.DB {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 	sqlDB.SetConnMaxIdleTime(10 * time.Minute)
-
-	if err := db.AutoMigrate(&biz.User{}); err != nil {
-		log.Fatal(err)
-	}
 	return db
 }
 

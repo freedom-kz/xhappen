@@ -40,7 +40,7 @@ type Boss struct {
 	isExiting   int32
 }
 
-func NewBoss(cfg *conf.Socket, logger log.Logger, passClient *client.PassClient) *Boss {
+func NewBoss(cfg *conf.Bootstrap, logger log.Logger, passClient *client.PassClient) *Boss {
 	boss := &Boss{
 		startTime:  time.Now(),
 		logger:     logger,
@@ -49,11 +49,11 @@ func NewBoss(cfg *conf.Socket, logger log.Logger, passClient *client.PassClient)
 	}
 
 	boss.ctx, boss.ctxCancel = context.WithCancel(context.Background())
-	boss.SwapOpts(cfg)
+	boss.SwapOpts(cfg.Socket)
 	boss.errValue.Store(errStore{})
 	boss.hubStart()
 
-	tlsConfig, err := buildTLSConfig(cfg.Main)
+	tlsConfig, err := buildTLSConfig(cfg.Socket.Main)
 	if err != nil {
 		boss.logger.Log(log.LevelFatal, "buildTLSConfig", err)
 		os.Exit(1)
@@ -61,13 +61,13 @@ func NewBoss(cfg *conf.Socket, logger log.Logger, passClient *client.PassClient)
 
 	boss.tlsConfig = tlsConfig
 
-	boss.tcpListener, err = net.Listen("tcp", cfg.Main.TcpAddress)
+	boss.tcpListener, err = net.Listen("tcp", cfg.Socket.Main.TcpAddress)
 	if err != nil {
 		boss.logger.Log(log.LevelFatal, "buildTcpListener", err)
 		os.Exit(1)
 	}
 
-	boss.wsListener, err = net.Listen("tcp", cfg.Main.WsAddress)
+	boss.wsListener, err = net.Listen("tcp", cfg.Socket.Main.WsAddress)
 	if err != nil {
 		boss.logger.Log(log.LevelFatal, "buildTcpListener", err)
 		os.Exit(1)
@@ -112,6 +112,13 @@ func (boss *Boss) Stop(context.Context) error {
 		err := boss.tcpListener.Close()
 		if err != nil {
 			boss.logger.Log(log.LevelError, "tcpListener.Close", err)
+		}
+	}
+
+	if boss.wsListener != nil {
+		err := boss.wsListener.Close()
+		if err != nil {
+			boss.logger.Log(log.LevelError, "wsListener.Close", err)
 		}
 	}
 

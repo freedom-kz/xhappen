@@ -30,6 +30,10 @@ type UserClient interface {
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutReply, error)
 	// mobile login
 	DeRegister(ctx context.Context, in *DeRegisterRequest, opts ...grpc.CallOption) (*DeRegisterReply, error)
+	// get user profile
+	GetUserProfile(ctx context.Context, in *GetUserProfileRequest, opts ...grpc.CallOption) (*GetUserProfileReply, error)
+	// get self profile
+	GetSelfProfile(ctx context.Context, in *GetSelfProfileRequest, opts ...grpc.CallOption) (*GetSelfProfileReply, error)
 }
 
 type userClient struct {
@@ -76,6 +80,24 @@ func (c *userClient) DeRegister(ctx context.Context, in *DeRegisterRequest, opts
 	return out, nil
 }
 
+func (c *userClient) GetUserProfile(ctx context.Context, in *GetUserProfileRequest, opts ...grpc.CallOption) (*GetUserProfileReply, error) {
+	out := new(GetUserProfileReply)
+	err := c.cc.Invoke(ctx, "/portal.v1.User/GetUserProfile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userClient) GetSelfProfile(ctx context.Context, in *GetSelfProfileRequest, opts ...grpc.CallOption) (*GetSelfProfileReply, error) {
+	out := new(GetSelfProfileReply)
+	err := c.cc.Invoke(ctx, "/portal.v1.User/GetSelfProfile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServer is the server API for User service.
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
@@ -88,6 +110,10 @@ type UserServer interface {
 	Logout(context.Context, *LogoutRequest) (*LogoutReply, error)
 	// mobile login
 	DeRegister(context.Context, *DeRegisterRequest) (*DeRegisterReply, error)
+	// get user profile
+	GetUserProfile(context.Context, *GetUserProfileRequest) (*GetUserProfileReply, error)
+	// get self profile
+	GetSelfProfile(context.Context, *GetSelfProfileRequest) (*GetSelfProfileReply, error)
 	mustEmbedUnimplementedUserServer()
 }
 
@@ -106,6 +132,12 @@ func (UnimplementedUserServer) Logout(context.Context, *LogoutRequest) (*LogoutR
 }
 func (UnimplementedUserServer) DeRegister(context.Context, *DeRegisterRequest) (*DeRegisterReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeRegister not implemented")
+}
+func (UnimplementedUserServer) GetUserProfile(context.Context, *GetUserProfileRequest) (*GetUserProfileReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserProfile not implemented")
+}
+func (UnimplementedUserServer) GetSelfProfile(context.Context, *GetSelfProfileRequest) (*GetSelfProfileReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSelfProfile not implemented")
 }
 func (UnimplementedUserServer) mustEmbedUnimplementedUserServer() {}
 
@@ -192,6 +224,42 @@ func _User_DeRegister_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _User_GetUserProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).GetUserProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/portal.v1.User/GetUserProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).GetUserProfile(ctx, req.(*GetUserProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_GetSelfProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSelfProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).GetSelfProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/portal.v1.User/GetSelfProfile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).GetSelfProfile(ctx, req.(*GetSelfProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // User_ServiceDesc is the grpc.ServiceDesc for User service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -214,6 +282,14 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeRegister",
 			Handler:    _User_DeRegister_Handler,
+		},
+		{
+			MethodName: "GetUserProfile",
+			Handler:    _User_GetUserProfile_Handler,
+		},
+		{
+			MethodName: "GetSelfProfile",
+			Handler:    _User_GetSelfProfile_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

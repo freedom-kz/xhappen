@@ -93,7 +93,7 @@ func main() {
 
 	r := etcd.New(client)
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Socket, r, logger)
+	app, cleanup, err := wireApp(&bc, r, logger)
 	if err != nil {
 		panic(err)
 	}

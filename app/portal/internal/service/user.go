@@ -68,6 +68,7 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 	}, nil
 }
 func (s *UserService) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.LogoutReply, error) {
+	s.user.Logout(ctx)
 	return &pb.LogoutReply{}, nil
 }
 func (s *UserService) DeRegister(ctx context.Context, req *pb.DeRegisterRequest) (*pb.DeRegisterReply, error) {

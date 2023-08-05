@@ -41,6 +41,22 @@ service User {
           body: "*",
         };
   }
+
+   // get user profile
+  rpc GetUserProfile (GetUserProfileRequest) returns (GetUserProfileReply)  {
+        option (google.api.http) = {
+          post: "/user/getuserprofile",
+          body: "*",
+        };
+  }
+   // get self profile
+  rpc GetSelfProfile (GetSelfProfileRequest) returns (GetSelfProfileReply)  {
+        option (google.api.http) = {
+          post: "/auth/user/getselfprofile",
+          body: "*",
+        };
+  }
+
 }
 
 message SMSCodeRequest {
@@ -89,5 +105,21 @@ message DeRegisterRequest {
 }
 
 message DeRegisterReply {
+  
+}
+
+message GetUserProfileRequest {
+  uint32 id = 2;
+}
+
+message GetUserProfileReply {
+  
+}
+
+message GetSelfProfileRequest {
+  
+}
+
+message GetSelfProfileReply {
   
 }

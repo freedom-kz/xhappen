@@ -7,6 +7,8 @@ import (
 	"time"
 
 	basic "xhappen/api/basic/v1"
+	protocol "xhappen/api/protocol/v1"
+
 	"xhappen/app/portal/internal/common"
 	"xhappen/app/portal/internal/event"
 	"xhappen/pkg/utils"
@@ -110,6 +112,8 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, clienrId
 		user.Nickname = "用户" + mobile[len(mobile)-6:]
 		user.Gender = 0
 		user.Birth = time.Now()
+		//新用户角色
+		user.Roles = protocol.RoleType_ROLE_NORMAL.String()
 		user, err = u.repo.SaveUser(ctx, user)
 		if err != nil {
 			return user, err
@@ -122,6 +126,7 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, clienrId
 }
 
 func (u *UserUseCase) Logout(ctx context.Context) error {
+	u.log.Log(log.LevelInfo, "roleType", protocol.RoleType_ROLE_NORMAL.String())
 	return nil
 }
 

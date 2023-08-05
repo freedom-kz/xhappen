@@ -20,10 +20,10 @@ type PassClient struct {
 	conn *srcgrpc.ClientConn
 }
 
-func NewPassClient(conf *conf.Data, logger log.Logger) (*PassClient, func(), error) {
+func NewPassClient(conf *conf.Bootstrap, logger log.Logger) (*PassClient, func(), error) {
 
 	cli, err := clientv3.New(clientv3.Config{
-		Endpoints: []string{conf.Etcd.Addr},
+		Endpoints: []string{conf.Data.Etcd.Addr},
 	})
 	if err != nil {
 		logger.Log(log.LevelFatal, "msg", "init etcd client fail", "err", err)
@@ -40,6 +40,10 @@ func NewPassClient(conf *conf.Data, logger log.Logger) (*PassClient, func(), err
 			recovery.Recovery(),
 		),
 	)
+	if err != nil {
+		logger.Log(log.LevelFatal, "msg", "transgrpc.DialInsecure fail", "err", err)
+		os.Exit(1)
+	}
 	pb.NewPassClient(conn)
 
 	cleanup := func() {

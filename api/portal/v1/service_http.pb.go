@@ -19,6 +19,8 @@ const _ = http.SupportPackageIsVersion1
 
 type UserHTTPServer interface {
 	DeRegister(context.Context, *DeRegisterRequest) (*DeRegisterReply, error)
+	GetSelfProfile(context.Context, *GetSelfProfileRequest) (*GetSelfProfileReply, error)
+	GetUserProfile(context.Context, *GetUserProfileRequest) (*GetUserProfileReply, error)
 	LoginByMobile(context.Context, *LoginByMobileRequest) (*LoginByMobileReply, error)
 	Logout(context.Context, *LogoutRequest) (*LogoutReply, error)
 	SendSMSCode(context.Context, *SMSCodeRequest) (*SMSCodeReply, error)
@@ -30,6 +32,8 @@ func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r.POST("/user/login", _User_LoginByMobile0_HTTP_Handler(srv))
 	r.POST("/auth/user/logout", _User_Logout0_HTTP_Handler(srv))
 	r.POST("/auth/user/deregister", _User_DeRegister0_HTTP_Handler(srv))
+	r.POST("/user/getuserprofile", _User_GetUserProfile0_HTTP_Handler(srv))
+	r.POST("/auth/user/getselfprofile", _User_GetSelfProfile0_HTTP_Handler(srv))
 }
 
 func _User_SendSMSCode0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
@@ -108,8 +112,48 @@ func _User_DeRegister0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) e
 	}
 }
 
+func _User_GetUserProfile0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetUserProfileRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, "/portal.v1.User/GetUserProfile")
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetUserProfile(ctx, req.(*GetUserProfileRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetUserProfileReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_GetSelfProfile0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetSelfProfileRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, "/portal.v1.User/GetSelfProfile")
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.GetSelfProfile(ctx, req.(*GetSelfProfileRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*GetSelfProfileReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type UserHTTPClient interface {
 	DeRegister(ctx context.Context, req *DeRegisterRequest, opts ...http.CallOption) (rsp *DeRegisterReply, err error)
+	GetSelfProfile(ctx context.Context, req *GetSelfProfileRequest, opts ...http.CallOption) (rsp *GetSelfProfileReply, err error)
+	GetUserProfile(ctx context.Context, req *GetUserProfileRequest, opts ...http.CallOption) (rsp *GetUserProfileReply, err error)
 	LoginByMobile(ctx context.Context, req *LoginByMobileRequest, opts ...http.CallOption) (rsp *LoginByMobileReply, err error)
 	Logout(ctx context.Context, req *LogoutRequest, opts ...http.CallOption) (rsp *LogoutReply, err error)
 	SendSMSCode(ctx context.Context, req *SMSCodeRequest, opts ...http.CallOption) (rsp *SMSCodeReply, err error)
@@ -128,6 +172,32 @@ func (c *UserHTTPClientImpl) DeRegister(ctx context.Context, in *DeRegisterReque
 	pattern := "/auth/user/deregister"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation("/portal.v1.User/DeRegister"))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *UserHTTPClientImpl) GetSelfProfile(ctx context.Context, in *GetSelfProfileRequest, opts ...http.CallOption) (*GetSelfProfileReply, error) {
+	var out GetSelfProfileReply
+	pattern := "/auth/user/getselfprofile"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation("/portal.v1.User/GetSelfProfile"))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *UserHTTPClientImpl) GetUserProfile(ctx context.Context, in *GetUserProfileRequest, opts ...http.CallOption) (*GetUserProfileReply, error) {
+	var out GetUserProfileReply
+	pattern := "/user/getuserprofile"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation("/portal.v1.User/GetUserProfile"))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

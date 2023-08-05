@@ -395,6 +395,158 @@ func (*DeRegisterReply) Descriptor() ([]byte, []int) {
 	return file_api_portal_v1_service_proto_rawDescGZIP(), []int{7}
 }
 
+type GetUserProfileRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *GetUserProfileRequest) Reset() {
+	*x = GetUserProfileRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_portal_v1_service_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetUserProfileRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserProfileRequest) ProtoMessage() {}
+
+func (x *GetUserProfileRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_portal_v1_service_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserProfileRequest.ProtoReflect.Descriptor instead.
+func (*GetUserProfileRequest) Descriptor() ([]byte, []int) {
+	return file_api_portal_v1_service_proto_rawDescGZIP(), []int{8}
+}
+
+type GetUserProfileReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *GetUserProfileReply) Reset() {
+	*x = GetUserProfileReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_portal_v1_service_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetUserProfileReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUserProfileReply) ProtoMessage() {}
+
+func (x *GetUserProfileReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_portal_v1_service_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUserProfileReply.ProtoReflect.Descriptor instead.
+func (*GetUserProfileReply) Descriptor() ([]byte, []int) {
+	return file_api_portal_v1_service_proto_rawDescGZIP(), []int{9}
+}
+
+type GetSelfProfileRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *GetSelfProfileRequest) Reset() {
+	*x = GetSelfProfileRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_portal_v1_service_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetSelfProfileRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSelfProfileRequest) ProtoMessage() {}
+
+func (x *GetSelfProfileRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_portal_v1_service_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSelfProfileRequest.ProtoReflect.Descriptor instead.
+func (*GetSelfProfileRequest) Descriptor() ([]byte, []int) {
+	return file_api_portal_v1_service_proto_rawDescGZIP(), []int{10}
+}
+
+type GetSelfProfileReply struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *GetSelfProfileReply) Reset() {
+	*x = GetSelfProfileReply{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_portal_v1_service_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetSelfProfileReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSelfProfileReply) ProtoMessage() {}
+
+func (x *GetSelfProfileReply) ProtoReflect() protoreflect.Message {
+	mi := &file_api_portal_v1_service_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSelfProfileReply.ProtoReflect.Descriptor instead.
+func (*GetSelfProfileReply) Descriptor() ([]byte, []int) {
+	return file_api_portal_v1_service_proto_rawDescGZIP(), []int{11}
+}
+
 var File_api_portal_v1_service_proto protoreflect.FileDescriptor
 
 var file_api_portal_v1_service_proto_rawDesc = []byte{
@@ -439,7 +591,13 @@ var file_api_portal_v1_service_proto_rawDesc = []byte{
 	0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x18,
 	0x0a, 0x07, 0x73, 0x6d, 0x73, 0x43, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
 	0x07, 0x73, 0x6d, 0x73, 0x43, 0x6f, 0x64, 0x65, 0x22, 0x11, 0x0a, 0x0f, 0x44, 0x65, 0x52, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x32, 0x90, 0x03, 0x0a, 0x04,
+	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x17, 0x0a, 0x15, 0x47,
+	0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x50, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x22, 0x15, 0x0a, 0x13, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x50,
+	0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x17, 0x0a, 0x15, 0x47,
+	0x65, 0x74, 0x53, 0x65, 0x6c, 0x66, 0x50, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x22, 0x15, 0x0a, 0x13, 0x47, 0x65, 0x74, 0x53, 0x65, 0x6c, 0x66, 0x50,
+	0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x32, 0xff, 0x04, 0x0a, 0x04,
 	0x55, 0x73, 0x65, 0x72, 0x12, 0x5b, 0x0a, 0x0b, 0x53, 0x65, 0x6e, 0x64, 0x53, 0x4d, 0x53, 0x43,
 	0x6f, 0x64, 0x65, 0x12, 0x19, 0x2e, 0x70, 0x6f, 0x72, 0x74, 0x61, 0x6c, 0x2e, 0x76, 0x31, 0x2e,
 	0x53, 0x4d, 0x53, 0x43, 0x6f, 0x64, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x17,
@@ -464,10 +622,25 @@ var file_api_portal_v1_service_proto_rawDesc = []byte{
 	0x1a, 0x1a, 0x2e, 0x70, 0x6f, 0x72, 0x74, 0x61, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x44, 0x65, 0x52,
 	0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x20, 0x82, 0xd3,
 	0xe4, 0x93, 0x02, 0x1a, 0x22, 0x15, 0x2f, 0x61, 0x75, 0x74, 0x68, 0x2f, 0x75, 0x73, 0x65, 0x72,
-	0x2f, 0x64, 0x65, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x3a, 0x01, 0x2a, 0x42, 0x1a,
-	0x5a, 0x18, 0x78, 0x68, 0x61, 0x70, 0x70, 0x65, 0x6e, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x70, 0x6f,
-	0x72, 0x74, 0x61, 0x6c, 0x2f, 0x76, 0x31, 0x3b, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x2f, 0x64, 0x65, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x3a, 0x01, 0x2a, 0x12, 0x73,
+	0x0a, 0x0e, 0x47, 0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x50, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65,
+	0x12, 0x20, 0x2e, 0x70, 0x6f, 0x72, 0x74, 0x61, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74,
+	0x55, 0x73, 0x65, 0x72, 0x50, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x70, 0x6f, 0x72, 0x74, 0x61, 0x6c, 0x2e, 0x76, 0x31, 0x2e, 0x47,
+	0x65, 0x74, 0x55, 0x73, 0x65, 0x72, 0x50, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x52, 0x65, 0x70,
+	0x6c, 0x79, 0x22, 0x1f, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x19, 0x22, 0x14, 0x2f, 0x75, 0x73, 0x65,
+	0x72, 0x2f, 0x67, 0x65, 0x74, 0x75, 0x73, 0x65, 0x72, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65,
+	0x3a, 0x01, 0x2a, 0x12, 0x78, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x53, 0x65, 0x6c, 0x66, 0x50, 0x72,
+	0x6f, 0x66, 0x69, 0x6c, 0x65, 0x12, 0x20, 0x2e, 0x70, 0x6f, 0x72, 0x74, 0x61, 0x6c, 0x2e, 0x76,
+	0x31, 0x2e, 0x47, 0x65, 0x74, 0x53, 0x65, 0x6c, 0x66, 0x50, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x70, 0x6f, 0x72, 0x74, 0x61, 0x6c,
+	0x2e, 0x76, 0x31, 0x2e, 0x47, 0x65, 0x74, 0x53, 0x65, 0x6c, 0x66, 0x50, 0x72, 0x6f, 0x66, 0x69,
+	0x6c, 0x65, 0x52, 0x65, 0x70, 0x6c, 0x79, 0x22, 0x24, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x1e, 0x22,
+	0x19, 0x2f, 0x61, 0x75, 0x74, 0x68, 0x2f, 0x75, 0x73, 0x65, 0x72, 0x2f, 0x67, 0x65, 0x74, 0x73,
+	0x65, 0x6c, 0x66, 0x70, 0x72, 0x6f, 0x66, 0x69, 0x6c, 0x65, 0x3a, 0x01, 0x2a, 0x42, 0x1a, 0x5a,
+	0x18, 0x78, 0x68, 0x61, 0x70, 0x70, 0x65, 0x6e, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x70, 0x6f, 0x72,
+	0x74, 0x61, 0x6c, 0x2f, 0x76, 0x31, 0x3b, 0x76, 0x31, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -482,33 +655,41 @@ func file_api_portal_v1_service_proto_rawDescGZIP() []byte {
 	return file_api_portal_v1_service_proto_rawDescData
 }
 
-var file_api_portal_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_api_portal_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_api_portal_v1_service_proto_goTypes = []interface{}{
-	(*SMSCodeRequest)(nil),       // 0: portal.v1.SMSCodeRequest
-	(*SMSCodeReply)(nil),         // 1: portal.v1.SMSCodeReply
-	(*LoginByMobileRequest)(nil), // 2: portal.v1.LoginByMobileRequest
-	(*LoginByMobileReply)(nil),   // 3: portal.v1.LoginByMobileReply
-	(*LogoutRequest)(nil),        // 4: portal.v1.LogoutRequest
-	(*LogoutReply)(nil),          // 5: portal.v1.LogoutReply
-	(*DeRegisterRequest)(nil),    // 6: portal.v1.DeRegisterRequest
-	(*DeRegisterReply)(nil),      // 7: portal.v1.DeRegisterReply
-	(*v1.User)(nil),              // 8: basic.v1.User
+	(*SMSCodeRequest)(nil),        // 0: portal.v1.SMSCodeRequest
+	(*SMSCodeReply)(nil),          // 1: portal.v1.SMSCodeReply
+	(*LoginByMobileRequest)(nil),  // 2: portal.v1.LoginByMobileRequest
+	(*LoginByMobileReply)(nil),    // 3: portal.v1.LoginByMobileReply
+	(*LogoutRequest)(nil),         // 4: portal.v1.LogoutRequest
+	(*LogoutReply)(nil),           // 5: portal.v1.LogoutReply
+	(*DeRegisterRequest)(nil),     // 6: portal.v1.DeRegisterRequest
+	(*DeRegisterReply)(nil),       // 7: portal.v1.DeRegisterReply
+	(*GetUserProfileRequest)(nil), // 8: portal.v1.GetUserProfileRequest
+	(*GetUserProfileReply)(nil),   // 9: portal.v1.GetUserProfileReply
+	(*GetSelfProfileRequest)(nil), // 10: portal.v1.GetSelfProfileRequest
+	(*GetSelfProfileReply)(nil),   // 11: portal.v1.GetSelfProfileReply
+	(*v1.User)(nil),               // 12: basic.v1.User
 }
 var file_api_portal_v1_service_proto_depIdxs = []int32{
-	8, // 0: portal.v1.LoginByMobileReply.user:type_name -> basic.v1.User
-	0, // 1: portal.v1.User.SendSMSCode:input_type -> portal.v1.SMSCodeRequest
-	2, // 2: portal.v1.User.LoginByMobile:input_type -> portal.v1.LoginByMobileRequest
-	4, // 3: portal.v1.User.Logout:input_type -> portal.v1.LogoutRequest
-	6, // 4: portal.v1.User.DeRegister:input_type -> portal.v1.DeRegisterRequest
-	1, // 5: portal.v1.User.SendSMSCode:output_type -> portal.v1.SMSCodeReply
-	3, // 6: portal.v1.User.LoginByMobile:output_type -> portal.v1.LoginByMobileReply
-	5, // 7: portal.v1.User.Logout:output_type -> portal.v1.LogoutReply
-	7, // 8: portal.v1.User.DeRegister:output_type -> portal.v1.DeRegisterReply
-	5, // [5:9] is the sub-list for method output_type
-	1, // [1:5] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	12, // 0: portal.v1.LoginByMobileReply.user:type_name -> basic.v1.User
+	0,  // 1: portal.v1.User.SendSMSCode:input_type -> portal.v1.SMSCodeRequest
+	2,  // 2: portal.v1.User.LoginByMobile:input_type -> portal.v1.LoginByMobileRequest
+	4,  // 3: portal.v1.User.Logout:input_type -> portal.v1.LogoutRequest
+	6,  // 4: portal.v1.User.DeRegister:input_type -> portal.v1.DeRegisterRequest
+	8,  // 5: portal.v1.User.GetUserProfile:input_type -> portal.v1.GetUserProfileRequest
+	10, // 6: portal.v1.User.GetSelfProfile:input_type -> portal.v1.GetSelfProfileRequest
+	1,  // 7: portal.v1.User.SendSMSCode:output_type -> portal.v1.SMSCodeReply
+	3,  // 8: portal.v1.User.LoginByMobile:output_type -> portal.v1.LoginByMobileReply
+	5,  // 9: portal.v1.User.Logout:output_type -> portal.v1.LogoutReply
+	7,  // 10: portal.v1.User.DeRegister:output_type -> portal.v1.DeRegisterReply
+	9,  // 11: portal.v1.User.GetUserProfile:output_type -> portal.v1.GetUserProfileReply
+	11, // 12: portal.v1.User.GetSelfProfile:output_type -> portal.v1.GetSelfProfileReply
+	7,  // [7:13] is the sub-list for method output_type
+	1,  // [1:7] is the sub-list for method input_type
+	1,  // [1:1] is the sub-list for extension type_name
+	1,  // [1:1] is the sub-list for extension extendee
+	0,  // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_api_portal_v1_service_proto_init() }
@@ -613,6 +794,54 @@ func file_api_portal_v1_service_proto_init() {
 				return nil
 			}
 		}
+		file_api_portal_v1_service_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetUserProfileRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_portal_v1_service_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetUserProfileReply); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_portal_v1_service_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetSelfProfileRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_portal_v1_service_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetSelfProfileReply); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -620,7 +849,7 @@ func file_api_portal_v1_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_portal_v1_service_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
