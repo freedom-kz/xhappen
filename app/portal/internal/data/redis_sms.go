@@ -12,19 +12,17 @@ import (
 )
 
 const (
-	DEFAULT_SEPARATOR = ":"
-	LOGIN_PREFIX      = "authcode:"
+	DEFAULT_SEPARATOR     = ":"
+	LOGIN_AUTHCODE_PREFIX = "authcode:"
+	SMS_DAY_LIMIT_PREFIX  = "smsDayLimit:"
+	SMS_DAY_LIMIT         = 10
 
 	EXPIRE_AFTER_5_MINUTE = time.Minute * 5
 	EXPIRE_AFTER_1_DAY    = time.Hour * 24
 )
 
-var (
-	REDIS_KEY_NOTFOUND error = errors.New("key not found")
-)
-
-func (user *userRepo) GenerateLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (err error) {
-	key := LOGIN_PREFIX + mobile
+func (user *userRepo) SaveLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (err error) {
+	key := LOGIN_AUTHCODE_PREFIX + mobile
 	values := make(map[string]string)
 	values[common.CLIENTID_KEY] = clientId
 	values[common.SMSCODE_KEY] = smsCode
@@ -42,13 +40,13 @@ func (user *userRepo) GenerateLoginAuthCode(ctx context.Context, mobile string, 
 }
 
 func (user *userRepo) GetAuthInfo(ctx context.Context, mobile string) (map[string]string, error) {
-	key := LOGIN_PREFIX + mobile
+	key := LOGIN_AUTHCODE_PREFIX + mobile
 	kvs, err := user.data.rdb.HGetAll(ctx, key).Result()
 	return kvs, err
 }
 
 func (user *userRepo) VerifyLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (bool, error) {
-	key := LOGIN_PREFIX + mobile
+	key := LOGIN_AUTHCODE_PREFIX + mobile
 
 	kvs, err := user.data.rdb.HGetAll(ctx, key).Result()
 
@@ -67,12 +65,29 @@ func (user *userRepo) VerifyLoginAuthCode(ctx context.Context, mobile string, cl
 	}
 
 	if kvs[common.CLIENTID_KEY] != clientId || kvs[common.SMSCODE_KEY] != smsCode {
-		return false, errors.New("smsCode not match")
+		return false, errors.New("smsCode not match device")
 	}
 
 	//验证成功则删除，仅一次使用
 	if user.data.rdb.Del(ctx, key).Err() != nil {
 		user.log.Log(log.LevelError, "msg", "redis user del err", "key", key)
+	}
+
+	return true, nil
+}
+
+func (user *userRepo) VerifyDayLimit(ctx context.Context, mobile string) (bool, error) {
+	key := SMS_DAY_LIMIT_PREFIX + mobile + DEFAULT_SEPARATOR + utils.TodayString()
+	cmd := user.data.rdb.Incr(ctx, key)
+	limit, err := cmd.Result()
+	if err != nil {
+		return false, err
+	}
+
+	user.data.rdb.Expire(ctx, key, EXPIRE_AFTER_1_DAY)
+
+	if limit > SMS_DAY_LIMIT {
+		return false, nil
 	}
 
 	return true, nil

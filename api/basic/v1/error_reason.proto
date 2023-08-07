@@ -45,4 +45,10 @@ enum ErrorDeviceReason {
   DEVICE_NO_PAIR = 1 [(errors.code) = 461];
 }
 
+enum ErrorLimitReason {
+  option (errors.default_code) = 500;
+
+  SMS_DAY_LIMIT_EXCEED = 0 [(errors.code) = 470];
+}
+
 

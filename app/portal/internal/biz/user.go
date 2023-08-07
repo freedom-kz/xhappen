@@ -16,30 +16,39 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 )
 
+const (
+	USER_STATE_NORMAL int = iota
+	USER_STATE_WAIT_CLEAN
+	USER_STATE_MUTE
+	USER_STATE_BLACK_USER
+)
+
 type User struct {
-	Id          int64 `gorm:"primaryKey"`
-	UId         string
-	Phone       string
-	Nickname    string
-	Icon        string
-	Birth       time.Time
-	Gender      int
-	Sign        string
-	State       int
-	Roles       string
-	Props       string
-	NotifyProps string
-	Updated     int64 `gorm:"autoUpdateTime:nano"` //更新时间
-	Created     int64 `gorm:"autoCreateTime:nano"` //创建时间
-	DeleteAt    int64
+	Id          int64     `db:"id"`
+	UId         string    `db:"uid"`
+	Phone       string    `db:"phone"`
+	Nickname    string    `db:"nickname"`
+	Icon        string    `db:"icon"`
+	Birth       time.Time `db:"birth"`
+	Gender      int       `db:"gender"`
+	Sign        string    `db:"sign"`
+	State       int       `db:"state"`
+	Roles       string    `db:"roles"`
+	Props       string    `db:"props"`
+	NotifyProps string    `db:"notify_props"`
+	Updated     int64     `db:"updated"`
+	Created     int64     `db:"created"`
+	DeleteAt    int64     `db:"delete_at"`
 }
 
 type UserRepo interface {
 	GetUserByPhone(ctx context.Context, phone string) (*User, bool, error)
 	SaveUser(ctx context.Context, g *User) (*User, error)
-	GenerateLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (err error)
+	UpdateUserStateByID(ctx context.Context, id int64, state int) (bool, error)
+	SaveLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (err error)
 	GetAuthInfo(ctx context.Context, mobile string) (map[string]string, error)
 	VerifyLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (bool, error)
+	VerifyDayLimit(ctx context.Context, mobile string) (bool, error)
 }
 
 type UserUseCase struct {
@@ -74,14 +83,24 @@ func (u *UserUseCase) SendSMSCode(ctx context.Context, mobile string, clientId s
 			return basic.ErrorRequestTooFast("mobile %s request too fast", mobile)
 		}
 	}
+
+	ok, err := u.repo.VerifyDayLimit(ctx, mobile)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return basic.ErrorSmsDayLimitExceed("mobile %s sms day limit", mobile)
+	}
+
 	//生成authcode并存储
 	authCode := utils.GenerateAuthCode(6)
 	u.log.Debugf("%s generate authCode %v", mobile, authCode)
 
-	err = u.repo.GenerateLoginAuthCode(ctx, mobile, clientId, authCode)
+	err = u.repo.SaveLoginAuthCode(ctx, mobile, clientId, authCode)
 	if err != nil {
 		return err
 	}
+	//发送至队列并返回
 	return u.sendAuthCodeToKafka(ctx, mobile, authCode)
 }
 
@@ -107,13 +126,17 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, clienrId
 	}
 
 	if !exist {
+		now := time.Now().UnixNano()
 		user.Phone = mobile
 		user.UId = utils.GenerateId()
 		user.Nickname = "用户" + mobile[len(mobile)-6:]
 		user.Gender = 0
 		user.Birth = time.Now()
-		//新用户角色
+		//新用户角色默认普通用户
 		user.Roles = protocol.RoleType_ROLE_NORMAL.String()
+		user.Created = now
+		user.Updated = now
+		user.DeleteAt = 0
 		user, err = u.repo.SaveUser(ctx, user)
 		if err != nil {
 			return user, err
@@ -126,12 +149,21 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, clienrId
 }
 
 func (u *UserUseCase) Logout(ctx context.Context) error {
-	u.log.Log(log.LevelInfo, "roleType", protocol.RoleType_ROLE_NORMAL.String())
+	//强制离线
+	// 清空token
 	return nil
 }
 
 func (u *UserUseCase) Deregister(ctx context.Context) error {
+	// 强制离线
+	// 清空token
+	// 变更状态
 	return nil
+}
+
+func (u *UserUseCase) UpdateUserStateByID(ctx context.Context, id int64, state int) error {
+	_, err := u.repo.UpdateUserStateByID(ctx, id, state)
+	return err
 }
 
 func (u *UserUseCase) sendAuthCodeToKafka(ctx context.Context, mobile string, authcode string) error {

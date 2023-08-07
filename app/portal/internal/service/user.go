@@ -42,8 +42,14 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 		return nil, err
 	}
 
-	if user.State != 0 {
+	if user.State == biz.USER_STATE_BLACK_USER {
 		return nil, v1.ErrorBlackUser("state %d", user.State)
+	}
+
+	//注销中用户，变更状态
+	if user.State == biz.USER_STATE_WAIT_CLEAN {
+		err := s.user.UpdateUserStateByID(ctx, user.Id, biz.USER_STATE_NORMAL)
+		return nil, v1.ErrorUnknown("err: %v", err)
 	}
 
 	tokenStr, err := s.jwt.GenerateToken(ctx, user.Id)
@@ -75,6 +81,17 @@ func (s *UserService) DeRegister(ctx context.Context, req *pb.DeRegisterRequest)
 	return &pb.DeRegisterReply{}, nil
 }
 
+// get user profile
+func (s *UserService) GetUserProfile(ctx context.Context, in *pb.GetUserProfileRequest) (*pb.GetUserProfileReply, error) {
+	return &pb.GetUserProfileReply{}, nil
+}
+
+// get self profile
+func (s *UserService) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileRequest) (*pb.GetSelfProfileReply, error) {
+	return &pb.GetSelfProfileReply{}, nil
+}
+
+//filter使用
 func (s *UserService) VerifyToken(ctx context.Context, token string) (string, error) {
 	return s.jwt.VerifyToken(ctx, token)
 }

@@ -178,3 +178,15 @@ func IsDeviceNoPair(err error) bool {
 func ErrorDeviceNoPair(format string, args ...interface{}) *errors.Error {
 	return errors.New(461, ErrorDeviceReason_DEVICE_NO_PAIR.String(), fmt.Sprintf(format, args...))
 }
+
+func IsSmsDayLimitExceed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorLimitReason_SMS_DAY_LIMIT_EXCEED.String() && e.Code == 470
+}
+
+func ErrorSmsDayLimitExceed(format string, args ...interface{}) *errors.Error {
+	return errors.New(470, ErrorLimitReason_SMS_DAY_LIMIT_EXCEED.String(), fmt.Sprintf(format, args...))
+}

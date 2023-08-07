@@ -9,19 +9,23 @@ option java_multiple_files = true;
 option java_package = "basic.v1";
 option objc_class_prefix = "BasiclV1";
 
+//
 message User{
-    uint64 Id = 1;
-    string HId = 2;
-    string Phone = 3;
+    uint64 id = 1;
+    string hId = 2;
+    string phone = 3;
     string nickName = 4;
     google.protobuf.Timestamp birth = 5;
-    string Icon = 6;
+    string icon = 6;
     int32 gender = 7;
     string sign = 8;
     int32 state   = 9 ;
+    repeated string roles = 10;
 }
 
 message UserProfile{
-    
+    uint64 id = 1;
+    string nickName = 2;
+    string icon = 3;
 }
 

@@ -6,11 +6,11 @@ import (
 	"xhappen/app/portal/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/wire"
+	"github.com/jmoiron/sqlx"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 // ProviderSet is data providers.
@@ -18,28 +18,23 @@ var ProviderSet = wire.NewSet(NewData, NewUserRepo, NewJwtRepo)
 
 // Data .
 type Data struct {
-	db  *gorm.DB
+	db  *sqlx.DB
 	rdb *redis.Client
 	log *log.Helper
 }
 
-func newDB(conf *conf.Bootstrap, logger log.Logger) *gorm.DB {
-	log := log.NewHelper(log.With(logger, "module", "order-service/data/gorm"))
+func newDB(conf *conf.Bootstrap, logger log.Logger) *sqlx.DB {
+	log := log.NewHelper(log.With(logger, "module", "portal/data/gorm"))
 
-	db, err := gorm.Open(mysql.Open(conf.Data.Database.Source), &gorm.Config{})
+	db, err := sqlx.Connect("mysql", conf.Data.Database.Source)
 	if err != nil {
 		log.Fatalf("failed opening connection to mysql: %v", err)
 	}
 
-	sqlDB, err := db.DB()
-	if err != nil {
-		log.Fatalf("get sql.db error: %v", err)
-	}
-
-	sqlDB.SetMaxIdleConns(10)
-	sqlDB.SetMaxOpenConns(100)
-	sqlDB.SetConnMaxLifetime(time.Hour)
-	sqlDB.SetConnMaxIdleTime(10 * time.Minute)
+	db.SetMaxIdleConns(10)
+	db.SetMaxOpenConns(100)
+	db.SetConnMaxLifetime(time.Hour)
+	db.SetConnMaxIdleTime(10 * time.Minute)
 	return db
 }
 
@@ -61,7 +56,7 @@ func newRDB(conf *conf.Bootstrap, logger log.Logger) *redis.Client {
 
 // NewData .
 func NewData(conf *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
-	loggger := log.NewHelper(log.With(logger, "module", "order-service/data"))
+	loggger := log.NewHelper(log.With(logger, "module", "portal/data"))
 
 	d := &Data{
 		db:  newDB(conf, logger),
