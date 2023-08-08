@@ -33,3 +33,8 @@ func (j *jwtRepo) VerifyToken(ctx context.Context, token string) (string, error)
 	cmd := j.data.rdb.HGet(ctx, JWT_TOKEN_PREFIX+token, "id")
 	return cmd.Result()
 }
+
+func (j *jwtRepo) RemoveToken(ctx context.Context, token string) error {
+	cmd := j.data.rdb.Del(ctx, JWT_TOKEN_PREFIX+token)
+	return cmd.Err()
+}

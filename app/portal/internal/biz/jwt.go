@@ -13,6 +13,7 @@ import (
 type JWTRepo interface {
 	SaveToken(ctx context.Context, token string, id string) error
 	VerifyToken(ctx context.Context, token string) (string, error)
+	RemoveToken(ctx context.Context, token string) error
 }
 
 type jwtTokenOption struct {
@@ -62,4 +63,8 @@ func (useCase *JwtUseCase) GenerateToken(ctx context.Context, id int64) (string,
 
 func (useCase *JwtUseCase) VerifyToken(ctx context.Context, token string) (string, error) {
 	return useCase.repo.VerifyToken(ctx, token)
+}
+
+func (useCase *JwtUseCase) RemoveToken(ctx context.Context, token string) error {
+	return useCase.repo.RemoveToken(ctx, token)
 }

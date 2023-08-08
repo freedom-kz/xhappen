@@ -109,11 +109,11 @@ message DeRegisterReply {
 }
 
 message GetUserProfileRequest {
-  repeated uint32 id = 2;
+  repeated int64 ids = 2;
 }
 
 message GetUserProfileReply {
-  repeated basic.v1.UserProfile userProfile = 2;
+  map<int64, basic.v1.UserProfile> users = 1;
 }
 
 message GetSelfProfileRequest {
@@ -121,5 +121,5 @@ message GetSelfProfileRequest {
 }
 
 message GetSelfProfileReply {
-  basic.v1.User user = 2;
+  basic.v1.User user = 1;
 }

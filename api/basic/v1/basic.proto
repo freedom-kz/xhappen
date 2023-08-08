@@ -11,7 +11,7 @@ option objc_class_prefix = "BasiclV1";
 
 //
 message User{
-    uint64 id = 1;
+    int64 id = 1;
     string hId = 2;
     string phone = 3;
     string nickName = 4;
@@ -21,11 +21,16 @@ message User{
     string sign = 8;
     int32 state   = 9 ;
     repeated string roles = 10;
+    int64 Updated = 11;
+    int64 Created = 12;
+    int64 DeleteAt = 13;
 }
 
 message UserProfile{
-    uint64 id = 1;
+    int64 id = 1;
     string nickName = 2;
     string icon = 3;
+    int64 Updated = 4;
+    int64 DeleteAt = 5;
 }
 

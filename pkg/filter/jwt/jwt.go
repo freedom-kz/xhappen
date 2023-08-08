@@ -14,17 +14,17 @@ import (
 
 const (
 	// bearerWord the bearer key word for authorization
-	bearerWord string = "Bearer"
+	BearerWord string = "Bearer"
 
 	// authorizationKey holds the key used to store the JWT Token in the request tokenHeader.
-	authorizationKey string = "Authorization"
+	AuthorizationKey string = "Authorization"
 
 	// reason holds the error reason.
 	reason string = "UNAUTHORIZED"
 
 	VERIFY string = "/auth"
 
-	AUTHKEY = "UID"
+	AUTHEDKEY = "UID"
 )
 
 var (
@@ -129,8 +129,8 @@ func Server(keyFunc jwt.Keyfunc, verifyToken func(ctx context.Context, token str
 			}
 
 			if strings.HasPrefix(r.URL.Path, VERIFY) {
-				auths := strings.SplitN(r.Header.Get(authorizationKey), " ", 2)
-				if len(auths) != 2 || !strings.EqualFold(auths[0], bearerWord) {
+				auths := strings.SplitN(r.Header.Get(AuthorizationKey), " ", 2)
+				if len(auths) != 2 || !strings.EqualFold(auths[0], BearerWord) {
 					kratosHttp.DefaultErrorEncoder(w, r, ErrMissingJwtToken)
 					return
 				}
@@ -140,11 +140,11 @@ func Server(keyFunc jwt.Keyfunc, verifyToken func(ctx context.Context, token str
 					kratosHttp.DefaultErrorEncoder(w, r, err)
 					return
 				}
-				r.Header.Set(AUTHKEY, uid)
+				r.Header.Set(AUTHEDKEY, uid)
 				next.ServeHTTP(w, r)
 			} else {
-				auths := strings.SplitN(r.Header.Get(authorizationKey), " ", 2)
-				if len(auths) != 2 || !strings.EqualFold(auths[0], bearerWord) {
+				auths := strings.SplitN(r.Header.Get(AuthorizationKey), " ", 2)
+				if len(auths) != 2 || !strings.EqualFold(auths[0], BearerWord) {
 					next.ServeHTTP(w, r)
 					return
 				}
@@ -154,7 +154,7 @@ func Server(keyFunc jwt.Keyfunc, verifyToken func(ctx context.Context, token str
 					next.ServeHTTP(w, r)
 					return
 				}
-				r.Header.Set(AUTHKEY, uid)
+				r.Header.Set(AUTHEDKEY, uid)
 				next.ServeHTTP(w, r)
 			}
 		})

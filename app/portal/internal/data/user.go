@@ -55,7 +55,7 @@ func (r *userRepo) GetUserByPhone(ctx context.Context, phone string) (*biz.User,
 	user := &biz.User{}
 	selectUserSql := `SELECT
 					id, uid, phone, nickname, icon, birth, gender, sign, state, roles, props, notify_props, updated, created, delete_at 
-				   FROM users WHERE phone= ?`
+				   FROM users WHERE delete_at = 0 and phone= ?`
 
 	err := r.data.db.Get(user,
 		selectUserSql,
@@ -67,4 +67,17 @@ func (r *userRepo) GetUserByPhone(ctx context.Context, phone string) (*biz.User,
 		return user, false, err
 	}
 	return user, true, nil
+}
+
+func (r *userRepo) GetUserInfoByIDs(ctx context.Context, ids []int64) ([]biz.User, error) {
+	users := []biz.User{}
+	selectUserSql := `SELECT
+					id, uid, phone, nickname, icon, birth, gender, sign, state, roles, props, notify_props, updated, created, delete_at 
+				   FROM users WHERE id in (?)`
+
+	err := r.data.db.Select(&users,
+		selectUserSql,
+		ids)
+
+	return users, err
 }

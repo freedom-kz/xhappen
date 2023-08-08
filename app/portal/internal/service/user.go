@@ -48,7 +48,8 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 
 	//注销中用户，变更状态
 	if user.State == biz.USER_STATE_WAIT_CLEAN {
-		err := s.user.UpdateUserStateByID(ctx, user.Id, biz.USER_STATE_NORMAL)
+		user.State = biz.USER_STATE_NORMAL
+		err := s.user.UpdateUserStateByID(ctx, user.Id, user.State)
 		return nil, v1.ErrorUnknown("err: %v", err)
 	}
 
@@ -61,7 +62,7 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 	return &pb.LoginByMobileReply{
 		Token: tokenStr,
 		User: &v1.User{
-			Id:       uint64(user.Id),
+			Id:       user.Id,
 			HId:      user.UId,
 			Phone:    user.Phone,
 			NickName: user.Nickname,
@@ -70,25 +71,120 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 			Gender:   int32(user.Gender),
 			Sign:     user.Sign,
 			State:    int32(user.State),
+			Created:  user.Created,
+			Updated:  user.Updated,
+			DeleteAt: user.DeleteAt,
 		},
 	}, nil
 }
 func (s *UserService) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.LogoutReply, error) {
-	s.user.Logout(ctx)
-	return &pb.LogoutReply{}, nil
+
+	//强制离线
+	_, err := GetUserID(ctx)
+	if err != nil {
+		return &pb.LogoutReply{}, err
+	}
+
+	err = s.user.KickOff(ctx)
+	if err != nil {
+		return &pb.LogoutReply{}, err
+	}
+	// 清空token
+	token, err := GetToken(ctx)
+	if err != nil {
+		return &pb.LogoutReply{}, err
+	}
+
+	err = s.jwt.RemoveToken(ctx, token)
+	return &pb.LogoutReply{}, err
 }
 func (s *UserService) DeRegister(ctx context.Context, req *pb.DeRegisterRequest) (*pb.DeRegisterReply, error) {
-	return &pb.DeRegisterReply{}, nil
+	//强制离线
+	id, err := GetUserID(ctx)
+	if err != nil {
+		return &pb.DeRegisterReply{}, err
+	}
+	err = s.user.KickOff(ctx)
+	if err != nil {
+		return &pb.DeRegisterReply{}, err
+	}
+
+	// 清空token
+	token, err := GetToken(ctx)
+	if err != nil {
+		return &pb.DeRegisterReply{}, err
+	}
+	err = s.jwt.RemoveToken(ctx, token)
+	if err != nil {
+		return &pb.DeRegisterReply{}, err
+	}
+	//变更用户状态
+	err = s.user.UpdateUserStateByID(ctx, id, biz.USER_STATE_WAIT_CLEAN)
+
+	return &pb.DeRegisterReply{}, err
 }
 
 // get user profile
 func (s *UserService) GetUserProfile(ctx context.Context, in *pb.GetUserProfileRequest) (*pb.GetUserProfileReply, error) {
-	return &pb.GetUserProfileReply{}, nil
+	users, err := s.user.GetUserInfoByIDs(ctx, in.Ids)
+	if err != nil {
+		return &pb.GetUserProfileReply{}, err
+	}
+
+	profiles := make(map[int64]*v1.UserProfile, len(users))
+
+	for _, user := range users {
+		u := &v1.UserProfile{
+			Id:       user.Id,
+			NickName: user.Nickname,
+			Icon:     user.Icon,
+			Updated:  user.Updated,
+			DeleteAt: user.DeleteAt,
+		}
+		profiles[u.Id] = u
+	}
+
+	for _, id := range in.Ids {
+		if _, ok := profiles[id]; !ok {
+			profiles[id] = &v1.UserProfile{}
+		}
+	}
+
+	return &pb.GetUserProfileReply{
+		Users: profiles,
+	}, nil
 }
 
 // get self profile
 func (s *UserService) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileRequest) (*pb.GetSelfProfileReply, error) {
-	return &pb.GetSelfProfileReply{}, nil
+	id, err := GetUserID(ctx)
+	if err != nil {
+		return &pb.GetSelfProfileReply{}, err
+	}
+	users, err := s.user.GetUserInfoByIDs(ctx, []int64{id})
+	if err != nil {
+		return &pb.GetSelfProfileReply{}, err
+	}
+	if len(users) != 1 {
+		return &pb.GetSelfProfileReply{}, v1.ErrorUnknown("user %v not found", id)
+	}
+	user := users[1]
+	return &pb.GetSelfProfileReply{
+		User: &v1.User{
+			Id:       user.Id,
+			HId:      user.UId,
+			Phone:    user.Phone,
+			NickName: user.Nickname,
+			Birth:    timestamppb.New(user.Birth),
+			Icon:     user.Icon,
+			Gender:   int32(user.Gender),
+			Sign:     user.Sign,
+			State:    int32(user.State),
+			Created:  user.Created,
+			Updated:  user.Updated,
+			DeleteAt: user.DeleteAt,
+		},
+	}, nil
 }
 
 //filter使用

@@ -46,6 +46,7 @@ type UserRepo interface {
 	SaveUser(ctx context.Context, g *User) (*User, error)
 	UpdateUserStateByID(ctx context.Context, id int64, state int) (bool, error)
 	SaveLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (err error)
+	GetUserInfoByIDs(ctx context.Context, ids []int64) ([]User, error)
 	GetAuthInfo(ctx context.Context, mobile string) (map[string]string, error)
 	VerifyLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (bool, error)
 	VerifyDayLimit(ctx context.Context, mobile string) (bool, error)
@@ -148,22 +149,17 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, clienrId
 	return user, nil
 }
 
-func (u *UserUseCase) Logout(ctx context.Context) error {
-	//强制离线
-	// 清空token
-	return nil
-}
-
-func (u *UserUseCase) Deregister(ctx context.Context) error {
-	// 强制离线
-	// 清空token
-	// 变更状态
+func (u *UserUseCase) KickOff(ctx context.Context) error {
 	return nil
 }
 
 func (u *UserUseCase) UpdateUserStateByID(ctx context.Context, id int64, state int) error {
 	_, err := u.repo.UpdateUserStateByID(ctx, id, state)
 	return err
+}
+
+func (u *UserUseCase) GetUserInfoByIDs(ctx context.Context, ids []int64) ([]User, error) {
+	return u.repo.GetUserInfoByIDs(ctx, ids)
 }
 
 func (u *UserUseCase) sendAuthCodeToKafka(ctx context.Context, mobile string, authcode string) error {
