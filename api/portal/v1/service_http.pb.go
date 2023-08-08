@@ -32,7 +32,7 @@ func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r.POST("/user/login", _User_LoginByMobile0_HTTP_Handler(srv))
 	r.POST("/auth/user/logout", _User_Logout0_HTTP_Handler(srv))
 	r.POST("/auth/user/deregister", _User_DeRegister0_HTTP_Handler(srv))
-	r.POST("/user/getuserprofile", _User_GetUserProfile0_HTTP_Handler(srv))
+	r.POST("/user/getprofile", _User_GetUserProfile0_HTTP_Handler(srv))
 	r.POST("/auth/user/getselfprofile", _User_GetSelfProfile0_HTTP_Handler(srv))
 }
 
@@ -195,7 +195,7 @@ func (c *UserHTTPClientImpl) GetSelfProfile(ctx context.Context, in *GetSelfProf
 
 func (c *UserHTTPClientImpl) GetUserProfile(ctx context.Context, in *GetUserProfileRequest, opts ...http.CallOption) (*GetUserProfileReply, error) {
 	var out GetUserProfileReply
-	pattern := "/user/getuserprofile"
+	pattern := "/user/getprofile"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation("/portal.v1.User/GetUserProfile"))
 	opts = append(opts, http.PathTemplate(pattern))

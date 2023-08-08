@@ -45,7 +45,7 @@ service User {
    // get user profile
   rpc GetUserProfile (GetUserProfileRequest) returns (GetUserProfileReply)  {
         option (google.api.http) = {
-          post: "/user/getuserprofile",
+          post: "/user/getprofile",
           body: "*",
         };
   }
