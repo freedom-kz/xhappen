@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strings"
 
 	v1 "xhappen/api/basic/v1"
 	pb "xhappen/api/portal/v1"
@@ -50,7 +51,10 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 	if user.State == biz.USER_STATE_WAIT_CLEAN {
 		user.State = biz.USER_STATE_NORMAL
 		err := s.user.UpdateUserStateByID(ctx, user.Id, user.State)
-		return nil, v1.ErrorUnknown("err: %v", err)
+		if err != nil {
+			return nil, v1.ErrorUnknown("err: %v", err)
+		}
+
 	}
 
 	tokenStr, err := s.jwt.GenerateToken(ctx, user.Id)
@@ -71,6 +75,7 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 			Gender:   int32(user.Gender),
 			Sign:     user.Sign,
 			State:    int32(user.State),
+			Roles:    strings.Split(user.Roles, " "),
 			Created:  user.Created,
 			Updated:  user.Updated,
 			DeleteAt: user.DeleteAt,
@@ -168,7 +173,7 @@ func (s *UserService) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileR
 	if len(users) != 1 {
 		return &pb.GetSelfProfileReply{}, v1.ErrorUnknown("user %v not found", id)
 	}
-	user := users[1]
+	user := users[0]
 	return &pb.GetSelfProfileReply{
 		User: &v1.User{
 			Id:       user.Id,
@@ -180,6 +185,7 @@ func (s *UserService) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileR
 			Gender:   int32(user.Gender),
 			Sign:     user.Sign,
 			State:    int32(user.State),
+			Roles:    strings.Split(user.Roles, " "),
 			Created:  user.Created,
 			Updated:  user.Updated,
 			DeleteAt: user.DeleteAt,

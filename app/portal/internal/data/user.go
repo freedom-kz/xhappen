@@ -7,6 +7,7 @@ import (
 	"xhappen/app/portal/internal/biz"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/jmoiron/sqlx"
 )
 
 type userRepo struct {
@@ -71,13 +72,23 @@ func (r *userRepo) GetUserByPhone(ctx context.Context, phone string) (*biz.User,
 
 func (r *userRepo) GetUserInfoByIDs(ctx context.Context, ids []int64) ([]biz.User, error) {
 	users := []biz.User{}
-	selectUserSql := `SELECT
-					id, uid, phone, nickname, icon, birth, gender, sign, state, roles, props, notify_props, updated, created, delete_at 
-				   FROM users WHERE id in (?)`
-
-	err := r.data.db.Select(&users,
-		selectUserSql,
+	query, args, err := sqlx.In(`SELECT
+									id, uid, phone, nickname, icon, birth, gender, sign, state, roles, props, notify_props, updated, created, delete_at 
+   								FROM users WHERE id in (?)`,
 		ids)
+	if err != nil {
+		return users, err
+	}
+	query = r.data.db.Rebind(query)
+	rows, err := r.data.db.Queryx(query, args...)
 
+	for rows.Next() {
+		user := biz.User{}
+		err = rows.StructScan(&user)
+		if err != nil {
+			return users, err
+		}
+		users = append(users, user)
+	}
 	return users, err
 }
