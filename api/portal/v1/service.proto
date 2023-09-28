@@ -42,14 +42,14 @@ service User {
         };
   }
 
-   // get user profile
+  // get user profile
   rpc GetUserProfile (GetUserProfileRequest) returns (GetUserProfileReply)  {
         option (google.api.http) = {
           post: "/user/getprofile",
           body: "*",
         };
   }
-   // get self profile
+  // get self profile
   rpc GetSelfProfile (GetSelfProfileRequest) returns (GetSelfProfileReply)  {
         option (google.api.http) = {
           post: "/auth/user/getselfprofile",
@@ -57,6 +57,13 @@ service User {
         };
   }
 
+  // update profile
+  rpc UpdateProfile (UpdateProfileRequest) returns (UpdateProfileReply)  {
+        option (google.api.http) = {
+          post: "/auth/user/updateprofile",
+          body: "*",
+        };
+  }
 }
 
 message SMSCodeRequest {
@@ -122,4 +129,12 @@ message GetSelfProfileRequest {
 
 message GetSelfProfileReply {
   basic.v1.User user = 1;
+}
+
+message UpdateProfileRequest {
+  
+}
+
+message UpdateProfileReply {
+  
 }

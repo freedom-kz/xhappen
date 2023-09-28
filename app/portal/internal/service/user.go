@@ -38,6 +38,7 @@ func (s *UserService) SendSMSCode(ctx context.Context, req *pb.SMSCodeRequest) (
 	return &pb.SMSCodeReply{}, nil
 }
 func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRequest) (*pb.LoginByMobileReply, error) {
+	//登录或者注册手机号
 	user, err := s.user.LoginByMobile(ctx, req.Mobile, req.ClientId, req.SmsCode)
 	if err != nil {
 		return nil, err
@@ -56,13 +57,14 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 		}
 
 	}
-
+	//生成token
 	tokenStr, err := s.jwt.GenerateToken(ctx, user.Id)
 
 	if err != nil {
 		return nil, err
 	}
 
+	//返回信息
 	return &pb.LoginByMobileReply{
 		Token: tokenStr,
 		User: &v1.User{

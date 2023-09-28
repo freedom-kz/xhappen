@@ -47,5 +47,9 @@ func NewHTTPServer(c *conf.Bootstrap, user *service.UserService, logger log.Logg
 	}
 	srv := http.NewServer(opts...)
 	v1.RegisterUserHTTPServer(srv, user)
+
+	route := srv.Route("/")
+	route.POST("/upload", service.UploadFile)
+
 	return srv
 }
