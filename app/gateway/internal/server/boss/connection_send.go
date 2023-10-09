@@ -55,6 +55,7 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 				if len(d.Payload) != 0 {
 					msg := NewMessage(d, int64(d.Sequence))
 					err := connection.StartInflight(msg)
+					connection.SendingMessage()
 					if err != nil {
 						connection.logger.Log(log.LevelError, "msg", "in startInflight", "err", err)
 					}
@@ -80,6 +81,7 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 					if err != nil {
 						connection.logger.Log(log.LevelError, "msg", "in startInflight", "err", err)
 					}
+					connection.SendingMessage()
 					err = connection.WriteDeliver(msg)
 					if err != nil {
 						goto exit
@@ -122,6 +124,7 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 			if err != nil {
 				connection.logger.Log(log.LevelError, "msg", "in startInflight", "err", err)
 			}
+			connection.SendingMessage()
 			err = connection.WriteAction(msg)
 			if err != nil {
 				goto exit

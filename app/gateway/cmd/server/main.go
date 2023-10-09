@@ -82,7 +82,7 @@ func main() {
 	if err := c.Scan(&bc); err != nil {
 		panic(err)
 	}
-	logger.Log(log.LevelDebug, "config", bc)
+	logger.Log(log.LevelDebug, "config", bc.String())
 
 	client, err := etcdclient.New(etcdclient.Config{
 		Endpoints: []string{bc.Data.Etcd.Addr},
