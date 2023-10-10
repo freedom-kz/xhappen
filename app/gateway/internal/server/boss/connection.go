@@ -1,7 +1,6 @@
 package boss
 
 import (
-	"fmt"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -69,7 +68,6 @@ type Connection struct {
 	ReadTimeout  time.Duration
 	MsgTimeout   time.Duration
 	FlushEvery   time.Duration
-	SampleRate   int32
 
 	writeLock      sync.RWMutex
 	Closer         sync.Once
@@ -180,14 +178,6 @@ func (connection *Connection) SendActionCh(action *protocol.Action) {
 
 func (connection *Connection) SendingMessage() {
 	atomic.AddInt64(&connection.InFlightCount, 1)
-}
-
-func (connection *Connection) SetSampleRate(sampleRate int32) error {
-	if sampleRate < 0 || sampleRate > 99 {
-		return fmt.Errorf("sample rate (%d) is invalid", sampleRate)
-	}
-	atomic.StoreInt32(&connection.SampleRate, sampleRate)
-	return nil
 }
 
 func (connection *Connection) processExpectSequence(sequence uint64) {
