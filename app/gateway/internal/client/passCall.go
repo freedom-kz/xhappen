@@ -20,8 +20,8 @@ type PassClient struct {
 	conn *srcgrpc.ClientConn
 }
 
+// 采用随机调用
 func NewPassClient(conf *conf.Bootstrap, logger log.Logger) (*PassClient, func(), error) {
-
 	cli, err := clientv3.New(clientv3.Config{
 		Endpoints: []string{conf.Data.Etcd.Addr},
 	})
@@ -59,26 +59,31 @@ func NewPassClient(conf *conf.Bootstrap, logger log.Logger) (*PassClient, func()
 	return passClient, cleanup, nil
 }
 
+// 设备绑定
 func (passClient *PassClient) Bind(ctx context.Context, in *pb.BindRequest) (*pb.BindReply, error) {
 	client := pb.NewPassClient(passClient.conn)
 	return client.Bind(ctx, in)
 }
 
+// 设备验证
 func (passClient *PassClient) Auth(ctx context.Context, in *pb.AuthRequest) (*pb.AuthReply, error) {
 	client := pb.NewPassClient(passClient.conn)
 	return client.Auth(ctx, in)
 }
 
+// 上行消息
 func (passClient *PassClient) Submit(ctx context.Context, in *pb.SubmitRequest) (*pb.SubmitReply, error) {
 	client := pb.NewPassClient(passClient.conn)
 	return client.Submit(ctx, in)
 }
 
+// 指令消息
 func (passClient *PassClient) Action(ctx context.Context, in *pb.ActionRequest) (*pb.ActionReply, error) {
 	client := pb.NewPassClient(passClient.conn)
 	return client.Action(ctx, in)
 }
 
+// 主动退出
 func (passClient *PassClient) Quit(ctx context.Context, in *pb.QuitRequest) (*pb.QuitReply, error) {
 	client := pb.NewPassClient(passClient.conn)
 	return client.Quit(ctx, in)

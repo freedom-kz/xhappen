@@ -142,14 +142,17 @@ func (h *Hub) Start() {
 			}
 
 		exit:
+			connIndex.Clear()
 			h.logger.Log(log.LevelInfo, "msg", "hub exit", "index", h.index)
+
 		}
 	}()
 
 }
 
+// 发送退出信号
 func (h *Hub) Stop() {
-
+	h.exitCh <- struct{}{}
 }
 
 func (h *Hub) AddConn(conn *Connection) {
@@ -243,7 +246,6 @@ func (i *ConnectionIndex) Add(connection *Connection) {
 }
 
 func (i *ConnectionIndex) Remove(connection *Connection) {
-
 	userConnIndex, ok := i.byConnection[connection]
 	if !ok {
 		return
@@ -274,4 +276,15 @@ func (i *ConnectionIndex) ForClientId(clientId string) *Connection {
 
 func (i *ConnectionIndex) All() map[*Connection]int {
 	return i.byConnection
+}
+
+func (i *ConnectionIndex) Clear() {
+	//这里按照正常退出处理，避免非正常断开业务造成的大量离线业务处理
+	for conn := range i.byConnection {
+		conn.Shutdown(true)
+	}
+	//数据置空
+	i.byClientId = nil
+	i.byConnection = nil
+	i.byUserId = nil
 }

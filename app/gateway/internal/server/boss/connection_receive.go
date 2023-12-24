@@ -297,7 +297,7 @@ func (connection *Connection) processPing(ping *protocol.Ping) error {
 }
 
 func (connection *Connection) processQuit(quit *protocol.Quit) error {
-	return fmt.Errorf("not error normal exit")
+	return fmt.Errorf("normal exit")
 }
 
 func (connection *Connection) FinishDeliver(sequence uint64) error {

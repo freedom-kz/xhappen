@@ -20,6 +20,7 @@ func NewGatewaySrvService(boss *boss.Boss) *GatewaySrvService {
 	}
 }
 
+// 接收同步消息
 func (s *GatewaySrvService) Sync(ctx context.Context, req *pb.SyncRequest) (*pb.SyncReply, error) {
 	done := make(chan *errors.Error)
 	s.boss.SendSyncToHubConn(done, req)
@@ -35,7 +36,7 @@ func (s *GatewaySrvService) Sync(ctx context.Context, req *pb.SyncRequest) (*pb.
 				Ret: true,
 			}, nil
 		}
-	case <-ctx.Done():
+	case <-ctx.Done(): //超时
 		return &pb.SyncReply{
 			Ret: false,
 			Err: &errors.New(413, "TIME_OUT", "ctx deadline").Status,
@@ -43,8 +44,8 @@ func (s *GatewaySrvService) Sync(ctx context.Context, req *pb.SyncRequest) (*pb.
 	}
 }
 
+// 接收下行消息
 func (s *GatewaySrvService) Deliver(ctx context.Context, req *pb.DeliverRequest) (*pb.DeliverReply, error) {
-
 	done := make(chan *errors.Error)
 	s.boss.SendDeliverToHubConn(done, req)
 	select {
@@ -67,9 +68,8 @@ func (s *GatewaySrvService) Deliver(ctx context.Context, req *pb.DeliverRequest)
 	}
 }
 
-//广播
+// 广播
 func (s *GatewaySrvService) Broadcast(ctx context.Context, req *pb.BroadcastRequest) (*pb.BroadcastReply, error) {
-
 	done := make(chan *errors.Error)
 	s.boss.SendBroadcastToHubConn(done, req)
 	select {
@@ -92,7 +92,7 @@ func (s *GatewaySrvService) Broadcast(ctx context.Context, req *pb.BroadcastRequ
 	}
 }
 
-//指令
+// 指令下发
 func (s *GatewaySrvService) Action(ctx context.Context, req *pb.ActionRequest) (*pb.ActionReply, error) {
 	done := make(chan *errors.Error)
 	s.boss.SendActionToHubConn(done, req)
@@ -116,8 +116,8 @@ func (s *GatewaySrvService) Action(ctx context.Context, req *pb.ActionRequest) (
 	}
 }
 
+// 强制下线
 func (s *GatewaySrvService) Disconnectedforce(ctx context.Context, req *pb.DisconnectForceRequest) (*pb.DisconnectForceReply, error) {
-
 	done := make(chan *errors.Error)
 	s.boss.DisconnectedConn(done, req)
 	select {

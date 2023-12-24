@@ -40,6 +40,9 @@ type Boss struct {
 	isExiting   int32
 }
 
+/*
+创建boss，这里会创建passclient，对注册中心有依赖
+*/
 func NewBoss(cfg *conf.Bootstrap, logger log.Logger, passClient *client.PassClient) *Boss {
 	boss := &Boss{
 		startTime:  time.Now(),
@@ -75,9 +78,11 @@ func NewBoss(cfg *conf.Bootstrap, logger log.Logger, passClient *client.PassClie
 	return boss
 }
 
+// 会被kratos启动执行
 func (boss *Boss) Start(context.Context) error {
 	exitCh := make(chan error)
 	var once sync.Once
+	//仅接收第一个服务运行错误
 	exitFunc := func(err error) {
 		once.Do(func() {
 			if err != nil {
@@ -88,7 +93,7 @@ func (boss *Boss) Start(context.Context) error {
 	}
 
 	bossServer := &BossServer{boss: boss}
-
+	//socket协程启动
 	boss.waitGroup.Wrap(func() {
 		exitFunc(TCPServe(boss.tcpListener, bossServer, boss.logger))
 	})
@@ -96,11 +101,12 @@ func (boss *Boss) Start(context.Context) error {
 	boss.waitGroup.Wrap(func() {
 		exitFunc(WsServe(boss.wsListener, bossServer, boss.logger))
 	})
-
+	//等待第一个运行错误返回
 	err := <-exitCh
 	return err
 }
 
+// kratos退出执行
 func (boss *Boss) Stop(context.Context) error {
 	//退出中，直接返回
 	if !atomic.CompareAndSwapInt32(&boss.isExiting, 0, 1) {
@@ -121,14 +127,14 @@ func (boss *Boss) Stop(context.Context) error {
 			boss.logger.Log(log.LevelError, "wsListener.Close", err)
 		}
 	}
-
+	//关闭hub
 	for _, hub := range boss.hubs {
 		hub.Stop()
 	}
 
 	//发送退出信号
 	close(boss.exitChan)
-	//等待关闭
+	//等待关闭，这里仅等待socket接收协程结束
 	boss.waitGroup.Wait()
 	boss.logger.Log(log.LevelInfo, "stop", "success")
 	//取消函数调用
@@ -219,7 +225,7 @@ func (boss *Boss) GetError() error {
 func (boss *Boss) GetHealth() string {
 	err := boss.GetError()
 	if err != nil {
-		return fmt.Sprintf("NOK - %s", err)
+		return fmt.Sprintf("!OK - %s", err)
 	}
 	return "OK"
 }
