@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"runtime"
@@ -40,9 +39,6 @@ type Boss struct {
 	isExiting   int32
 }
 
-/*
-创建boss，这里会创建passclient，对注册中心有依赖
-*/
 func NewBoss(cfg *conf.Bootstrap, logger log.Logger, passClient *client.PassClient) *Boss {
 	boss := &Boss{
 		startTime:  time.Now(),
@@ -64,6 +60,7 @@ func NewBoss(cfg *conf.Bootstrap, logger log.Logger, passClient *client.PassClie
 
 	boss.tlsConfig = tlsConfig
 
+	//TODO, tls add
 	boss.tcpListener, err = net.Listen("tcp", cfg.Socket.Main.TcpAddress)
 	if err != nil {
 		boss.logger.Log(log.LevelFatal, "buildTcpListener", err)
@@ -272,7 +269,7 @@ func buildTLSConfig(cfg *conf.Socket_Main) (*tls.Config, error) {
 
 	if cfg.TlsRootCAFile != "" {
 		tlsCertPool := x509.NewCertPool()
-		caCertFile, err := ioutil.ReadFile(cfg.TlsRootCAFile)
+		caCertFile, err := os.ReadFile(cfg.TlsRootCAFile)
 		if err != nil {
 			return nil, err
 		}

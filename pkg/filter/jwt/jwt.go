@@ -129,6 +129,7 @@ func Server(keyFunc jwt.Keyfunc, verifyToken func(ctx context.Context, token str
 			}
 
 			if strings.HasPrefix(r.URL.Path, VERIFY) {
+				//需要验证
 				auths := strings.SplitN(r.Header.Get(AuthorizationKey), " ", 2)
 				if len(auths) != 2 || !strings.EqualFold(auths[0], BearerWord) {
 					kratosHttp.DefaultErrorEncoder(w, r, ErrMissingJwtToken)
@@ -143,6 +144,7 @@ func Server(keyFunc jwt.Keyfunc, verifyToken func(ctx context.Context, token str
 				r.Header.Set(AUTHEDKEY, uid)
 				next.ServeHTTP(w, r)
 			} else {
+				//尝试验证放入数据
 				auths := strings.SplitN(r.Header.Get(AuthorizationKey), " ", 2)
 				if len(auths) != 2 || !strings.EqualFold(auths[0], BearerWord) {
 					next.ServeHTTP(w, r)

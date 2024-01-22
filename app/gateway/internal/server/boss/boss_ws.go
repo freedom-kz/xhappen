@@ -5,10 +5,10 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	golog "log"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -31,8 +31,8 @@ func WsServe(listener net.Listener, handler ConnHandler, logger log.Logger) erro
 		Handler:        http.DefaultServeMux,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,                                        //1M
-		ErrorLog:       golog.New(ioutil.Discard, "", golog.LstdFlags), //不打印底层错误日志至stderr
+		MaxHeaderBytes: 1 << 20,                                   //1M
+		ErrorLog:       golog.New(os.Stderr, "", golog.LstdFlags), //不打印底层错误日志至stderr
 	}
 
 	if err := server.Serve(listener); err != nil && strings.Contains(err.Error(), "use of closed network connection") {

@@ -9,14 +9,18 @@ import (
 
 func UploadFile(ctx http.Context) error {
 	req := ctx.Request()
+
+	// formdata := req.MultipartForm
+	// files := formdata.File["file"]
+
 	fileName := req.FormValue("name")
-	file, handler, err := req.FormFile("file")
+	file, header, err := req.FormFile("file")
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	f, err := os.OpenFile(handler.Filename, os.O_WRONLY|os.O_CREATE, 0o666)
+	f, err := os.OpenFile(header.Filename, os.O_WRONLY|os.O_CREATE, 0o666)
 	if err != nil {
 		return err
 	}

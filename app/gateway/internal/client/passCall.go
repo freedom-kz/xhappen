@@ -16,6 +16,8 @@ import (
 	srcgrpc "google.golang.org/grpc"
 )
 
+const endpoint = "discovery:///business"
+
 type PassClient struct {
 	conn *srcgrpc.ClientConn
 }
@@ -34,7 +36,7 @@ func NewPassClient(conf *conf.Bootstrap, logger log.Logger) (*PassClient, func()
 
 	conn, err := transgrpc.DialInsecure(
 		context.Background(),
-		transgrpc.WithEndpoint("discovery:///business"),
+		transgrpc.WithEndpoint(endpoint),
 		grpc.WithDiscovery(r),
 		transgrpc.WithMiddleware(
 			recovery.Recovery(),

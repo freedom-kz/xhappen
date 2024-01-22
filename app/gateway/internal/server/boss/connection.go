@@ -223,15 +223,12 @@ func (connection *Connection) Flush() error {
 	return nil
 }
 
-//业务关闭
+// 业务关闭
 func (connection *Connection) Shutdown(active bool) {
 	connection.Closer.Do(func() {
 		err := connection.Flush()
 		if err != nil {
 			connection.logger.Log(log.LevelDebug, "msg", "socket flush err.", "err", err, "hosname", connection.String())
-		}
-		if !active && connection.RoleType != protocol.RoleType_ROLE_CUSTOMER_SERVICE {
-			//TODO,离线消息推送
 		}
 
 		connection.sendConnState(STATE_QUIT)
@@ -239,6 +236,10 @@ func (connection *Connection) Shutdown(active bool) {
 		err = connection.Conn.Close()
 		if err != nil {
 			connection.logger.Log(log.LevelInfo, "msg", "socket closed err.", "err", err, "hosname", connection.String())
+		}
+
+		if !active && connection.RoleType != protocol.RoleType_ROLE_CUSTOMER_SERVICE {
+			//TODO,离线消息推送
 		}
 	})
 }
