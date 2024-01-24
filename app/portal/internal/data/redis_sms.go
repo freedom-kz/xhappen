@@ -39,6 +39,7 @@ func (user *userRepo) SaveLoginAuthCode(ctx context.Context, mobile string, clie
 	return
 }
 
+// 获取smscode验证数据
 func (user *userRepo) GetAuthInfo(ctx context.Context, mobile string) (map[string]string, error) {
 	key := LOGIN_AUTHCODE_PREFIX + mobile
 	kvs, err := user.data.rdb.HGetAll(ctx, key).Result()
@@ -76,6 +77,8 @@ func (user *userRepo) VerifyLoginAuthCode(ctx context.Context, mobile string, cl
 	return true, nil
 }
 
+// 计算每日发送数，验证是否超过上限
+// 每日计数，每日数据有效期24小时
 func (user *userRepo) VerifyDayLimit(ctx context.Context, mobile string) (bool, error) {
 	key := SMS_DAY_LIMIT_PREFIX + mobile + DEFAULT_SEPARATOR + utils.TodayString()
 	cmd := user.data.rdb.Incr(ctx, key)
