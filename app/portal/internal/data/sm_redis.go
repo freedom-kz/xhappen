@@ -21,13 +21,17 @@ const (
 	EXPIRE_AFTER_1_DAY    = time.Hour * 24
 )
 
+/*
+保存手机验证码数据
+当前保存map中的key有，clientID，expire
+*/
 func (user *userRepo) SaveLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (err error) {
 	key := LOGIN_AUTHCODE_PREFIX + mobile
 	values := make(map[string]string)
 	values[common.CLIENTID_KEY] = clientId
 	values[common.SMSCODE_KEY] = smsCode
 
-	//这里放入expire主要是担心失效时间设置错误导致的数据存在问题
+	//这里放入expire主要是担心失效时间设置错误导致的数据存在问题,进行双重验证
 	expire := int(utils.MillisFromTime(time.Now().Add(EXPIRE_AFTER_5_MINUTE)))
 	values[common.EXPIRE_KEY] = strconv.Itoa(expire)
 	err = user.data.rdb.HSet(ctx, key, values).Err()
@@ -57,6 +61,7 @@ func (user *userRepo) VerifyLoginAuthCode(ctx context.Context, mobile string, cl
 
 	ev := kvs[common.EXPIRE_KEY]
 	if ev != "" {
+		//二次进行过期验证
 		expire, err := strconv.Atoi(ev)
 		if err != nil || expire < int(utils.MillisFromTime(time.Now())) {
 			return false, errors.New("smsCode expire")
@@ -65,8 +70,12 @@ func (user *userRepo) VerifyLoginAuthCode(ctx context.Context, mobile string, cl
 		return false, errors.New("smsCode expire")
 	}
 
-	if kvs[common.CLIENTID_KEY] != clientId || kvs[common.SMSCODE_KEY] != smsCode {
+	if kvs[common.CLIENTID_KEY] != clientId {
 		return false, errors.New("smsCode not match device")
+	}
+
+	if kvs[common.SMSCODE_KEY] != smsCode {
+		return false, errors.New("smsCode is invalid")
 	}
 
 	//验证成功则删除，仅一次使用
@@ -87,7 +96,11 @@ func (user *userRepo) VerifyDayLimit(ctx context.Context, mobile string) (bool, 
 		return false, err
 	}
 
-	user.data.rdb.Expire(ctx, key, EXPIRE_AFTER_1_DAY)
+	err = user.data.rdb.Expire(ctx, key, EXPIRE_AFTER_1_DAY).Err()
+
+	if err != nil {
+		return false, err
+	}
 
 	if limit > SMS_DAY_LIMIT {
 		return false, nil

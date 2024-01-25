@@ -80,7 +80,7 @@ func (u *UserUseCase) SendSMSCode(ctx context.Context, mobile string, clientId s
 		if err != nil {
 			return err
 		}
-		if utils.TimeFromMillis(int64(createAt)).After(time.Now().Add(4 * time.Minute)) {
+		if time.Now().Add(4 * time.Minute).Before(utils.TimeFromMillis(int64(createAt))) {
 			return basic.ErrorRequestTooFast("mobile %s request too fast", mobile)
 		}
 	}

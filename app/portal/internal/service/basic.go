@@ -2,30 +2,37 @@ package service
 
 import (
 	"io"
-	"os"
 
 	"github.com/go-kratos/kratos/v2/transport/http"
 )
 
+// 多个文件上传
 func UploadFile(ctx http.Context) error {
 	req := ctx.Request()
 
-	// formdata := req.MultipartForm
-	// files := formdata.File["file"]
+	//1.用户验证
+	//2.文件处理
+	//3.关系数据保存
+	// userId, err := GetUserID(ctx)
+	// if err != nil {
+	// 	return err
+	// }
 
-	fileName := req.FormValue("name")
-	file, header, err := req.FormFile("file")
-	if err != nil {
-		return err
+	formdata := req.MultipartForm
+	files := formdata.File["file"]
+
+	for _, v := range files {
+		file, err := v.Open()
+		if err != nil {
+			return err
+
+		}
+		defer file.Close()
+		_, err = io.ReadAll(file)
+		if err != nil {
+			return err
+		}
+		//TODO,minio op
 	}
-	defer file.Close()
-
-	f, err := os.OpenFile(header.Filename, os.O_WRONLY|os.O_CREATE, 0o666)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	_, _ = io.Copy(f, file)
-
-	return ctx.String(200, "File "+fileName+" Uploaded successfully")
+	return ctx.String(200, "File Uploaded successfully")
 }
