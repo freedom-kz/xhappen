@@ -33,12 +33,14 @@ func (s *UserService) TokenAuth(ctx context.Context, req *pb.TokenAuthRequest) (
 	uid, err := s.VerifyToken(ctx, req.Token)
 
 	if err != nil {
-		return &pb.TokenAuthReply{}, nil
+		return &pb.TokenAuthReply{
+			Err: &v1.ErrorTokenExpire("info", err).Status,
+		}, nil
+	} else {
+		return &pb.TokenAuthReply{
+			Uid: uid,
+		}, nil
 	}
-	// 2.验证用户状态
-	return &pb.TokenAuthReply{
-		Uid: uid,
-	}, nil
 }
 
 func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRequest) (*pb.LoginByMobileReply, error) {

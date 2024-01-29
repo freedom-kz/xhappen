@@ -22,7 +22,8 @@ enum ErrorUserReason {
   option (errors.default_code) = 500;
 
   AUTH_CODE_INVALID = 0 [(errors.code) = 440];
-  BLACK_USER = 1 [(errors.code) = 441];
+  AUTH_TOKEN_INVALID = 0 [(errors.code) = 441];
+  BLACK_USER = 1 [(errors.code) = 442];
 }
 
 
