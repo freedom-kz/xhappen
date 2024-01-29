@@ -21,6 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// 用户个人信息
 type User struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -164,6 +165,7 @@ func (x *User) GetDeleteAt() int64 {
 	return 0
 }
 
+// 用户公开个人信息
 type UserProfile struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
