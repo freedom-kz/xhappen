@@ -61,8 +61,8 @@ func NewPortalClient(conf *conf.Bootstrap, logger log.Logger) (*PortalClient, fu
 	return passClient, cleanup, nil
 }
 
-// 设备绑定
-func (portalClient *PortalClient) Bind(ctx context.Context, in *pb.BindRequest) (*pb.BindReply, error) {
-	client := pb.NewUserHTTPClient(portalClient.conn)
-	return client.Bind(ctx, in)
+// 设备Auth
+func (portalClient *PortalClient) TokenAuth(ctx context.Context, in *pb.TokenAuthRequest) (*pb.TokenAuthReply, error) {
+	client := pb.NewUserClient(portalClient.conn)
+	return client.TokenAuth(ctx, in)
 }

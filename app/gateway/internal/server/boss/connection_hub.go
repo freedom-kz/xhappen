@@ -76,6 +76,7 @@ func (h *Hub) Start() {
 				connIndex.Remove(connection)
 			case deliverToHub := <-h.deliverToHub:
 				if deliverToHub.deliverMessage.Clientid != "" {
+					//设备下发
 					conn := connIndex.ForClientId(deliverToHub.deliverMessage.Clientid)
 					if conn == nil || conn.UserId != deliverToHub.deliverMessage.Userid {
 						deliverToHub.done <- errors.New(460, "NO_DEVICE_ONLINE", "NO_DEVICE_ONLINE")
@@ -83,8 +84,10 @@ func (h *Hub) Start() {
 						conn.SendDeliverCh(deliverToHub.deliverMessage.Deliver)
 					}
 				} else {
+					//用户下发
 					conns := connIndex.ForUser(deliverToHub.deliverMessage.Userid)
 					for _, conn := range conns {
+						//忽略设备
 						if utils.StringInSlice(conn.ClientId, deliverToHub.deliverMessage.OmitClientids) {
 							continue
 						}
@@ -99,6 +102,7 @@ func (h *Hub) Start() {
 				conn.SendSyncCh(syncToHub.syncMessage.Sync)
 			case actionToHub := <-h.actionToHub:
 				if actionToHub.actionMessage.ClientId != "" {
+					//设备下发
 					conn := connIndex.ForClientId(actionToHub.actionMessage.ClientId)
 					if conn == nil || conn.UserId != actionToHub.actionMessage.Uid {
 						actionToHub.done <- errors.New(460, "NO_DEVICE_ONLINE", "NO_DEVICE_ONLINE")
@@ -106,8 +110,10 @@ func (h *Hub) Start() {
 						conn.SendActionCh(actionToHub.actionMessage.Action)
 					}
 				} else {
+					//用户下发
 					conns := connIndex.ForUser(actionToHub.actionMessage.Uid)
 					for _, conn := range conns {
+						//忽略设备
 						if utils.StringInSlice(conn.ClientId, actionToHub.actionMessage.OmitClientids) {
 							continue
 						}
@@ -115,7 +121,9 @@ func (h *Hub) Start() {
 					}
 				}
 			case broadcastToHub := <-h.broadcastToHub:
+				//广播
 				for conn := range connIndex.All() {
+					//用户或者设备忽略
 					if utils.StringInSlice(conn.UserId, broadcastToHub.broadcastMessage.OmitUserIds) ||
 						utils.StringInSlice(conn.ClientId, broadcastToHub.broadcastMessage.OmitClientids) {
 						continue
@@ -126,12 +134,14 @@ func (h *Hub) Start() {
 			case dicconnectforce := <-h.disconnectedforceToHub:
 				conns := connIndex.ForUser(dicconnectforce.disconnectForceMessage.Userid)
 				if dicconnectforce.disconnectForceMessage.Clientid != "" {
+					//设备连接关闭
 					for _, conn := range conns {
 						if conn.ClientId == dicconnectforce.disconnectForceMessage.Clientid {
 							conn.Shutdown(false)
 						}
 					}
 				} else {
+					//用户设备关闭
 					for _, conn := range conns {
 						conn.Shutdown(false)
 					}
@@ -246,17 +256,23 @@ func (i *ConnectionIndex) Add(connection *Connection) {
 }
 
 func (i *ConnectionIndex) Remove(connection *Connection) {
+	//连接索引
 	userConnIndex, ok := i.byConnection[connection]
 	if !ok {
 		return
 	}
-
+	//用户连接切片
 	userConnections := i.byUserId[connection.UserId]
+	//末尾连接
 	last := userConnections[len(userConnections)-1]
+	//删除索引填充末尾元素
 	userConnections[userConnIndex] = last
+	//删除末尾元素
 	i.byUserId[connection.UserId] = userConnections[:len(userConnections)-1]
+	//元素索引重置
 	i.byConnection[last] = userConnIndex
 
+	//删除其他字典缓存
 	delete(i.byConnection, connection)
 	delete(i.byClientId, connection.ClientId)
 }

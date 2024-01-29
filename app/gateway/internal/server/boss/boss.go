@@ -60,17 +60,30 @@ func NewBoss(cfg *conf.Bootstrap, logger log.Logger, passClient *client.PassClie
 
 	boss.tlsConfig = tlsConfig
 
-	//TODO, tls add
-	boss.tcpListener, err = net.Listen("tcp", cfg.Socket.Main.TcpAddress)
-	if err != nil {
-		boss.logger.Log(log.LevelFatal, "buildTcpListener", err)
-		os.Exit(1)
-	}
+	if tlsConfig == nil {
+		boss.tcpListener, err = net.Listen("tcp", cfg.Socket.Main.TcpAddress)
+		if err != nil {
+			boss.logger.Log(log.LevelFatal, "buildTcpListener", err)
+			os.Exit(1)
+		}
 
-	boss.wsListener, err = net.Listen("tcp", cfg.Socket.Main.WsAddress)
-	if err != nil {
-		boss.logger.Log(log.LevelFatal, "buildTcpListener", err)
-		os.Exit(1)
+		boss.wsListener, err = net.Listen("tcp", cfg.Socket.Main.WsAddress)
+		if err != nil {
+			boss.logger.Log(log.LevelFatal, "buildTcpListener", err)
+			os.Exit(1)
+		}
+	} else {
+		boss.tcpListener, err = tls.Listen("tcp", cfg.Socket.Main.TcpAddress, tlsConfig)
+		if err != nil {
+			boss.logger.Log(log.LevelFatal, "buildTcpListener", err)
+			os.Exit(1)
+		}
+
+		boss.wsListener, err = tls.Listen("tcp", cfg.Socket.Main.WsAddress, tlsConfig)
+		if err != nil {
+			boss.logger.Log(log.LevelFatal, "buildTcpListener", err)
+			os.Exit(1)
+		}
 	}
 	return boss
 }
@@ -139,6 +152,7 @@ func (boss *Boss) Stop(context.Context) error {
 	return nil
 }
 
+// 创建并开启hub
 func (boss *Boss) hubStart() {
 	numberOfHubs := runtime.NumCPU() * 4
 	boss.logger.Log(log.LevelInfo, "hubs", numberOfHubs)

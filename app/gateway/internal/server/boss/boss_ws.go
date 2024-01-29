@@ -32,7 +32,7 @@ func WsServe(listener net.Listener, handler ConnHandler, logger log.Logger) erro
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,                                   //1M
-		ErrorLog:       golog.New(os.Stderr, "", golog.LstdFlags), //不打印底层错误日志至stderr
+		ErrorLog:       golog.New(os.Stderr, "", golog.LstdFlags), //打印底层错误日志至stderr
 	}
 
 	if err := server.Serve(listener); err != nil && strings.Contains(err.Error(), "use of closed network connection") {

@@ -1,7 +1,7 @@
 package server
 
 import (
-	v1 "xhappen/api/helloworld/v1"
+	v1 "xhappen/api/transfer/v1"
 	"xhappen/app/transfer/internal/conf"
 	"xhappen/app/transfer/internal/service"
 
@@ -10,8 +10,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 )
 
-// NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, pass *service.PassService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -25,6 +24,7 @@ func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, logger log.L
 		opts = append(opts, grpc.Timeout(c.Grpc.Timeout.AsDuration()))
 	}
 	srv := grpc.NewServer(opts...)
-	v1.RegisterGreeterServer(srv, greeter)
+	v1.RegisterPassServer(srv, pass)
+
 	return srv
 }

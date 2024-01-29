@@ -47,6 +47,7 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 		select {
 		case <-flusherChan:
 			err = connection.Flush()
+			flushed = true
 			connection.logger.Log(log.LevelError, "msg", "socket flush err")
 		case d := <-dChan:
 			//如果是期待sequence，则进行发送处理，否则进入等待队列
@@ -65,12 +66,16 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 					}
 					flushed = false
 				}
+				//仿真消息，payload为空，这里进行本地序列递进比对发送
 				connection.expectNextSequence++
 				for i := 0; ; i++ {
+					//从缓存队列获取期望序列消息
 					msg, _ := connection.toFlightPQ.PeekAndShift(int64(connection.expectNextSequence))
 					if msg == nil {
+						//拿不到，中止
 						break
 					}
+					//拿到移除缓存，期望递进
 					connection.removeFromToFlight(msg)
 					connection.expectNextSequence++
 					//过滤掉ghost deliver
@@ -90,11 +95,13 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 				}
 				//这里在连续出现空缺的时候，可能超时不准确，待优化
 				if len(connection.toFlightMessages) == 0 {
+					//没有断续产生的混存消息，超时定时清空
 					timeoutChan = nil
 					if timeoutTicker != nil {
 						timeoutTicker.Stop()
 					}
 				} else {
+					//还是有待处理消息，计算，已超时/重新设定时器
 					timeoutTicker.Stop()
 					msg := connection.toFlightPQ[0]
 					gap := time.Until(msg.deliveryTS.Add(-connection.MsgTimeout))
@@ -106,12 +113,13 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 					timeoutChan = timeoutTicker.C
 				}
 			} else {
+				//不是期望消息，加入待发送队列
 				msg := NewMessage(d, int64(d.Sequence))
 				err := connection.StartToflight(msg)
 				if err != nil {
 					connection.logger.Log(log.LevelError, "msg", "in startToflight", "err", err)
 				}
-
+				//超时定时器开启
 				if timeoutTicker == nil {
 					timeoutTicker = time.NewTicker(connection.MsgTimeout * 3)
 					timeoutChan = timeoutTicker.C
@@ -246,7 +254,10 @@ func (connection *Connection) WriteDeliver(message *Message) error {
 	}
 
 	if message.Attempts > 1 {
-		connection.logger.Log(log.LevelInfo, "msg", "message retry")
+		connection.logger.Log(log.LevelInfo,
+			"msg", "message retry",
+			"sessionId", message.SessionId,
+			"", message.Sequence)
 	}
 
 	packet := &packets.DeliverPacket{

@@ -125,6 +125,9 @@ func (connection *Connection) processBind() error {
 	connection.KeepAlive = time.Duration(bind.KeepAlive)
 	connection.Version = strconv.Itoa(int(bind.CurVersion))
 	connection.Os = bind.DeviceType
+	if bind.QueueSize > connection.Boss.GetConfig().Queue.MaxRdyCount {
+		bind.QueueSize = connection.Boss.GetConfig().Queue.MaxRdyCount
+	}
 	connection.ReadyCount = int64(bind.QueueSize)
 	connection.LoginType = bind.LoginType
 	return nil
