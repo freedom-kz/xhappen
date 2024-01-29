@@ -5,19 +5,14 @@ package portal.v1;
 import "google/api/annotations.proto";
 import "api/basic/v1/basic.proto";
 import "validate/validate.proto";
+import "errors/errors.proto";
 
 option go_package = "xhappen/api/portal/v1;v1";
+option java_multiple_files = true;
+option java_package = "portal.v1";
+option objc_class_prefix = "PortalV1";
 
-// The greeting service definition.
 service User {
-  // Sends SMS code
-  rpc SendSMSCode (SMSCodeRequest) returns (SMSCodeReply)  {
-        option (google.api.http) = {
-          post: "/user/smscode",
-          body: "*",
-        };
-  }
-
   // mobile login
   rpc LoginByMobile (LoginByMobileRequest) returns (LoginByMobileReply)  {
         option (google.api.http) = {
@@ -25,6 +20,8 @@ service User {
           body: "*",
         };
   }
+
+  rpc TokenAuth (TokenAuthRequest) returns (TokenAuthReply)  {}
 
   // mobile login
   rpc Logout (LogoutRequest) returns (LogoutReply)  {
@@ -66,21 +63,6 @@ service User {
   }
 }
 
-message SMSCodeRequest {
-  string mobile = 1 [(validate.rules).string = {
-    pattern: "^1(3\\d|4[0-14-9]|5[0-35-9]|6[2567]|7[0-8]|8\\d|9[0-35-9])\\d{8}$",
-    len: 11, 
-  }];
-  string clientId = 2 [(validate.rules).string = {
-    min_len: 24, 
-    max_len: 36
-  }];
-}
-
-message SMSCodeReply {
-
-}
-
 message LoginByMobileRequest {
   string mobile = 1 [(validate.rules).string = {
     pattern: "^1(3\\d|4[0-14-9]|5[0-35-9]|6[2567]|7[0-8]|8\\d|9[0-35-9])\\d{8}$",
@@ -99,6 +81,15 @@ message LoginByMobileRequest {
 message LoginByMobileReply {
   string token = 1;
   basic.v1.User user = 2;
+}
+
+message TokenAuthRequest {
+  string token = 1;
+}
+
+message TokenAuthReply {
+  string uid = 1;
+  errors.Status err = 2;  
 }
 
 message LogoutRequest {

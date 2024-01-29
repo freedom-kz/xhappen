@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v3.15.6
-// source: api/portal/v1/service.proto
+// source: api/portal/v1/user.proto
 
 package v1
 
@@ -19,8 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	User_SendSMSCode_FullMethodName    = "/portal.v1.User/SendSMSCode"
 	User_LoginByMobile_FullMethodName  = "/portal.v1.User/LoginByMobile"
+	User_TokenAuth_FullMethodName      = "/portal.v1.User/TokenAuth"
 	User_Logout_FullMethodName         = "/portal.v1.User/Logout"
 	User_DeRegister_FullMethodName     = "/portal.v1.User/DeRegister"
 	User_GetUserProfile_FullMethodName = "/portal.v1.User/GetUserProfile"
@@ -32,10 +32,9 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserClient interface {
-	// Sends SMS code
-	SendSMSCode(ctx context.Context, in *SMSCodeRequest, opts ...grpc.CallOption) (*SMSCodeReply, error)
 	// mobile login
 	LoginByMobile(ctx context.Context, in *LoginByMobileRequest, opts ...grpc.CallOption) (*LoginByMobileReply, error)
+	TokenAuth(ctx context.Context, in *TokenAuthRequest, opts ...grpc.CallOption) (*TokenAuthReply, error)
 	// mobile login
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutReply, error)
 	// mobile login
@@ -56,18 +55,18 @@ func NewUserClient(cc grpc.ClientConnInterface) UserClient {
 	return &userClient{cc}
 }
 
-func (c *userClient) SendSMSCode(ctx context.Context, in *SMSCodeRequest, opts ...grpc.CallOption) (*SMSCodeReply, error) {
-	out := new(SMSCodeReply)
-	err := c.cc.Invoke(ctx, User_SendSMSCode_FullMethodName, in, out, opts...)
+func (c *userClient) LoginByMobile(ctx context.Context, in *LoginByMobileRequest, opts ...grpc.CallOption) (*LoginByMobileReply, error) {
+	out := new(LoginByMobileReply)
+	err := c.cc.Invoke(ctx, User_LoginByMobile_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *userClient) LoginByMobile(ctx context.Context, in *LoginByMobileRequest, opts ...grpc.CallOption) (*LoginByMobileReply, error) {
-	out := new(LoginByMobileReply)
-	err := c.cc.Invoke(ctx, User_LoginByMobile_FullMethodName, in, out, opts...)
+func (c *userClient) TokenAuth(ctx context.Context, in *TokenAuthRequest, opts ...grpc.CallOption) (*TokenAuthReply, error) {
+	out := new(TokenAuthReply)
+	err := c.cc.Invoke(ctx, User_TokenAuth_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -123,10 +122,9 @@ func (c *userClient) UpdateProfile(ctx context.Context, in *UpdateProfileRequest
 // All implementations must embed UnimplementedUserServer
 // for forward compatibility
 type UserServer interface {
-	// Sends SMS code
-	SendSMSCode(context.Context, *SMSCodeRequest) (*SMSCodeReply, error)
 	// mobile login
 	LoginByMobile(context.Context, *LoginByMobileRequest) (*LoginByMobileReply, error)
+	TokenAuth(context.Context, *TokenAuthRequest) (*TokenAuthReply, error)
 	// mobile login
 	Logout(context.Context, *LogoutRequest) (*LogoutReply, error)
 	// mobile login
@@ -144,11 +142,11 @@ type UserServer interface {
 type UnimplementedUserServer struct {
 }
 
-func (UnimplementedUserServer) SendSMSCode(context.Context, *SMSCodeRequest) (*SMSCodeReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendSMSCode not implemented")
-}
 func (UnimplementedUserServer) LoginByMobile(context.Context, *LoginByMobileRequest) (*LoginByMobileReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginByMobile not implemented")
+}
+func (UnimplementedUserServer) TokenAuth(context.Context, *TokenAuthRequest) (*TokenAuthReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TokenAuth not implemented")
 }
 func (UnimplementedUserServer) Logout(context.Context, *LogoutRequest) (*LogoutReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Logout not implemented")
@@ -178,24 +176,6 @@ func RegisterUserServer(s grpc.ServiceRegistrar, srv UserServer) {
 	s.RegisterService(&User_ServiceDesc, srv)
 }
 
-func _User_SendSMSCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SMSCodeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserServer).SendSMSCode(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: User_SendSMSCode_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserServer).SendSMSCode(ctx, req.(*SMSCodeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _User_LoginByMobile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LoginByMobileRequest)
 	if err := dec(in); err != nil {
@@ -210,6 +190,24 @@ func _User_LoginByMobile_Handler(srv interface{}, ctx context.Context, dec func(
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserServer).LoginByMobile(ctx, req.(*LoginByMobileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _User_TokenAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TokenAuthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServer).TokenAuth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: User_TokenAuth_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServer).TokenAuth(ctx, req.(*TokenAuthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -312,12 +310,12 @@ var User_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*UserServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SendSMSCode",
-			Handler:    _User_SendSMSCode_Handler,
-		},
-		{
 			MethodName: "LoginByMobile",
 			Handler:    _User_LoginByMobile_Handler,
+		},
+		{
+			MethodName: "TokenAuth",
+			Handler:    _User_TokenAuth_Handler,
 		},
 		{
 			MethodName: "Logout",
@@ -341,5 +339,5 @@ var User_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/portal/v1/service.proto",
+	Metadata: "api/portal/v1/user.proto",
 }

@@ -2,8 +2,8 @@ package server
 
 import (
 	v1 "xhappen/api/helloworld/v1"
-	"xhappen/app/job/internal/conf"
-	"xhappen/app/job/internal/service"
+	"xhappen/app/transfer/internal/conf"
+	"xhappen/app/transfer/internal/service"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -17,9 +17,7 @@ func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, logger log.L
 			recovery.Recovery(),
 		),
 	}
-	if c.Grpc.Network != "" {
-		opts = append(opts, grpc.Network(c.Grpc.Network))
-	}
+
 	if c.Grpc.Addr != "" {
 		opts = append(opts, grpc.Address(c.Grpc.Addr))
 	}

@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package sequence.v1;
+
+import "errors/errors.proto";
+
+option go_package = "xhappen/api/sequence/v1;v1";
+option java_multiple_files = true;
+option java_package = "sequence.v1";
+option objc_class_prefix = "SequenceV1";
+
+service Sequence {
+  rpc GetSequenceByIds (GetSequenceByIdsRequest) returns (GetSequenceByIdsReply)  {}
+  rpc GetLocalSequenceByIds (GetLocalSequenceByIdsRequest) returns (GetLocalSequenceByIdsReply)  {}
+  rpc GetCurrentSequenceByIds (GetCurrentSequenceByIdsRequest) returns (GetCurrentSequenceByIdsReply)  {}
+  rpc GetLocalCurrentSequenceByIds (GetLocalCurrentSequenceByIdsRequest) returns (GetLocalCurrentSequenceByIdsReply)  {}
+}
+
+message GetSequenceByIdsRequest {
+    repeated string id = 1;
+}
+
+message GetSequenceByIdsReply {
+    bool ret = 1;
+    errors.Status err = 2;          //kratos通用错误
+}
+
+message GetLocalSequenceByIdsRequest {
+    repeated string id = 1;
+}
+  
+message GetLocalSequenceByIdsReply {
+    bool ret = 1;
+    errors.Status err = 2;          //kratos通用错误
+}
+
+message GetCurrentSequenceByIdsRequest {
+    repeated string id = 1;
+}
+  
+message GetCurrentSequenceByIdsReply {
+    bool ret = 1;
+    errors.Status err = 2;          //kratos通用错误
+}
+
+message GetLocalCurrentSequenceByIdsRequest {
+    repeated string id = 1;
+}
+
+message GetLocalCurrentSequenceByIdsReply {
+    bool ret = 1;
+    errors.Status err = 2;          //kratos通用错误
+}

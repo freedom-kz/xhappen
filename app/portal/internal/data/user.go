@@ -15,7 +15,6 @@ type userRepo struct {
 	log  *log.Helper
 }
 
-// NewGreeterRepo .
 func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
 	return &userRepo{
 		data: data,

@@ -1,41 +1,65 @@
 syntax = "proto3";
 package kratos.api;
 
-option go_package = "xhappen/app/job/internal/conf;conf";
+option go_package = "xhappen/app/transfer/internal/conf;conf";
 
 import "google/protobuf/duration.proto";
 
 message Bootstrap {
   Server server = 1;
   Data data = 2;
+  Trace trace = 3;
+}
+
+message Trace {
+    string endpoint = 1;
 }
 
 message Server {
-  message HTTP {
-    string network = 1;
-    string addr = 2;
-    google.protobuf.Duration timeout = 3;
-  }
   message GRPC {
-    string network = 1;
     string addr = 2;
     google.protobuf.Duration timeout = 3;
   }
-  HTTP http = 1;
-  GRPC grpc = 2;
+  GRPC grpc = 1;
 }
 
 message Data {
-  message Database {
+  message RDB {
     string driver = 1;
     string source = 2;
   }
   message Redis {
-    string network = 1;
-    string addr = 2;
-    google.protobuf.Duration read_timeout = 3;
-    google.protobuf.Duration write_timeout = 4;
+    string addr = 1;
+    string password = 2;
+    int32 db = 3;
+    google.protobuf.Duration dialTimeout = 4;
+    google.protobuf.Duration readTimeout = 5;
+    google.protobuf.Duration writeTimeout = 6;
   }
-  Database database = 1;
+  message Etcd {
+        string addr = 1;
+        google.protobuf.Duration dialTimeout = 2;
+        google.protobuf.Duration readTimeout = 3;
+        google.protobuf.Duration writeTimeout = 4;
+  }
+
+  message Kafka {
+        string addr = 1;
+        string smsCodeTopic = 2;
+  }
+  
+  message MDB {
+    string addr = 1;
+    string userName = 2;
+    string password = 3;
+    string database = 4;
+    int32 idle = 5;
+    int32 maxConns = 6;
+  }
+
+  RDB rdb = 1;
   Redis redis = 2;
+  Etcd etcd = 3;
+  Kafka kafka = 4;
+  MDB mds = 5;
 }

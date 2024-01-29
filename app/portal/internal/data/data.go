@@ -13,13 +13,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewUserRepo, NewJwtRepo)
+var ProviderSet = wire.NewSet(NewData, NewUserRepo, NewJwtRepo, NewSMSRepo)
 
-// Data .
 type Data struct {
 	db  *sqlx.DB
 	rdb *redis.Client
+
 	log *log.Helper
 }
 
@@ -54,7 +53,6 @@ func newRDB(conf *conf.Bootstrap, logger log.Logger) *redis.Client {
 	return rdb
 }
 
-// NewData .
 func NewData(conf *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	loggger := log.NewHelper(log.With(logger, "module", "portal/data"))
 

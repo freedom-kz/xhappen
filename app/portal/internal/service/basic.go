@@ -13,10 +13,10 @@ func UploadFile(ctx http.Context) error {
 	//1.用户验证
 	//2.文件处理
 	//3.关系数据保存
-	// userId, err := GetUserID(ctx)
-	// if err != nil {
-	// 	return err
-	// }
+	_, err := GetUserID(ctx)
+	if err != nil {
+		return err
+	}
 
 	formdata := req.MultipartForm
 	files := formdata.File["file"]

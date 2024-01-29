@@ -6,11 +6,11 @@
 package main
 
 import (
-	"xhappen/app/job/internal/biz"
-	"xhappen/app/job/internal/conf"
-	"xhappen/app/job/internal/data"
-	"xhappen/app/job/internal/server"
-	"xhappen/app/job/internal/service"
+	"xhappen/app/transfer/internal/biz"
+	"xhappen/app/transfer/internal/conf"
+	"xhappen/app/transfer/internal/data"
+	"xhappen/app/transfer/internal/server"
+	"xhappen/app/transfer/internal/service"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"

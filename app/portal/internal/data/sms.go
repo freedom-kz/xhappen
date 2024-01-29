@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strconv"
 	"time"
+	"xhappen/app/portal/internal/biz"
 	"xhappen/app/portal/internal/common"
 	"xhappen/pkg/utils"
 
@@ -21,11 +22,23 @@ const (
 	EXPIRE_AFTER_1_DAY    = time.Hour * 24
 )
 
+type SMSRepo struct {
+	data *Data
+	log  *log.Helper
+}
+
+func NewSMSRepo(data *Data, logger log.Logger) biz.SMSRepo {
+	return &userRepo{
+		data: data,
+		log:  log.NewHelper(logger),
+	}
+}
+
 /*
 保存手机验证码数据
 当前保存map中的key有，clientID，expire
 */
-func (user *userRepo) SaveLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (err error) {
+func (r *userRepo) SaveLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (err error) {
 	key := LOGIN_AUTHCODE_PREFIX + mobile
 	values := make(map[string]string)
 	values[common.CLIENTID_KEY] = clientId
@@ -34,19 +47,19 @@ func (user *userRepo) SaveLoginAuthCode(ctx context.Context, mobile string, clie
 	//这里放入expire主要是担心失效时间设置错误导致的数据存在问题,进行双重验证
 	expire := int(utils.MillisFromTime(time.Now().Add(EXPIRE_AFTER_5_MINUTE)))
 	values[common.EXPIRE_KEY] = strconv.Itoa(expire)
-	err = user.data.rdb.HSet(ctx, key, values).Err()
+	err = r.data.rdb.HSet(ctx, key, values).Err()
 	if err != nil {
 		return
 	}
 
-	err = user.data.rdb.Expire(ctx, key, EXPIRE_AFTER_5_MINUTE).Err()
+	err = r.data.rdb.Expire(ctx, key, EXPIRE_AFTER_5_MINUTE).Err()
 	return
 }
 
 // 获取smscode验证数据
-func (user *userRepo) GetAuthInfo(ctx context.Context, mobile string) (map[string]string, error) {
+func (r *userRepo) GetAuthInfo(ctx context.Context, mobile string) (map[string]string, error) {
 	key := LOGIN_AUTHCODE_PREFIX + mobile
-	kvs, err := user.data.rdb.HGetAll(ctx, key).Result()
+	kvs, err := r.data.rdb.HGetAll(ctx, key).Result()
 	return kvs, err
 }
 

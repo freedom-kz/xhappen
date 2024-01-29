@@ -14,7 +14,7 @@ import (
 func GetUserID(ctx context.Context) (int64, error) {
 	tr, ok := transport.FromServerContext(ctx)
 	if !ok {
-		return 0, v1.ErrorUnknown("is not kratos context")
+		return 0, v1.ErrorUnknown("context info loss")
 	}
 	uid := strings.TrimSpace(tr.RequestHeader().Get(jwt.AUTHEDKEY))
 

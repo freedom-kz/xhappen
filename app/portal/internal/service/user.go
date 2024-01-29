@@ -28,15 +28,19 @@ func NewUserService(user *biz.UserUseCase, jwt *biz.JwtUseCase, logger log.Logge
 	}
 }
 
-func (s *UserService) SendSMSCode(ctx context.Context, req *pb.SMSCodeRequest) (*pb.SMSCodeReply, error) {
-	err := s.user.SendSMSCode(ctx, req.Mobile, req.ClientId)
+func (s *UserService) TokenAuth(ctx context.Context, req *pb.TokenAuthRequest) (*pb.TokenAuthReply, error) {
+	//1. 验证token
+	uid, err := s.VerifyToken(ctx, req.Token)
 
 	if err != nil {
-		return nil, err
+		return &pb.TokenAuthReply{}, nil
 	}
-
-	return &pb.SMSCodeReply{}, nil
+	// 2.验证用户状态
+	return &pb.TokenAuthReply{
+		Uid: uid,
+	}, nil
 }
+
 func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRequest) (*pb.LoginByMobileReply, error) {
 	//登录或者注册手机号
 	user, err := s.user.LoginByMobile(ctx, req.Mobile, req.ClientId, req.SmsCode)
@@ -195,7 +199,7 @@ func (s *UserService) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileR
 	}, nil
 }
 
-//filter使用
+// filter使用
 func (s *UserService) VerifyToken(ctx context.Context, token string) (string, error) {
 	return s.jwt.VerifyToken(ctx, token)
 }

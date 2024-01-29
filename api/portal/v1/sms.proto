@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package portal.v1;
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+option go_package = "xhappen/api/portal/v1;v1";
+option java_multiple_files = true;
+option java_package = "portal.v1";
+option objc_class_prefix = "PortalV1";
+
+service SMS {
+  // Sends SMS code
+  rpc SendSMSCode (SMSCodeRequest) returns (SMSCodeReply)  {
+        option (google.api.http) = {
+          post: "/user/smscode",
+          body: "*",
+        };
+  }
+}
+
+message SMSCodeRequest {
+  string mobile = 1 [(validate.rules).string = {
+    pattern: "^1(3\\d|4[0-14-9]|5[0-35-9]|6[2567]|7[0-8]|8\\d|9[0-35-9])\\d{8}$",
+    len: 11, 
+  }];
+  string clientId = 2 [(validate.rules).string = {
+    min_len: 24, 
+    max_len: 36
+  }];
+}
+
+message SMSCodeReply {
+
+}

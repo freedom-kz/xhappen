@@ -2,14 +2,11 @@ package biz
 
 import (
 	"context"
-	"encoding/json"
-	"strconv"
 	"time"
 
 	basic "xhappen/api/basic/v1"
 	protocol "xhappen/api/protocol/v1"
 
-	"xhappen/app/portal/internal/common"
 	"xhappen/app/portal/internal/event"
 	"xhappen/pkg/utils"
 
@@ -45,69 +42,28 @@ type UserRepo interface {
 	GetUserByPhone(ctx context.Context, phone string) (*User, bool, error)
 	SaveUser(ctx context.Context, g *User) (*User, error)
 	UpdateUserStateByID(ctx context.Context, id int64, state int) (bool, error)
-	SaveLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (err error)
 	GetUserInfoByIDs(ctx context.Context, ids []int64) ([]User, error)
-	GetAuthInfo(ctx context.Context, mobile string) (map[string]string, error)
-	VerifyLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (bool, error)
-	VerifyDayLimit(ctx context.Context, mobile string) (bool, error)
 }
 
 type UserUseCase struct {
-	repo   UserRepo
-	sender event.Sender
-	log    *log.Helper
+	userRepo UserRepo
+	smsRepo  SMSRepo
+	sender   event.Sender
+	log      *log.Helper
 }
 
-func NewUserUseCase(repo UserRepo, sender event.Sender, logger log.Logger) *UserUseCase {
+func NewUserUseCase(userRepo UserRepo, smsRepo SMSRepo, sender event.Sender, logger log.Logger) *UserUseCase {
 	return &UserUseCase{
-		repo:   repo,
-		sender: sender,
-		log:    log.NewHelper(log.With(logger, "module", "usecase/user")),
+		userRepo: userRepo,
+		smsRepo:  smsRepo,
+		sender:   sender,
+		log:      log.NewHelper(log.With(logger, "module", "usecase/user")),
 	}
-}
-
-func (u *UserUseCase) SendSMSCode(ctx context.Context, mobile string, clientId string) error {
-	//尝试获取auth信息
-	kvs, err := u.repo.GetAuthInfo(ctx, mobile)
-	if err != nil {
-		return err
-	}
-	//如果存在，验证是否发送时间在1分钟内
-	if len(kvs) != 0 {
-		expire := kvs[common.EXPIRE_KEY]
-
-		createAt, err := strconv.Atoi(expire)
-		if err != nil {
-			return err
-		}
-		if time.Now().Add(4 * time.Minute).Before(utils.TimeFromMillis(int64(createAt))) {
-			return basic.ErrorRequestTooFast("mobile %s request too fast", mobile)
-		}
-	}
-
-	ok, err := u.repo.VerifyDayLimit(ctx, mobile)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		return basic.ErrorSmsDayLimitExceed("mobile %s sms day limit", mobile)
-	}
-
-	//生成authcode并存储
-	authCode := utils.GenerateAuthCode(6)
-	u.log.Debugf("%s generate authCode %v", mobile, authCode)
-
-	err = u.repo.SaveLoginAuthCode(ctx, mobile, clientId, authCode)
-	if err != nil {
-		return err
-	}
-	//发送至队列并返回
-	return u.sendAuthCodeToKafka(ctx, mobile, authCode)
 }
 
 func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, clienrId string, smsCode string) (*User, error) {
 	//验证authcode
-	authRet, err := u.repo.VerifyLoginAuthCode(ctx, mobile, clienrId, smsCode)
+	authRet, err := u.smsRepo.VerifyLoginAuthCode(ctx, mobile, clienrId, smsCode)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +73,7 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, clienrId
 	}
 
 	//查找用户，不存在则新建返回
-	user, exist, err := u.repo.GetUserByPhone(ctx, mobile)
+	user, exist, err := u.userRepo.GetUserByPhone(ctx, mobile)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +94,7 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, clienrId
 		user.Created = now
 		user.Updated = now
 		user.DeleteAt = 0
-		user, err = u.repo.SaveUser(ctx, user)
+		user, err = u.userRepo.SaveUser(ctx, user)
 		if err != nil {
 			return user, err
 		} else {
@@ -154,28 +110,10 @@ func (u *UserUseCase) KickOff(ctx context.Context) error {
 }
 
 func (u *UserUseCase) UpdateUserStateByID(ctx context.Context, id int64, state int) error {
-	_, err := u.repo.UpdateUserStateByID(ctx, id, state)
+	_, err := u.userRepo.UpdateUserStateByID(ctx, id, state)
 	return err
 }
 
 func (u *UserUseCase) GetUserInfoByIDs(ctx context.Context, ids []int64) ([]User, error) {
-	return u.repo.GetUserInfoByIDs(ctx, ids)
-}
-
-func (u *UserUseCase) sendAuthCodeToKafka(ctx context.Context, mobile string, authcode string) error {
-	smscodeMsg := &event.SMSCode{
-		Mobile:   mobile,
-		Authcode: authcode,
-	}
-
-	value, err := json.Marshal(smscodeMsg)
-
-	if err != nil {
-		return err
-	}
-
-	msg := event.NewMessage(mobile, value)
-
-	go u.sender.Send(ctx, msg)
-	return nil
+	return u.userRepo.GetUserInfoByIDs(ctx, ids)
 }

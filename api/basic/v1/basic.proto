@@ -9,7 +9,7 @@ option java_multiple_files = true;
 option java_package = "basic.v1";
 option objc_class_prefix = "BasiclV1";
 
-//
+//用户个人信息
 message User{
     int64 id = 1;
     string hId = 2;
@@ -26,6 +26,7 @@ message User{
     int64 DeleteAt = 13;
 }
 
+//用户公开个人信息
 message UserProfile{
     int64 id = 1;
     string nickName = 2;

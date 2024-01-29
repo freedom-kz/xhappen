@@ -7,6 +7,9 @@ import "api/protocol/v1/common.proto";
 import "errors/errors.proto";
 
 option go_package = "xhappen/api/gateway/v1;v1";
+option java_multiple_files = true;
+option java_package = "gateway.v1";
+option objc_class_prefix = "GatewayV1";
 
 service GatewaySrv {
     //接收同步消息

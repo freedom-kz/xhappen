@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.7.2
 // - protoc             v3.15.6
-// source: api/portal/v1/service.proto
+// source: api/portal/v1/user.proto
 
 package v1
 
@@ -24,7 +24,6 @@ const OperationUserGetSelfProfile = "/portal.v1.User/GetSelfProfile"
 const OperationUserGetUserProfile = "/portal.v1.User/GetUserProfile"
 const OperationUserLoginByMobile = "/portal.v1.User/LoginByMobile"
 const OperationUserLogout = "/portal.v1.User/Logout"
-const OperationUserSendSMSCode = "/portal.v1.User/SendSMSCode"
 const OperationUserUpdateProfile = "/portal.v1.User/UpdateProfile"
 
 type UserHTTPServer interface {
@@ -38,43 +37,18 @@ type UserHTTPServer interface {
 	LoginByMobile(context.Context, *LoginByMobileRequest) (*LoginByMobileReply, error)
 	// Logout mobile login
 	Logout(context.Context, *LogoutRequest) (*LogoutReply, error)
-	// SendSMSCode Sends SMS code
-	SendSMSCode(context.Context, *SMSCodeRequest) (*SMSCodeReply, error)
 	// UpdateProfile update profile
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*UpdateProfileReply, error)
 }
 
 func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r := s.Route("/")
-	r.POST("/user/smscode", _User_SendSMSCode0_HTTP_Handler(srv))
 	r.POST("/user/login", _User_LoginByMobile0_HTTP_Handler(srv))
 	r.POST("/auth/user/logout", _User_Logout0_HTTP_Handler(srv))
 	r.POST("/auth/user/deregister", _User_DeRegister0_HTTP_Handler(srv))
 	r.POST("/user/getprofile", _User_GetUserProfile0_HTTP_Handler(srv))
 	r.POST("/auth/user/getselfprofile", _User_GetSelfProfile0_HTTP_Handler(srv))
 	r.POST("/auth/user/updateprofile", _User_UpdateProfile0_HTTP_Handler(srv))
-}
-
-func _User_SendSMSCode0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
-	return func(ctx http.Context) error {
-		var in SMSCodeRequest
-		if err := ctx.Bind(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		http.SetOperation(ctx, OperationUserSendSMSCode)
-		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.SendSMSCode(ctx, req.(*SMSCodeRequest))
-		})
-		out, err := h(ctx, &in)
-		if err != nil {
-			return err
-		}
-		reply := out.(*SMSCodeReply)
-		return ctx.Result(200, reply)
-	}
 }
 
 func _User_LoginByMobile0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
@@ -215,7 +189,6 @@ type UserHTTPClient interface {
 	GetUserProfile(ctx context.Context, req *GetUserProfileRequest, opts ...http.CallOption) (rsp *GetUserProfileReply, err error)
 	LoginByMobile(ctx context.Context, req *LoginByMobileRequest, opts ...http.CallOption) (rsp *LoginByMobileReply, err error)
 	Logout(ctx context.Context, req *LogoutRequest, opts ...http.CallOption) (rsp *LogoutReply, err error)
-	SendSMSCode(ctx context.Context, req *SMSCodeRequest, opts ...http.CallOption) (rsp *SMSCodeReply, err error)
 	UpdateProfile(ctx context.Context, req *UpdateProfileRequest, opts ...http.CallOption) (rsp *UpdateProfileReply, err error)
 }
 
@@ -284,19 +257,6 @@ func (c *UserHTTPClientImpl) Logout(ctx context.Context, in *LogoutRequest, opts
 	pattern := "/auth/user/logout"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationUserLogout))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, err
-}
-
-func (c *UserHTTPClientImpl) SendSMSCode(ctx context.Context, in *SMSCodeRequest, opts ...http.CallOption) (*SMSCodeReply, error) {
-	var out SMSCodeReply
-	pattern := "/user/smscode"
-	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationUserSendSMSCode))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
