@@ -143,7 +143,7 @@ func (connection *Connection) String() string {
 
 // 客户端接收状态判断
 func (connection *Connection) IsReadyForMessages() bool {
-	if connection.state == STATE_QUIT {
+	if connection.state != STATE_NORMAL {
 		return false
 	}
 
