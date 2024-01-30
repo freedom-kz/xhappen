@@ -116,8 +116,9 @@ func (connection *Connection) processBind() error {
 	if err != nil {
 		return err
 	}
+	//返回错误，关闭连接
 	if !bindAck.BindRet {
-		connection.logger.Log(log.LevelDebug, "msg", "Bind reply fail", "clientId", connection.ClientId, "err", reply.Err)
+		connection.logger.Log(log.LevelDebug, "msg", "Bind failure", "clientId", connection.ClientId, "err", reply.Err)
 		return fmt.Errorf(bindAck.Err.Reason)
 	}
 	//填充信息
@@ -186,6 +187,7 @@ func (connection *Connection) processAuth() error {
 		return err
 	}
 	if !ack.AuthRet {
+		connection.logger.Log(log.LevelDebug, "msg", "auth failure", "clientId", connection.ClientId, "err", reply.Err)
 		return fmt.Errorf(ack.Err.Reason)
 	}
 	//信息填充
@@ -237,7 +239,7 @@ func (connection *Connection) processSubmit(submit *protocol.Submit) error {
 	if err != nil {
 		return err
 	}
-	//这里往发送协程发送一个假的deliver,用来处理按sequence发送deliver逻辑
+	//这里往发送协程发送一个假的deliver,用来触发按sequence发送deliver逻辑
 	deliverGhost := &protocol.Deliver{
 		Sequence: ack.Sequence,
 	}
@@ -258,10 +260,9 @@ func (connection *Connection) processSyncAck(syncAck *protocol.SyncAck) error {
 		if err != nil {
 			return err
 		}
-	}
-	if len(connection.syncSessions) == 0 {
 		connection.sendConnState(STATE_NORMAL)
 	}
+
 	return nil
 }
 
@@ -269,7 +270,7 @@ func (connection *Connection) processDeliverAck(deliverAck *protocol.DeliverAck)
 	connection.logger.Log(log.LevelDebug, "msg", "process deliver ack")
 	err := connection.FinishDeliver(deliverAck.Sequence)
 	connection.logger.Log(log.LevelError, "msg", "process deliver ack", "error", err)
-	return nil
+	return err
 }
 
 func (connection *Connection) processAction(action *protocol.Action) error {
@@ -280,9 +281,10 @@ func (connection *Connection) processActionAck(actionAck *protocol.ActionAck) er
 	connection.logger.Log(log.LevelDebug, "msg", "process action ack")
 	err := connection.FinishAction(uint64(actionAck.Id))
 	connection.logger.Log(log.LevelError, "msg", "process action ack", "error", err)
-	return nil
+	return err
 }
 
+// 处理ping消息
 func (connection *Connection) processPing(ping *protocol.Ping) error {
 	pong := &packets.PongPacket{
 		FixedHeader: packets.FixedHeader{MessageType: packets.SUBMITACK},
@@ -299,10 +301,12 @@ func (connection *Connection) processPing(ping *protocol.Ping) error {
 	return nil
 }
 
+// 标准退出
 func (connection *Connection) processQuit(quit *protocol.Quit) error {
-	return fmt.Errorf("normal exit")
+	return fmt.Errorf("standard exit")
 }
 
+// 清理deliver缓存
 func (connection *Connection) FinishDeliver(sequence uint64) error {
 	msg, err := connection.popInFlightMessage(sequence)
 	if err != nil {
@@ -312,6 +316,8 @@ func (connection *Connection) FinishDeliver(sequence uint64) error {
 	connection.FinishedMessage()
 	return nil
 }
+
+// 清理action缓存
 func (connection *Connection) FinishAction(sequence uint64) error {
 	msg, err := connection.popActionInFlightMessage(sequence)
 	if err != nil {
@@ -322,6 +328,7 @@ func (connection *Connection) FinishAction(sequence uint64) error {
 	return nil
 }
 
+// 消息计数和更新准备状态
 func (connection *Connection) FinishedMessage() {
 	atomic.AddUint64(&connection.FinishCount, 1)
 	atomic.AddInt64(&connection.InFlightCount, -1)

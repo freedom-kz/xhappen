@@ -18,7 +18,7 @@ const (
 	DEFAULT_READ_TIMEOUT  = 10 * time.Second //默认读超时
 	HandshakeTimeout      = 10 * time.Second //websocket握手超时
 
-	MESSAGE_RETRY_MAX = 3
+	MESSAGE_ATTEMPTS_MAX = 3
 )
 
 const (
@@ -52,15 +52,16 @@ type Connection struct {
 
 	expectNextSequence uint64
 	syncSessions       map[uint64]struct{}
-	inFlightMutex      sync.Mutex
-	inFlightMessages   map[uint64]*Message
-	inFlightAPQ        inFlightAPqueue //发送队列
-	inFlightAMutex     sync.Mutex
-	inFlightAMessages  map[uint64]*AMessage
-	inFlightPQ         inFlightPqueue //发送队列
-	toFlightMutex      sync.Mutex
-	toFlightMessages   map[uint64]*Message
-	toFlightPQ         inFlightPqueue //缓冲队列
+
+	inFlightMutex     sync.Mutex
+	inFlightMessages  map[uint64]*Message
+	inFlightPQ        inFlightPqueue //deliver发送队列
+	inFlightAMutex    sync.Mutex
+	inFlightAPQ       inFlightAPqueue //action发送队列
+	inFlightAMessages map[uint64]*AMessage
+	toFlightMutex     sync.Mutex
+	toFlightMessages  map[uint64]*Message
+	toFlightPQ        inFlightPqueue //deliver缓冲队列
 
 	KeepAlive    time.Duration
 	DailTimeout  time.Duration
@@ -91,25 +92,27 @@ func newConnection(conn net.Conn, boss *Boss) *Connection {
 	}
 
 	connection := &Connection{
-		Conn:             conn,
-		Boss:             boss,
-		logger:           boss.logger,
-		state:            STATE_BIND,
-		Hostname:         host,
-		ConnectTime:      time.Now(),
-		syncSessions:     make(map[uint64]struct{}),
-		inFlightMessages: make(map[uint64]*Message),
-		inFlightPQ:       newInFlightPqueue(100),
-		toFlightMessages: make(map[uint64]*Message),
-		toFlightPQ:       newInFlightPqueue(100),
-		KeepAlive:        conf.Main.MinKeepAlive.AsDuration(),
-		DailTimeout:      DEFAULT_DAIL_TIMEOUT,
-		WriteTimeout:     conf.Main.WriteTimeout.AsDuration(),
-		ReadTimeout:      conf.Main.MinKeepAlive.AsDuration(),
-		MsgTimeout:       conf.Queue.MsgTimeout.AsDuration(),
-		FlushEvery:       conf.Queue.MsgTimeout.AsDuration(),
-		StateChan:        make(chan int),
-		ReadyStateChan:   make(chan int),
+		Conn:              conn,
+		Boss:              boss,
+		logger:            boss.logger,
+		state:             STATE_BIND,
+		Hostname:          host,
+		ConnectTime:       time.Now(),
+		syncSessions:      make(map[uint64]struct{}),
+		inFlightMessages:  make(map[uint64]*Message),
+		inFlightPQ:        newInFlightPqueue(100),
+		toFlightMessages:  make(map[uint64]*Message),
+		toFlightPQ:        newInFlightPqueue(100),
+		inFlightAMessages: make(map[uint64]*AMessage),
+		inFlightAPQ:       newInFlightAPqueue(100),
+		KeepAlive:         conf.Main.MinKeepAlive.AsDuration(),
+		DailTimeout:       DEFAULT_DAIL_TIMEOUT,
+		WriteTimeout:      conf.Main.WriteTimeout.AsDuration(),
+		ReadTimeout:       conf.Main.MinKeepAlive.AsDuration(),
+		MsgTimeout:        conf.Queue.MsgTimeout.AsDuration(),
+		FlushEvery:        conf.Queue.MsgTimeout.AsDuration(),
+		StateChan:         make(chan int),
+		ReadyStateChan:    make(chan int),
 	}
 
 	return connection
@@ -138,6 +141,7 @@ func (connection *Connection) String() string {
 	return connection.RemoteAddr().String()
 }
 
+// 客户端接收状态判断
 func (connection *Connection) IsReadyForMessages() bool {
 	if connection.state == STATE_QUIT {
 		return false
@@ -153,10 +157,12 @@ func (connection *Connection) IsReadyForMessages() bool {
 	return true
 }
 
+// 发送客户端状态变更通知
 func (connection *Connection) sendConnState(state int) {
 	connection.StateChan <- state
 }
 
+// 触发客户端接收状态事件
 func (connection *Connection) tryUpdateReadyState() {
 	select {
 	case connection.ReadyStateChan <- 1:
@@ -180,6 +186,7 @@ func (connection *Connection) SendingMessage() {
 	atomic.AddInt64(&connection.InFlightCount, 1)
 }
 
+// 对期望序列号进行加工
 func (connection *Connection) processExpectSequence(sequence uint64) {
 	if sequence >= connection.expectNextSequence {
 		connection.expectNextSequence = sequence
@@ -188,7 +195,9 @@ func (connection *Connection) processExpectSequence(sequence uint64) {
 
 }
 
+// socket数据写入
 func (connection *Connection) Write(packet packets.ControlPacket) error {
+	//TODO，目前还是有锁，待优化
 	connection.writeLock.Lock()
 	defer connection.writeLock.Unlock()
 	var zeroTime time.Time
@@ -204,7 +213,9 @@ func (connection *Connection) Write(packet packets.ControlPacket) error {
 	return nil
 }
 
+// 数据缓冲刷新
 func (connection *Connection) Flush() error {
+	//目前还是有锁，待优化
 	connection.writeLock.Lock()
 	defer connection.writeLock.Unlock()
 	var zeroTime time.Time
@@ -231,13 +242,17 @@ func (connection *Connection) Shutdown(active bool) {
 			connection.logger.Log(log.LevelDebug, "msg", "socket flush err.", "err", err, "hosname", connection.String())
 		}
 
-		connection.sendConnState(STATE_QUIT)
-
-		err = connection.Conn.Close()
-		if err != nil {
-			connection.logger.Log(log.LevelInfo, "msg", "socket closed err.", "err", err, "hosname", connection.String())
+		if active {
+			//客户端主动关闭，发送状态
+			connection.sendConnState(STATE_QUIT)
+		} else {
+			//客户端被动关闭，直接关闭连接
+			err = connection.Conn.Close()
+			if err != nil {
+				connection.logger.Log(log.LevelInfo, "msg", "socket closed err.", "err", err, "hosname", connection.String())
+			}
 		}
-
+		//客户端主动关闭的，后面看是否需要补一次离线消息业务
 		if !active && connection.RoleType != protocol.RoleType_ROLE_CUSTOMER_SERVICE {
 			//TODO,离线消息推送
 		}

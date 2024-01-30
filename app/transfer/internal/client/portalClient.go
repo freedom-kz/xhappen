@@ -66,3 +66,9 @@ func (portalClient *PortalClient) TokenAuth(ctx context.Context, in *pb.TokenAut
 	client := pb.NewUserClient(portalClient.conn)
 	return client.TokenAuth(ctx, in)
 }
+
+// 获取用户信息
+func (portalClient *PortalClient) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileRequest) (*pb.GetSelfProfileReply, error) {
+	client := pb.NewUserClient(portalClient.conn)
+	return client.GetSelfProfile(ctx, in)
+}

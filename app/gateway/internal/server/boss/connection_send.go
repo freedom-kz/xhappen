@@ -22,6 +22,7 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 
 		timeoutTicker *time.Ticker
 	)
+	//开启时进行初始化
 	sChan := connection.syncCh
 
 	reSendTicker := time.NewTicker(DEFAULT_RESEND_TICKER)
@@ -171,6 +172,7 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 		case <-connection.ReadyStateChan:
 		case state, closed := <-connection.StateChan:
 			if !closed {
+				//赋值操作
 				connection.state = STATE_QUIT
 				goto exit
 			}
@@ -192,13 +194,14 @@ exit:
 	}
 	connection.Shutdown(true)
 	if err != nil {
-		connection.logger.Log(log.LevelError, "msg", "send goroutine exit", "clientId", connection.ClientId, "userId", connection.UserId, "err", err)
+		connection.logger.Log(log.LevelError, "msg", "io send goroutine exit", "clientId", connection.ClientId, "userId", connection.UserId, "err", err)
 	}
 }
 
 func (connection *Connection) processDeliverReSend() error {
 	var msgs []*Message
 	var err error
+	//遍历获取所有待重发的消息
 	for i := 0; ; i++ {
 		msg, _ := connection.inFlightPQ.PeekAndShift(math.MaxInt64)
 		if msg == nil {
@@ -207,6 +210,7 @@ func (connection *Connection) processDeliverReSend() error {
 		if msg.deliveryTS.Add(connection.MsgTimeout).Before(time.Now()) {
 			break
 		}
+		msgs = append(msgs, msg)
 	}
 	if len(msgs) != 0 {
 		for _, msg := range msgs {
@@ -249,8 +253,8 @@ func (connection *Connection) processActionReSend() error {
 func (connection *Connection) WriteDeliver(message *Message) error {
 	message.Attempts++
 	message.deliveryTS = time.Now()
-	if message.Attempts > MESSAGE_RETRY_MAX {
-		return fmt.Errorf("messgae send > %d", MESSAGE_RETRY_MAX)
+	if message.Attempts > MESSAGE_ATTEMPTS_MAX {
+		return fmt.Errorf("messgae send > %d", MESSAGE_ATTEMPTS_MAX)
 	}
 
 	if message.Attempts > 1 {
@@ -270,8 +274,8 @@ func (connection *Connection) WriteDeliver(message *Message) error {
 func (connection *Connection) WriteAction(message *AMessage) error {
 	message.Attempts++
 	message.deliveryTS = time.Now()
-	if message.Attempts > MESSAGE_RETRY_MAX {
-		return fmt.Errorf("messgae send > %d", MESSAGE_RETRY_MAX)
+	if message.Attempts > MESSAGE_ATTEMPTS_MAX {
+		return fmt.Errorf("action send > %d", MESSAGE_ATTEMPTS_MAX)
 	}
 
 	if message.Attempts > 1 {

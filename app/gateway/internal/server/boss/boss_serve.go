@@ -25,5 +25,7 @@ func (bossServer *BossServer) Handle(conn net.Conn) {
 
 	if err != nil {
 		bossServer.boss.logger.Log(log.LevelInfo, "msg", "socket io err.", "err", err, "hosname", connnection.String())
+	} else {
+		bossServer.boss.logger.Log(log.LevelInfo, "msg", "initiative quit", "hosname", connnection.String())
 	}
 }
