@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package consistenthash provides an implementation of a ring hash.
-package util
+package utils
 
 import (
 	"hash/crc32"
@@ -23,16 +23,16 @@ import (
 	"strconv"
 )
 
-type Hash func(data []byte) uint32
+type HashFunc func(data []byte) uint32
 
 type ConsistentHash struct {
-	hash     Hash
+	hash     HashFunc
 	replicas int
 	keys     []int // Sorted
 	hashMap  map[int]string
 }
 
-func NewConsistentHash(replicas int, fn Hash) *ConsistentHash {
+func NewConsistentHash(replicas int, fn HashFunc) *ConsistentHash {
 	m := &ConsistentHash{
 		replicas: replicas,
 		hash:     fn,

@@ -16,7 +16,7 @@ limitations under the License.
 
 // Package singleflight provides a duplicate function call suppression
 // mechanism.
-package util
+package utils
 
 import "sync"
 
