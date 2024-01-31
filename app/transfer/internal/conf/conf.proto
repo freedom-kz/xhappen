@@ -48,7 +48,7 @@ message Data {
         string smsCodeTopic = 2;
   }
   
-  message MDB {
+  message DMS {
     string addr = 1;
     string userName = 2;
     string password = 3;
@@ -61,5 +61,5 @@ message Data {
   Redis redis = 2;
   Etcd etcd = 3;
   Kafka kafka = 4;
-  MDB mds = 5;
+  DMS dms = 5;
 }

@@ -53,17 +53,17 @@ func newRDB(conf *conf.Bootstrap, logger log.Logger) *redis.Client {
 func newMDB(conf *conf.Bootstrap, logger log.Logger) *mongo.Client {
 	opts := options.Client()
 	opts.SetMaxConnIdleTime(5 * 60 * time.Second)           //空闲超时5分钟
-	opts.SetMaxIdleConnsPerHost(uint16(conf.Data.Mds.Idle)) //最大空闲数
-	opts.SetMaxPoolSize(uint16(conf.Data.Mds.MaxConns))     //最大连接数
+	opts.SetMaxIdleConnsPerHost(uint16(conf.Data.Dms.Idle)) //最大空闲数
+	opts.SetMaxPoolSize(uint16(conf.Data.Dms.MaxConns))     //最大连接数
 	//验证开关
-	if conf.Data.Mds.UserName != "" {
-		opts.SetAuth(options.Credential{AuthSource: "admin", Username: conf.Data.Mds.UserName, Password: conf.Data.Mds.Password})
+	if conf.Data.Dms.UserName != "" {
+		opts.SetAuth(options.Credential{AuthSource: "admin", Username: conf.Data.Dms.UserName, Password: conf.Data.Dms.Password})
 	}
 	opts.SetConnectTimeout(5 * time.Second)                                                //连接超时
 	opts.SetReadPreference(readpref.Primary())                                             //只从主节点读取
 	opts.SetReadConcern(readconcern.Majority())                                            //读策略
 	opts.SetWriteConcern(writeconcern.New(writeconcern.WMajority(), writeconcern.J(true))) //写策略 ps: writeconcern.WTimeout(time.Second*5)写超时是否加入需测试
-	mongoClient, err := mongo.Connect(context.Background(), "mongodb://"+conf.Data.Mds.Addr, opts)
+	mongoClient, err := mongo.Connect(context.Background(), "mongodb://"+conf.Data.Dms.Addr, opts)
 	if err != nil {
 		log.Fatalf("Mongo DB 初始化错误:%s\n", err.Error())
 	}
@@ -71,12 +71,12 @@ func newMDB(conf *conf.Bootstrap, logger log.Logger) *mongo.Client {
 }
 
 func NewData(conf *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
-	loggger := log.NewHelper(log.With(logger, "module", "portal/data"))
+	helper := log.NewHelper(log.With(logger, "module", "portal/data"))
 
 	d := &Data{
 		db:  newMDB(conf, logger),
 		rdb: newRDB(conf, logger),
-		log: loggger,
+		log: helper,
 	}
 
 	mdb := d.db.Database(conf.Data.Mds.Database)

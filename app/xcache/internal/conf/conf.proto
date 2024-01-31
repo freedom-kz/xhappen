@@ -11,31 +11,33 @@ message Bootstrap {
 }
 
 message Server {
-  message HTTP {
-    string network = 1;
-    string addr = 2;
-    google.protobuf.Duration timeout = 3;
-  }
   message GRPC {
     string network = 1;
     string addr = 2;
     google.protobuf.Duration timeout = 3;
   }
-  HTTP http = 1;
-  GRPC grpc = 2;
+  message Info{
+    int32 capacity = 1;
+  }
+  GRPC grpc = 1;
+  Info info = 2;
 }
 
 message Data {
-  message Database {
-    string driver = 1;
-    string source = 2;
+  message DMS {
+    string addr = 1;
+    string userName = 2;
+    string password = 3;
+    string database = 4;
+    int32 idle = 5;
+    int32 maxConns = 6;
   }
-  message Redis {
-    string network = 1;
-    string addr = 2;
-    google.protobuf.Duration read_timeout = 3;
-    google.protobuf.Duration write_timeout = 4;
+  message Etcd {
+    string addr = 1;
+    google.protobuf.Duration dialTimeout = 2;
+    google.protobuf.Duration readTimeout = 3;
+    google.protobuf.Duration writeTimeout = 4;
   }
-  Database database = 1;
-  Redis redis = 2;
+  DMS dms = 1;
+  Etcd etcd = 2;
 }

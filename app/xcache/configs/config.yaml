@@ -1,15 +1,20 @@
 server:
-  http:
-    addr: 0.0.0.0:8000
-    timeout: 1s
   grpc:
     addr: 0.0.0.0:9000
     timeout: 1s
+  info:
+    capacity: 3
 data:
-  database:
-    driver: mysql
-    source: root:root@tcp(127.0.0.1:3306)/test
-  redis:
-    addr: 127.0.0.1:6379
-    read_timeout: 0.2s
-    write_timeout: 0.2s
+  dms:
+    addr: 192.168.71.69:27017
+    username: root
+    passwd: pwd9627
+    database: xhappen
+    idle: 10
+    maxConns: 100
+  etcd:
+    addr: 192.168.71.69:2379
+    dialTimeout: 1s
+    readTimeout: 1s
+    writeTimeout: 1s
+  

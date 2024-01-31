@@ -187,7 +187,7 @@ type Data struct {
 	Redis *Data_Redis `protobuf:"bytes,2,opt,name=redis,proto3" json:"redis,omitempty"`
 	Etcd  *Data_Etcd  `protobuf:"bytes,3,opt,name=etcd,proto3" json:"etcd,omitempty"`
 	Kafka *Data_Kafka `protobuf:"bytes,4,opt,name=kafka,proto3" json:"kafka,omitempty"`
-	Mds   *Data_MDB   `protobuf:"bytes,5,opt,name=mds,proto3" json:"mds,omitempty"`
+	Dms   *Data_DMS   `protobuf:"bytes,5,opt,name=dms,proto3" json:"dms,omitempty"`
 }
 
 func (x *Data) Reset() {
@@ -250,9 +250,9 @@ func (x *Data) GetKafka() *Data_Kafka {
 	return nil
 }
 
-func (x *Data) GetMds() *Data_MDB {
+func (x *Data) GetDms() *Data_DMS {
 	if x != nil {
-		return x.Mds
+		return x.Dms
 	}
 	return nil
 }
@@ -580,7 +580,7 @@ func (x *Data_Kafka) GetSmsCodeTopic() string {
 	return ""
 }
 
-type Data_MDB struct {
+type Data_DMS struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -593,8 +593,8 @@ type Data_MDB struct {
 	MaxConns int32  `protobuf:"varint,6,opt,name=maxConns,proto3" json:"maxConns,omitempty"`
 }
 
-func (x *Data_MDB) Reset() {
-	*x = Data_MDB{}
+func (x *Data_DMS) Reset() {
+	*x = Data_DMS{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_app_transfer_internal_conf_conf_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -602,13 +602,13 @@ func (x *Data_MDB) Reset() {
 	}
 }
 
-func (x *Data_MDB) String() string {
+func (x *Data_DMS) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Data_MDB) ProtoMessage() {}
+func (*Data_DMS) ProtoMessage() {}
 
-func (x *Data_MDB) ProtoReflect() protoreflect.Message {
+func (x *Data_DMS) ProtoReflect() protoreflect.Message {
 	mi := &file_app_transfer_internal_conf_conf_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -620,47 +620,47 @@ func (x *Data_MDB) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Data_MDB.ProtoReflect.Descriptor instead.
-func (*Data_MDB) Descriptor() ([]byte, []int) {
+// Deprecated: Use Data_DMS.ProtoReflect.Descriptor instead.
+func (*Data_DMS) Descriptor() ([]byte, []int) {
 	return file_app_transfer_internal_conf_conf_proto_rawDescGZIP(), []int{3, 4}
 }
 
-func (x *Data_MDB) GetAddr() string {
+func (x *Data_DMS) GetAddr() string {
 	if x != nil {
 		return x.Addr
 	}
 	return ""
 }
 
-func (x *Data_MDB) GetUserName() string {
+func (x *Data_DMS) GetUserName() string {
 	if x != nil {
 		return x.UserName
 	}
 	return ""
 }
 
-func (x *Data_MDB) GetPassword() string {
+func (x *Data_DMS) GetPassword() string {
 	if x != nil {
 		return x.Password
 	}
 	return ""
 }
 
-func (x *Data_MDB) GetDatabase() string {
+func (x *Data_DMS) GetDatabase() string {
 	if x != nil {
 		return x.Database
 	}
 	return ""
 }
 
-func (x *Data_MDB) GetIdle() int32 {
+func (x *Data_DMS) GetIdle() int32 {
 	if x != nil {
 		return x.Idle
 	}
 	return 0
 }
 
-func (x *Data_MDB) GetMaxConns() int32 {
+func (x *Data_DMS) GetMaxConns() int32 {
 	if x != nil {
 		return x.MaxConns
 	}
@@ -706,9 +706,9 @@ var file_app_transfer_internal_conf_conf_proto_rawDesc = []byte{
 	0x65, 0x74, 0x63, 0x64, 0x12, 0x2c, 0x0a, 0x05, 0x6b, 0x61, 0x66, 0x6b, 0x61, 0x18, 0x04, 0x20,
 	0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x6b, 0x72, 0x61, 0x74, 0x6f, 0x73, 0x2e, 0x61, 0x70, 0x69,
 	0x2e, 0x44, 0x61, 0x74, 0x61, 0x2e, 0x4b, 0x61, 0x66, 0x6b, 0x61, 0x52, 0x05, 0x6b, 0x61, 0x66,
-	0x6b, 0x61, 0x12, 0x26, 0x0a, 0x03, 0x6d, 0x64, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x6b, 0x61, 0x12, 0x26, 0x0a, 0x03, 0x64, 0x6d, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32,
 	0x14, 0x2e, 0x6b, 0x72, 0x61, 0x74, 0x6f, 0x73, 0x2e, 0x61, 0x70, 0x69, 0x2e, 0x44, 0x61, 0x74,
-	0x61, 0x2e, 0x4d, 0x44, 0x42, 0x52, 0x03, 0x6d, 0x64, 0x73, 0x1a, 0x35, 0x0a, 0x03, 0x52, 0x44,
+	0x61, 0x2e, 0x44, 0x4d, 0x53, 0x52, 0x03, 0x64, 0x6d, 0x73, 0x1a, 0x35, 0x0a, 0x03, 0x52, 0x44,
 	0x42, 0x12, 0x16, 0x0a, 0x06, 0x64, 0x72, 0x69, 0x76, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x06, 0x64, 0x72, 0x69, 0x76, 0x65, 0x72, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x6f, 0x75,
 	0x72, 0x63, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63,
@@ -746,7 +746,7 @@ var file_app_transfer_internal_conf_conf_proto_rawDesc = []byte{
 	0x09, 0x52, 0x04, 0x61, 0x64, 0x64, 0x72, 0x12, 0x22, 0x0a, 0x0c, 0x73, 0x6d, 0x73, 0x43, 0x6f,
 	0x64, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x73,
 	0x6d, 0x73, 0x43, 0x6f, 0x64, 0x65, 0x54, 0x6f, 0x70, 0x69, 0x63, 0x1a, 0x9d, 0x01, 0x0a, 0x03,
-	0x4d, 0x44, 0x42, 0x12, 0x12, 0x0a, 0x04, 0x61, 0x64, 0x64, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x44, 0x4d, 0x53, 0x12, 0x12, 0x0a, 0x04, 0x61, 0x64, 0x64, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x04, 0x61, 0x64, 0x64, 0x72, 0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x4e,
 	0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x4e,
 	0x61, 0x6d, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x18,
@@ -784,7 +784,7 @@ var file_app_transfer_internal_conf_conf_proto_goTypes = []interface{}{
 	(*Data_Redis)(nil),          // 6: kratos.api.Data.Redis
 	(*Data_Etcd)(nil),           // 7: kratos.api.Data.Etcd
 	(*Data_Kafka)(nil),          // 8: kratos.api.Data.Kafka
-	(*Data_MDB)(nil),            // 9: kratos.api.Data.MDB
+	(*Data_DMS)(nil),            // 9: kratos.api.Data.DMS
 	(*durationpb.Duration)(nil), // 10: google.protobuf.Duration
 }
 var file_app_transfer_internal_conf_conf_proto_depIdxs = []int32{
@@ -796,7 +796,7 @@ var file_app_transfer_internal_conf_conf_proto_depIdxs = []int32{
 	6,  // 5: kratos.api.Data.redis:type_name -> kratos.api.Data.Redis
 	7,  // 6: kratos.api.Data.etcd:type_name -> kratos.api.Data.Etcd
 	8,  // 7: kratos.api.Data.kafka:type_name -> kratos.api.Data.Kafka
-	9,  // 8: kratos.api.Data.mds:type_name -> kratos.api.Data.MDB
+	9,  // 8: kratos.api.Data.dms:type_name -> kratos.api.Data.DMS
 	10, // 9: kratos.api.Server.GRPC.timeout:type_name -> google.protobuf.Duration
 	10, // 10: kratos.api.Data.Redis.dialTimeout:type_name -> google.protobuf.Duration
 	10, // 11: kratos.api.Data.Redis.readTimeout:type_name -> google.protobuf.Duration
@@ -926,7 +926,7 @@ func file_app_transfer_internal_conf_conf_proto_init() {
 			}
 		}
 		file_app_transfer_internal_conf_conf_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Data_MDB); i {
+			switch v := v.(*Data_DMS); i {
 			case 0:
 				return &v.state
 			case 1:

@@ -5,7 +5,7 @@ import (
 	"os"
 
 	pb "xhappen/api/portal/v1"
-	"xhappen/app/gateway/internal/conf"
+	"xhappen/app/transfer/internal/conf"
 
 	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/v2/log"
