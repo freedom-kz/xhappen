@@ -20,7 +20,7 @@ package util
 import "container/list"
 
 // Cache is an LRU cache. It is not safe for concurrent access.
-type Cache struct {
+type LruCache struct {
 	// MaxEntries is the maximum number of cache entries before
 	// an item is evicted. Zero means no limit.
 	MaxEntries int
@@ -44,8 +44,8 @@ type entry struct {
 // New creates a new Cache.
 // If maxEntries is zero, the cache has no limit and it's assumed
 // that eviction is done by the caller.
-func NewLRU(maxEntries int) *Cache {
-	return &Cache{
+func NewLRU(maxEntries int) *LruCache {
+	return &LruCache{
 		MaxEntries: maxEntries,
 		ll:         list.New(),
 		cache:      make(map[interface{}]*list.Element),
@@ -53,7 +53,7 @@ func NewLRU(maxEntries int) *Cache {
 }
 
 // Add adds a value to the cache.
-func (c *Cache) Add(key Key, value interface{}) {
+func (c *LruCache) Add(key Key, value interface{}) {
 	if c.cache == nil {
 		c.cache = make(map[interface{}]*list.Element)
 		c.ll = list.New()
@@ -71,7 +71,7 @@ func (c *Cache) Add(key Key, value interface{}) {
 }
 
 // Get looks up a key's value from the cache.
-func (c *Cache) Get(key Key) (value interface{}, ok bool) {
+func (c *LruCache) Get(key Key) (value interface{}, ok bool) {
 	if c.cache == nil {
 		return
 	}
@@ -83,7 +83,7 @@ func (c *Cache) Get(key Key) (value interface{}, ok bool) {
 }
 
 // Remove removes the provided key from the cache.
-func (c *Cache) Remove(key Key) {
+func (c *LruCache) Remove(key Key) {
 	if c.cache == nil {
 		return
 	}
@@ -93,7 +93,7 @@ func (c *Cache) Remove(key Key) {
 }
 
 // RemoveOldest removes the oldest item from the cache.
-func (c *Cache) RemoveOldest() {
+func (c *LruCache) RemoveOldest() {
 	if c.cache == nil {
 		return
 	}
@@ -103,7 +103,7 @@ func (c *Cache) RemoveOldest() {
 	}
 }
 
-func (c *Cache) removeElement(e *list.Element) {
+func (c *LruCache) removeElement(e *list.Element) {
 	c.ll.Remove(e)
 	kv := e.Value.(*entry)
 	delete(c.cache, kv.key)
@@ -113,7 +113,7 @@ func (c *Cache) removeElement(e *list.Element) {
 }
 
 // Len returns the number of items in the cache.
-func (c *Cache) Len() int {
+func (c *LruCache) Len() int {
 	if c.cache == nil {
 		return 0
 	}
@@ -121,7 +121,7 @@ func (c *Cache) Len() int {
 }
 
 // Clear purges all stored items from the cache.
-func (c *Cache) Clear() {
+func (c *LruCache) Clear() {
 	if c.OnEvicted != nil {
 		for _, e := range c.cache {
 			kv := e.Value.(*entry)

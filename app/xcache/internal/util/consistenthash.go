@@ -25,15 +25,15 @@ import (
 
 type Hash func(data []byte) uint32
 
-type Map struct {
+type ConsistentHash struct {
 	hash     Hash
 	replicas int
 	keys     []int // Sorted
 	hashMap  map[int]string
 }
 
-func NewConsistentHash(replicas int, fn Hash) *Map {
-	m := &Map{
+func NewConsistentHash(replicas int, fn Hash) *ConsistentHash {
+	m := &ConsistentHash{
 		replicas: replicas,
 		hash:     fn,
 		hashMap:  make(map[int]string),
@@ -45,12 +45,12 @@ func NewConsistentHash(replicas int, fn Hash) *Map {
 }
 
 // Returns true if there are no items available.
-func (m *Map) IsEmpty() bool {
+func (m *ConsistentHash) IsEmpty() bool {
 	return len(m.keys) == 0
 }
 
 // Adds some keys to the hash.
-func (m *Map) Add(keys ...string) {
+func (m *ConsistentHash) Add(keys ...string) {
 	for _, key := range keys {
 		for i := 0; i < m.replicas; i++ {
 			hash := int(m.hash([]byte(strconv.Itoa(i) + key)))
@@ -62,7 +62,7 @@ func (m *Map) Add(keys ...string) {
 }
 
 // Gets the closest item in the hash to the provided key.
-func (m *Map) Get(key string) string {
+func (m *ConsistentHash) Get(key string) string {
 	if m.IsEmpty() {
 		return ""
 	}
