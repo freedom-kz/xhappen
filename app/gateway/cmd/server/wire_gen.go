@@ -32,7 +32,7 @@ func wireApp(bootstrap *conf.Bootstrap, registrar registry.Registrar, logger log
 	bossBoss := boss.NewBoss(bootstrap, logger, passClient)
 	gatewaySrvService := service.NewGatewaySrvService(bossBoss)
 	grpcServer := server.NewGRPCServer(bootstrap, gatewaySrvService, logger)
-	app := newApp(logger, grpcServer, bossBoss, registrar)
+	app := newApp(bootstrap, logger, grpcServer, bossBoss, registrar)
 	return app, func() {
 		cleanup()
 	}, nil

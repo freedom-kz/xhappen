@@ -71,16 +71,28 @@ func ErrorAuthCodeInvalid(format string, args ...interface{}) *errors.Error {
 	return errors.New(440, ErrorUserReason_AUTH_CODE_INVALID.String(), fmt.Sprintf(format, args...))
 }
 
+func IsAuthTokenInvalid(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorUserReason_AUTH_TOKEN_INVALID.String() && e.Code == 441
+}
+
+func ErrorAuthTokenInvalid(format string, args ...interface{}) *errors.Error {
+	return errors.New(441, ErrorUserReason_AUTH_TOKEN_INVALID.String(), fmt.Sprintf(format, args...))
+}
+
 func IsBlackUser(err error) bool {
 	if err == nil {
 		return false
 	}
 	e := errors.FromError(err)
-	return e.Reason == ErrorUserReason_BLACK_USER.String() && e.Code == 441
+	return e.Reason == ErrorUserReason_BLACK_USER.String() && e.Code == 442
 }
 
 func ErrorBlackUser(format string, args ...interface{}) *errors.Error {
-	return errors.New(441, ErrorUserReason_BLACK_USER.String(), fmt.Sprintf(format, args...))
+	return errors.New(442, ErrorUserReason_BLACK_USER.String(), fmt.Sprintf(format, args...))
 }
 
 func IsClientidRejected(err error) bool {

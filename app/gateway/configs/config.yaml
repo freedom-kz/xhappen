@@ -4,6 +4,9 @@ server:
   grpc:
     addr: 0.0.0.0:9001
     timeout: 3s
+  info:
+    protoVersion: 1
+    minSupportProtoVersion: 0
 socket:
   main:
     tls: false

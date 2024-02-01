@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	basic "xhappen/api/basic/v1"
 	protocol "xhappen/api/protocol/v1"
 	pb "xhappen/api/transfer/v1"
 	"xhappen/app/gateway/internal/packets"
@@ -92,6 +93,38 @@ func (connection *Connection) processBind() error {
 			BindRet:         true,
 			ServerTimeStamp: uint64(time.Now().UnixMilli()),
 		},
+	}
+
+	//版本校验
+	if bind.CurVersion < connection.Boss.minSupportProtoVersion {
+		bindAck.BindRet = false
+		bindAck.Err = &basic.ErrorUpgrade("current version:%d.", connection.Boss.protoVersion).Status
+
+		err = connection.Write(bindAck)
+		if err != nil {
+			return err
+		}
+		err = connection.Flush()
+		if err != nil {
+			return err
+		} else {
+			return fmt.Errorf(bindAck.Err.Reason)
+		}
+	}
+	if IsValidClientId(bind.ClientID) {
+		bindAck.BindRet = false
+		bindAck.Err = &basic.ErrorClientidRejected("current version:%s.", bind.ClientID).Status
+
+		err = connection.Write(bindAck)
+		if err != nil {
+			return err
+		}
+		err = connection.Flush()
+		if err != nil {
+			return err
+		} else {
+			return fmt.Errorf(bindAck.Err.Reason)
+		}
 	}
 
 	in := &pb.BindRequest{
@@ -195,12 +228,13 @@ func (connection *Connection) processAuth() error {
 	connection.RoleType = reply.Role
 	connection.UserType = reply.UType
 	connection.tokenExpire = reply.TokenExpire.AsTime()
-	for _, sid := range reply.Sessions {
-		connection.syncSessions[sid] = struct{}{}
-	}
+
 	if len(connection.syncSessions) == 0 {
 		connection.sendConnState(STATE_NORMAL)
 	} else {
+		for _, sid := range reply.Sessions {
+			connection.syncSessions[sid] = struct{}{}
+		}
 		connection.sendConnState(STATE_SYNC)
 	}
 	connection.Boss.AddConnToHub(connection)
@@ -239,6 +273,11 @@ func (connection *Connection) processSubmit(submit *protocol.Submit) error {
 	if err != nil {
 		return err
 	}
+
+	if !ack.SubmitAck.SubmitRet {
+		return fmt.Errorf(ack.Err.Reason)
+	}
+
 	//这里往发送协程发送一个假的deliver,用来触发按sequence发送deliver逻辑
 	deliverGhost := &protocol.Deliver{
 		Sequence: ack.Sequence,
@@ -269,11 +308,14 @@ func (connection *Connection) processSyncAck(syncAck *protocol.SyncAck) error {
 func (connection *Connection) processDeliverAck(deliverAck *protocol.DeliverAck) error {
 	connection.logger.Log(log.LevelDebug, "msg", "process deliver ack")
 	err := connection.FinishDeliver(deliverAck.Sequence)
-	connection.logger.Log(log.LevelError, "msg", "process deliver ack", "error", err)
+	if err != nil {
+		connection.logger.Log(log.LevelError, "msg", "process deliver ack", "error", err)
+	}
 	return err
 }
 
 func (connection *Connection) processAction(action *protocol.Action) error {
+
 	return nil
 }
 
@@ -333,4 +375,8 @@ func (connection *Connection) FinishedMessage() {
 	atomic.AddUint64(&connection.FinishCount, 1)
 	atomic.AddInt64(&connection.InFlightCount, -1)
 	connection.tryUpdateReadyState()
+}
+
+func IsValidClientId(clientId string) bool {
+	return len(clientId) <= 36
 }

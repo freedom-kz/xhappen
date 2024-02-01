@@ -21,7 +21,14 @@ message Server {
     string addr = 1;
     google.protobuf.Duration timeout = 2;
   }
+
+  message Info {
+    int32 protoVersion = 1;
+    int32 minSupportProtoVersion = 2;
+  }
+
   GRPC grpc = 1;
+  Info info = 2;
 }
 
 message Data {

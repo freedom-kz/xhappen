@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"os"
+	"strconv"
 
 	"xhappen/app/gateway/internal/conf"
 	"xhappen/app/gateway/internal/server/boss"
@@ -40,12 +41,15 @@ func init() {
 	Version = "1.0.0"
 }
 
-func newApp(logger log.Logger, gs *grpc.Server, bs *boss.Boss, r registry.Registrar) *kratos.App {
+func newApp(bootstrap *conf.Bootstrap, logger log.Logger, gs *grpc.Server, bs *boss.Boss, r registry.Registrar) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
 		kratos.Version(Version),
-		kratos.Metadata(map[string]string{}),
+		kratos.Metadata(map[string]string{
+			"protoVersion":           strconv.Itoa(int(bootstrap.Server.Info.ProtoVersion)),
+			"minSupportProtoVersion": strconv.Itoa(int(bootstrap.Server.Info.MinSupportProtoVersion)),
+		}),
 		kratos.Logger(logger),
 		kratos.Server(
 			gs,
@@ -58,7 +62,7 @@ func newApp(logger log.Logger, gs *grpc.Server, bs *boss.Boss, r registry.Regist
 func main() {
 	flag.Parse()
 
-	logger := log.With(log.NewStdLogger(os.Stdout),
+	logger := log.With(newZapLog(),
 		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,
 		"service.id", id,
