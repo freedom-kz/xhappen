@@ -20,6 +20,7 @@ func NewPassService(logger log.Logger) *PassService {
 }
 
 func (s *PassService) Bind(ctx context.Context, in *v1.BindRequest) (*v1.BindReply, error) {
+	
 	return &v1.BindReply{}, nil
 }
 
@@ -36,3 +37,5 @@ func (s *PassService) Action(ctx context.Context, in *v1.ActionRequest) (*v1.Act
 func (s *PassService) Quit(ctx context.Context, in *v1.QuitRequest) (*v1.QuitReply, error) {
 	return nil, nil
 }
+
+

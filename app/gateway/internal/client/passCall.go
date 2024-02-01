@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	pb "xhappen/api/business/v1"
+	pb "xhappen/api/transfer/v1"
 	"xhappen/app/gateway/internal/conf"
 
 	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
@@ -46,7 +46,6 @@ func NewPassClient(conf *conf.Bootstrap, logger log.Logger) (*PassClient, func()
 		logger.Log(log.LevelFatal, "msg", "transgrpc.DialInsecure fail", "err", err)
 		os.Exit(1)
 	}
-	pb.NewPassClient(conn)
 
 	cleanup := func() {
 		logger.Log(log.LevelInfo, "msg", "closing the grpc client resources")

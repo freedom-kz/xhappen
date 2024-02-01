@@ -7,7 +7,7 @@ import (
 	"xhappen/app/transfer/internal/conf"
 	plog "xhappen/pkg/log"
 
-	"github.com/bketelsen/crypt/backend/etcd"
+	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"

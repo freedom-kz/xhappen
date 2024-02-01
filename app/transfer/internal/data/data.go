@@ -28,7 +28,7 @@ type collectionMap struct {
 }
 
 type Data struct {
-	db  *mongo.client
+	mdb *mongo.Client
 	rdb *redis.Client
 
 	log *log.Helper
@@ -52,18 +52,23 @@ func newRDB(conf *conf.Bootstrap, logger log.Logger) *redis.Client {
 
 func newMDB(conf *conf.Bootstrap, logger log.Logger) *mongo.Client {
 	opts := options.Client()
-	opts.SetMaxConnIdleTime(5 * 60 * time.Second)           //空闲超时5分钟
-	opts.SetMaxIdleConnsPerHost(uint16(conf.Data.Dms.Idle)) //最大空闲数
-	opts.SetMaxPoolSize(uint16(conf.Data.Dms.MaxConns))     //最大连接数
+	opts.ApplyURI("mongodb://" + conf.Data.Dms.Addr)
+	opts.SetMaxConnIdleTime(5 * 60 * time.Second) //空闲超时5分钟
+	opts.SetMaxPoolSize(uint64(conf.Data.Dms.Idle))
+	opts.SetMaxPoolSize(uint64(conf.Data.Dms.MaxConns)) //最大连接数
 	//验证开关
 	if conf.Data.Dms.UserName != "" {
 		opts.SetAuth(options.Credential{AuthSource: "admin", Username: conf.Data.Dms.UserName, Password: conf.Data.Dms.Password})
 	}
-	opts.SetConnectTimeout(5 * time.Second)                                                //连接超时
-	opts.SetReadPreference(readpref.Primary())                                             //只从主节点读取
-	opts.SetReadConcern(readconcern.Majority())                                            //读策略
-	opts.SetWriteConcern(writeconcern.New(writeconcern.WMajority(), writeconcern.J(true))) //写策略 ps: writeconcern.WTimeout(time.Second*5)写超时是否加入需测试
-	mongoClient, err := mongo.Connect(context.Background(), "mongodb://"+conf.Data.Dms.Addr, opts)
+	opts.SetConnectTimeout(5 * time.Second)     //连接超时
+	opts.SetReadPreference(readpref.Primary())  //只从主节点读取
+	opts.SetReadConcern(readconcern.Majority()) //读策略
+	journal := true
+	opts.SetWriteConcern(&writeconcern.WriteConcern{
+		W:       writeconcern.Majority(),
+		Journal: &journal,
+	})
+	mongoClient, err := mongo.Connect(context.Background(), opts)
 	if err != nil {
 		log.Fatalf("Mongo DB 初始化错误:%s\n", err.Error())
 	}
@@ -74,18 +79,23 @@ func NewData(conf *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	helper := log.NewHelper(log.With(logger, "module", "portal/data"))
 
 	d := &Data{
-		db:  newMDB(conf, logger),
+		mdb: newMDB(conf, logger),
 		rdb: newRDB(conf, logger),
 		log: helper,
 	}
 
-	mdb := d.db.Database(conf.Data.Mds.Database)
+	mdb := d.mdb.Database(conf.Data.Dms.Database)
 	Collection.Message = mdb.Collection("message")
 
 	cleanup := func() {
 		logger.Log(log.LevelInfo, "msg", "closing the data resources")
 		if err := d.rdb.Close(); err != nil {
-			log.Error(err)
+			logger.Log(log.LevelError, "msg", "closing the rdb data resources", "err", err)
+		}
+
+		ctx, _ := context.WithTimeout(context.Background(), time.Second)
+		if err := d.mdb.Disconnect(ctx); err != nil {
+			logger.Log(log.LevelError, "msg", "closing the mdb data resources", "err", err)
 		}
 	}
 

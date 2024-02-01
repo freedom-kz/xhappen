@@ -31,7 +31,8 @@ func wireApp(bootstrap *conf.Bootstrap, logger log.Logger, registrar registry.Re
 		return nil, nil, err
 	}
 	userRepo := data.NewUserRepo(dataData, logger)
-	userUseCase := biz.NewUserUseCase(userRepo, sender, logger)
+	smsRepo := data.NewSMSRepo(dataData, logger)
+	userUseCase := biz.NewUserUseCase(userRepo, smsRepo, sender, logger)
 	jwtRepo := data.NewJwtRepo(dataData, logger)
 	jwtUseCase := biz.NewJwtUseCase(bootstrap, jwtRepo, logger)
 	userService := service.NewUserService(userUseCase, jwtUseCase, logger)

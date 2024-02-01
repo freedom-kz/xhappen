@@ -7,8 +7,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	pb "xhappen/api/business/v1"
 	protocol "xhappen/api/protocol/v1"
+	pb "xhappen/api/transfer/v1"
 	"xhappen/app/gateway/internal/packets"
 
 	"github.com/go-kratos/kratos/v2/errors"
