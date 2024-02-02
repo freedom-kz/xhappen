@@ -111,9 +111,10 @@ func (connection *Connection) processBind() error {
 			return fmt.Errorf(bindAck.Err.Reason)
 		}
 	}
+	//客户端ID校验
 	if IsValidClientId(bind.ClientID) {
 		bindAck.BindRet = false
-		bindAck.Err = &basic.ErrorClientidRejected("current version:%s.", bind.ClientID).Status
+		bindAck.Err = &basic.ErrorClientidRejected("invalid clientId:%s.", bind.ClientID).Status
 
 		err = connection.Write(bindAck)
 		if err != nil {
@@ -378,5 +379,5 @@ func (connection *Connection) FinishedMessage() {
 }
 
 func IsValidClientId(clientId string) bool {
-	return len(clientId) <= 36
+	return len(clientId) >= 24 && len(clientId) <= 36
 }

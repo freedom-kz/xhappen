@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package portal.v1;
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+option go_package = "xhappen/api/portal/v1;v1";
+option java_multiple_files = true;
+option java_package = "portal.v1";
+option objc_class_prefix = "PortalV1";
+
+service Config {
+  // 获取基础配置
+  rpc GetCommonConfig (GetCommonConfigRequest) returns (GetCommonConfigReply)  {
+        option (google.api.http) = {
+          post: "/basic/getconfig",
+          body: "*",
+        };
+  }
+
+  rpc GetSocketHostConfig (GetSocketHostConfigRequest) returns (GetSocketHostConfigReply)  {}
+
+}
+
+message GetCommonConfigRequest {
+  string clientId = 1 [(validate.rules).string = {
+    min_len: 24, 
+    max_len: 36
+  }];
+  string userId = 2;
+}
+
+message GetCommonConfigReply {
+  string socketHost = 1;
+  string fileServerHost =2;
+}
+
+message GetSocketHostConfigRequest {
+  string clientId = 1 [(validate.rules).string = {
+    min_len: 24, 
+    max_len: 36
+  }];
+  string userId = 2;
+}
+
+message GetSocketHostConfigReply {
+  string socketHost = 1;
+}

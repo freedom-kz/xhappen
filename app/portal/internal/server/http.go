@@ -17,7 +17,11 @@ import (
 )
 
 // NewHTTPServer new an HTTP server.
-func NewHTTPServer(c *conf.Bootstrap, user *service.UserService, logger log.Logger) *http.Server {
+func NewHTTPServer(c *conf.Bootstrap,
+	user *service.UserService,
+	sms *service.SMSService,
+	config *service.ConfigService,
+	logger log.Logger) *http.Server {
 
 	keyFunc := func(token *jwtv4.Token) (interface{}, error) {
 		return []byte(c.Auth.Jwt.Secret), nil
@@ -47,6 +51,8 @@ func NewHTTPServer(c *conf.Bootstrap, user *service.UserService, logger log.Logg
 	}
 	srv := http.NewServer(opts...)
 	v1.RegisterUserHTTPServer(srv, user)
+	v1.RegisterSMSHTTPServer(srv, sms)
+	v1.RegisterConfigHTTPServer(srv, config)
 
 	route := srv.Route("/")
 	route.POST("/auth/upload", service.UploadFile)

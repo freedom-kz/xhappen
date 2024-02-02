@@ -21,6 +21,7 @@ service User {
         };
   }
 
+  //token auth
   rpc TokenAuth (TokenAuthRequest) returns (TokenAuthReply)  {}
 
   // mobile login
@@ -85,11 +86,15 @@ message LoginByMobileReply {
 
 message TokenAuthRequest {
   string token = 1;
+  string clientId = 2;
 }
 
 message TokenAuthReply {
-  string uid = 1;
-  errors.Status err = 2;  
+  bool ret = 1;
+  string clientId = 2;
+  string uid = 3; 
+  string gwhost = 4;
+  errors.Status err = 5;          //kratos通用错误 
 }
 
 message LogoutRequest {

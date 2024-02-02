@@ -35,7 +35,7 @@ type SMSRepo interface {
 }
 
 func (useCase *SMSUseCase) SendSMSCode(ctx context.Context, mobile string, clientId string) error {
-	//尝试获取auth信息
+	//尝试获取authcode信息
 	kvs, err := useCase.repo.GetAuthInfo(ctx, mobile)
 	if err != nil {
 		return err

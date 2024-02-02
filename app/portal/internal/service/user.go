@@ -28,13 +28,14 @@ func NewUserService(user *biz.UserUseCase, jwt *biz.JwtUseCase, logger log.Logge
 	}
 }
 
+// token换取用户信息
 func (s *UserService) TokenAuth(ctx context.Context, req *pb.TokenAuthRequest) (*pb.TokenAuthReply, error) {
 	//1. 验证token
 	uid, err := s.VerifyToken(ctx, req.Token)
 
 	if err != nil {
 		return &pb.TokenAuthReply{
-			Err: &v1.ErrorTokenExpire("info", err).Status,
+			Err: &v1.ErrorTokenExpire("info %v", err).Status,
 		}, nil
 	} else {
 		return &pb.TokenAuthReply{
@@ -43,6 +44,7 @@ func (s *UserService) TokenAuth(ctx context.Context, req *pb.TokenAuthRequest) (
 	}
 }
 
+// 登录手机号
 func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRequest) (*pb.LoginByMobileReply, error) {
 	//登录或者注册手机号
 	user, err := s.user.LoginByMobile(ctx, req.Mobile, req.ClientId, req.SmsCode)

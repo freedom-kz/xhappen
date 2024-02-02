@@ -34,6 +34,7 @@ const (
 type UserClient interface {
 	// mobile login
 	LoginByMobile(ctx context.Context, in *LoginByMobileRequest, opts ...grpc.CallOption) (*LoginByMobileReply, error)
+	// token auth
 	TokenAuth(ctx context.Context, in *TokenAuthRequest, opts ...grpc.CallOption) (*TokenAuthReply, error)
 	// mobile login
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutReply, error)
@@ -124,6 +125,7 @@ func (c *userClient) UpdateProfile(ctx context.Context, in *UpdateProfileRequest
 type UserServer interface {
 	// mobile login
 	LoginByMobile(context.Context, *LoginByMobileRequest) (*LoginByMobileReply, error)
+	// token auth
 	TokenAuth(context.Context, *TokenAuthRequest) (*TokenAuthReply, error)
 	// mobile login
 	Logout(context.Context, *LogoutRequest) (*LogoutReply, error)
