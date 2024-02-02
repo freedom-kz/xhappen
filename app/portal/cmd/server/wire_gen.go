@@ -36,8 +36,11 @@ func wireApp(bootstrap *conf.Bootstrap, logger log.Logger, registrar registry.Re
 	jwtRepo := data.NewJwtRepo(dataData, logger)
 	jwtUseCase := biz.NewJwtUseCase(bootstrap, jwtRepo, logger)
 	userService := service.NewUserService(userUseCase, jwtUseCase, logger)
-	grpcServer := server.NewGRPCServer(bootstrap, userService, logger)
-	httpServer := server.NewHTTPServer(bootstrap, userService, logger)
+	configService := service.NewConfigService(logger)
+	grpcServer := server.NewGRPCServer(bootstrap, userService, configService, logger)
+	smsUseCase := biz.NewSMSUseCase(smsRepo, sender, logger)
+	smsService := service.NewSMSService(userUseCase, jwtUseCase, smsUseCase, logger)
+	httpServer := server.NewHTTPServer(bootstrap, userService, smsService, configService, logger)
 	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {
 		cleanup()

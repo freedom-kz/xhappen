@@ -67,6 +67,12 @@ func (portalClient *PortalClient) TokenAuth(ctx context.Context, in *pb.TokenAut
 	return client.TokenAuth(ctx, in)
 }
 
+// 配置获取
+func (portalClient *PortalClient) GetSocketHostConfig(ctx context.Context, in *pb.GetSocketHostConfigRequest) (*pb.GetSocketHostConfigReply, error) {
+	client := pb.NewConfigClient(portalClient.conn)
+	return client.GetSocketHostConfig(ctx, in)
+}
+
 // 获取用户信息
 func (portalClient *PortalClient) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileRequest) (*pb.GetSelfProfileReply, error) {
 	client := pb.NewUserClient(portalClient.conn)
