@@ -17,10 +17,14 @@ func NewRouterService(uc *biz.RouterUsecase) *RouterService {
 	return &RouterService{uc: uc}
 }
 
-func (s *RouterService) GetServerByID(ctx context.Context, in *v1.GetServerByIDRequest) (*v1.GetServerByIDReply, error) {
+func (s *RouterService) GetServerByID(ctx context.Context, in *v1.GetServerByRequest) (*v1.GetServerByIDReply, error) {
 	return nil, nil
 }
 
-func (s *RouterService) GetLocalServerByID(ctx context.Context, in *v1.GetServerByIDRequest) (*v1.GetServerByIDReply, error) {
+func (s *RouterService) GetLocalServerByID(ctx context.Context, in *v1.GetServerByRequest) (*v1.GetServerByIDReply, error) {
+	return nil, nil
+}
+
+func (s *RouterService) DeviceBind(ctx context.Context, in *v1.DeviceBindRequest) (*v1.DeviceBindReply, error) {
 	return nil, nil
 }

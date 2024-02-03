@@ -10,10 +10,21 @@ option java_package = "sequence.v1";
 option objc_class_prefix = "SequenceV1";
 
 service Sequence {
-  rpc GetSequenceByIds (GetSequenceByIdsRequest) returns (GetSequenceByIdsReply)  {}
-  rpc GetLocalSequenceByIds (GetLocalSequenceByIdsRequest) returns (GetLocalSequenceByIdsReply)  {}
-  rpc GetCurrentSequenceByIds (GetCurrentSequenceByIdsRequest) returns (GetCurrentSequenceByIdsReply)  {}
-  rpc GetLocalCurrentSequenceByIds (GetLocalCurrentSequenceByIdsRequest) returns (GetLocalCurrentSequenceByIdsReply)  {}
+    //批量获取用户消息序列号
+    rpc GetSequenceByUserIds (GetSequenceByIdsRequest) returns (GetSequenceByIdsReply)  {}
+    rpc GetLocalSequenceByUserIds (GetLocalSequenceByIdsRequest) returns (GetLocalSequenceByIdsReply)  {}
+    
+    //批量获取用户当前序列号
+    rpc GetCurrentSequenceByUserIds (GetCurrentSequenceByIdsRequest) returns (GetCurrentSequenceByIdsReply)  {}
+    rpc GetLocalCurrentSequenceByUserIds (GetLocalCurrentSequenceByIdsRequest) returns (GetLocalCurrentSequenceByIdsReply)  {}
+    
+    //批量获取房间消息序列号
+    rpc GetRoomSequenceByRoomIds (GetLocalCurrentSequenceByIdsRequest) returns (GetLocalCurrentSequenceByIdsReply)  {}
+    rpc GetLocalRoomSequenceByRoomIds (GetLocalCurrentSequenceByIdsRequest) returns (GetLocalCurrentSequenceByIdsReply)  {}
+
+    //批量获取房间当前消息序列号
+    rpc GetCurrentRoomSequenceByRoomIds (GetLocalCurrentSequenceByIdsRequest) returns (GetLocalCurrentSequenceByIdsReply)  {}
+    rpc GetLocalCurrentRoomSequenceByRoomIds (GetLocalCurrentSequenceByIdsRequest) returns (GetLocalCurrentSequenceByIdsReply)  {}
 }
 
 message GetSequenceByIdsRequest {
