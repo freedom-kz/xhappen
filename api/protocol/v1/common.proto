@@ -12,7 +12,7 @@ enum DeviceType {
     ANDROID = 1;                        //安卓
     WEB = 2;                            //web端
     MINIWECHAT = 3;                     //微信小程序
-    UNKNOW = 9;                               //未知类型
+    UNKNOW = 9;                         //未知类型
 }
 
 enum LoginType {
@@ -31,12 +31,12 @@ enum MsgType{
     MSG_GROUP  = 1;                 //群聊
     MSG_CHATROOM = 2;               //聊天室
     MSG_VIRTUAL_GROUP = 3;          //虚拟组
-    MSG_APPLICATION = 4;            //应用通知类
+    MSG_APPLICATION = 4;            //应用通知
 }
 
 enum UserType{
     USER_NORMAL = 0;                 //普通用户
     USER_VIRTUAL_GROUP = 1;          //虚拟组用户
-    USER_SYSTEM = 2;                 //系统用户
+    USER_SYSTEM = 2;                 //系统
     USER_APPLICATION = 3;            //应用用户
 }

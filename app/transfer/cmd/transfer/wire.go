@@ -7,6 +7,7 @@ package main
 
 import (
 	"xhappen/app/transfer/internal/biz"
+	"xhappen/app/transfer/internal/client"
 	"xhappen/app/transfer/internal/conf"
 	"xhappen/app/transfer/internal/data"
 	"xhappen/app/transfer/internal/server"
@@ -20,5 +21,5 @@ import (
 
 // wireApp init kratos application.
 func wireApp(*conf.Bootstrap, registry.Registrar, log.Logger) (*kratos.App, func(), error) {
-	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, newApp))
+	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, client.ProviderSet, newApp))
 }

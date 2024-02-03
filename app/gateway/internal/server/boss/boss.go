@@ -22,33 +22,35 @@ import (
 )
 
 type Boss struct {
-	ctx                    context.Context
-	ctxCancel              context.CancelFunc
-	logger                 log.Logger
-	errValue               atomic.Value
-	opts                   atomic.Value
-	startTime              time.Time
-	serverId               string
-	protoVersion           int32
-	minSupportProtoVersion int32
-	tcpListener            net.Listener
-	wsListener             net.Listener
-	tlsConfig              *tls.Config
-	hubs                   []*Hub
-	passClient             *client.PassClient
-	exitChan               chan int
-	waitGroup              utils.WaitGroupWrapper
-	isExiting              int32
+	ctx                      context.Context
+	ctxCancel                context.CancelFunc
+	GlobalConnectionSequence uint64
+	logger                   log.Logger
+	errValue                 atomic.Value
+	opts                     atomic.Value
+	startTime                time.Time
+	serverId                 string
+	protoVersion             int32
+	minSupportProtoVersion   int32
+	tcpListener              net.Listener
+	wsListener               net.Listener
+	tlsConfig                *tls.Config
+	hubs                     []*Hub
+	passClient               *client.PassClient
+	exitChan                 chan int
+	waitGroup                utils.WaitGroupWrapper
+	isExiting                int32
 }
 
 func NewBoss(cfg *conf.Bootstrap, logger log.Logger, passClient *client.PassClient) *Boss {
 	boss := &Boss{
-		startTime:              time.Now(),
-		protoVersion:           cfg.Server.Info.ProtoVersion,
-		minSupportProtoVersion: cfg.Server.Info.MinSupportProtoVersion,
-		logger:                 logger,
-		exitChan:               make(chan int),
-		passClient:             passClient,
+		GlobalConnectionSequence: 0,
+		startTime:                time.Now(),
+		protoVersion:             cfg.Server.Info.ProtoVersion,
+		minSupportProtoVersion:   cfg.Server.Info.MinSupportProtoVersion,
+		logger:                   logger,
+		exitChan:                 make(chan int),
+		passClient:               passClient,
 	}
 
 	boss.ctx, boss.ctxCancel = context.WithCancel(context.Background())

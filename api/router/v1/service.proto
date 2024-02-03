@@ -3,6 +3,7 @@ syntax = "proto3";
 package sequence.v1;
 
 import "errors/errors.proto";
+import "api/protocol/v1/message.proto";
 
 option go_package = "xhappen/api/router/v1;v1";
 option java_multiple_files = true;
@@ -10,15 +11,36 @@ option java_package = "router.v1";
 option objc_class_prefix = "RouterV1";
 
 service Router {
-  rpc GetServerByID(GetServerByIDRequest) returns (GetServerByIDReply)  {}
-  rpc GetLocalServerByID(GetServerByIDRequest) returns (GetServerByIDReply)  {}
+  //设备相关操作
+  rpc DeviceBind(DeviceBindRequest) returns (DeviceBindReply)  {}
+  rpc DeviceAuth(DeviceBindRequest) returns (DeviceBindReply)  {}
+  rpc DeviceUnBind(DeviceBindRequest) returns (DeviceBindReply)  {}
+
+  //查询用户路由
+  rpc GetServerByID(GetServerByRequest) returns (GetServerByIDReply)  {}
+  rpc GetLocalServerByID(GetServerByRequest) returns (GetServerByIDReply)  {}
+
+  //查询房间路由
+  rpc SaveRoomServer(GetServerByRequest) returns (GetServerByIDReply)  {}
+  rpc GetRoomServerByID(GetServerByRequest) returns (GetServerByIDReply)  {}
 }
 
-message GetServerByIDRequest {
+message GetServerByRequest {
   repeated string id = 1;
 }
 
 message GetServerByIDReply {
   map<string, string> ids = 1;
   errors.Status err = 2;          //kratos通用错误
+}
+
+message DeviceBindRequest {
+  protocol.v1.Bind bindInfo = 1;
+  string serverID = 2;
+  uint64 connectSequece = 3;
+}
+
+message DeviceBindReply {
+  bool ret = 1;
+  errors.Status err = 3;          //kratos通用错误
 }

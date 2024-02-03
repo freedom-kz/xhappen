@@ -17,11 +17,11 @@ message Bind{
     int32 curVersion = 4;           //客户端当前协议版本
     string magic = 5;               //版本魔法数
     uint64 keepAlive = 6;           //心跳超时
-    uint32 queueSize = 7;           //最大等待响应包
+    uint32 queueSize = 7;           //最大消息缓存池大小
 }
 
 message BindAck{
-    bool bindRet = 1;                //响应码
+    bool bindRet = 1;               //响应码
     uint64 serverTimeStamp = 2;     //服务器时间戳
     errors.Status err = 3;          //kratos通用错误
 }
@@ -39,7 +39,7 @@ message AuthAck{
 }
 
 message Sync{
-    uint32 id = 1;                  //同步会话标识ID
+    uint32 id = 1;                  //同步会话标识ID,单次连接会话中有效
     uint64 sessionId = 2;           //服务端会话ID，客户端参考使用，可取任意一条消息获取消息收发端状态
     int32 total = 3;                //未读数统计
     repeated Deliver delivers = 4;  //消息数组
@@ -60,7 +60,7 @@ message SubmitOption {
     bool notify = 4;                //需要离线通知
     bool badge = 5;                 //离线通知是否需要计数
     bool persistent = 6;            //离线是否需要持久化
-    bool sessionUpdate = 7;         //更新绘画最后一条消息
+    bool sessionUpdate = 7;         //更新会话最后一条消息
     bool markRead = 8;              //是否需要阅读标记
     bool checkFriend = 9;           //是否需要检查好友关系
 }
@@ -73,7 +73,7 @@ message Submit{
     MsgType msgType = 5;            //消息类型
     bytes payload = 6;              //消息正文
     repeated string ats = 7;        //@列表
-    bool atAll = 8;                 //是否为@all
+    bool atAll = 8;                 //是否为@all，为true时，ats不再生效
     string notifyContent = 9;       //自定义通知正文
     SubmitOption option = 10;       //发送选项参数设定
 }

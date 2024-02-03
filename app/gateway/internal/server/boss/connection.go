@@ -33,18 +33,19 @@ type Connection struct {
 	net.Conn
 	logger log.Logger
 
-	Boss        *Boss
-	ConnectTime time.Time
-	ClientId    string
-	UserId      string
-	tokenExpire time.Time
-	Hostname    string
-	Os          protocol.DeviceType
-	UserType    protocol.UserType
-	RoleType    protocol.RoleType
-	LoginType   protocol.LoginType
-	Version     string
-	state       int
+	Boss            *Boss
+	ConnectTime     time.Time
+	connectSequence uint64
+	ClientId        string
+	UserId          string
+	tokenExpire     time.Time
+	Hostname        string
+	Os              protocol.DeviceType
+	UserType        protocol.UserType
+	RoleType        protocol.RoleType
+	LoginType       protocol.LoginType
+	Version         string
+	state           int
 
 	deliverCh chan *protocol.Deliver
 	syncCh    chan *protocol.Sync
@@ -91,12 +92,15 @@ func newConnection(conn net.Conn, boss *Boss) *Connection {
 		host, _, _ = net.SplitHostPort(conn.RemoteAddr().String())
 	}
 
+	connectSequence := atomic.AddUint64(&boss.GlobalConnectionSequence, 1)
+
 	connection := &Connection{
 		Conn:              conn,
 		Boss:              boss,
 		logger:            boss.logger,
 		state:             STATE_BIND,
 		Hostname:          host,
+		connectSequence:   connectSequence,
 		ConnectTime:       time.Now(),
 		syncSessions:      make(map[uint64]struct{}),
 		inFlightMessages:  make(map[uint64]*Message),

@@ -4,6 +4,7 @@ import (
 	"context"
 	basic "xhappen/api/basic/v1"
 	pb_portal "xhappen/api/portal/v1"
+	router "xhappen/api/router/v1"
 	v1 "xhappen/api/transfer/v1"
 	"xhappen/app/transfer/internal/client"
 
@@ -14,13 +15,15 @@ type PassService struct {
 	v1.UnimplementedPassServer
 
 	portalClient *client.PortalClient
+	xacheClient  *client.XcahceClient
 
 	log *log.Helper
 }
 
-func NewPassService(portalClient *client.PortalClient, logger log.Logger) *PassService {
+func NewPassService(portalClient *client.PortalClient, xcacheClient *client.XcahceClient, logger log.Logger) *PassService {
 	return &PassService{
 		portalClient: portalClient,
+		xacheClient:  xcacheClient,
 		log:          log.NewHelper(logger),
 	}
 }
@@ -32,22 +35,35 @@ func (s *PassService) Bind(ctx context.Context, in *v1.BindRequest) (*v1.BindRep
 		ClientId: in.BindInfo.ClientID,
 	}
 
-	reply, err := s.portalClient.GetSocketHostConfig(ctx, getSocketHostConfigRequest)
+	replyHost, err := s.portalClient.GetSocketHostConfig(ctx, getSocketHostConfigRequest)
 
 	if err != nil {
 		return nil, err
 	}
-	if reply.SocketHost == "" || reply.SocketHost != in.ServerID {
+	if replyHost.SocketHost == "" || replyHost.SocketHost != in.ServerID {
 		return &v1.BindReply{
 			Ret: false,
 			Err: &basic.ErrorUnknown("socketHost invalidate").Status,
 		}, nil
 	}
-	//2. 查看当前客户端的存在状态信息
+	//2. 尝试保存更新状态信息
+	bindreply, err := s.xacheClient.DeviceBind(ctx, &router.DeviceBindRequest{
+		BindInfo:       in.BindInfo,
+		ServerID:       in.ServerID,
+		ConnectSequece: in.ConnectSequece,
+	})
 
-	
+	if err != nil {
+		return &v1.BindReply{
+			Ret: false,
+			Err: &basic.ErrorSerberUnavailable("internal rpc err %v.", err).Status,
+		}, nil
+	}
 
-	return &v1.BindReply{}, nil
+	return &v1.BindReply{
+		Ret: bindreply.Ret,
+		Err: bindreply.Err,
+	}, nil
 }
 
 func (s *PassService) Auth(ctx context.Context, in *v1.AuthRequest) (*v1.AuthReply, error) {
