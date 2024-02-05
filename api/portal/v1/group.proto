@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package portal.v1;
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+option go_package = "xhappen/api/portal/v1;v1";
+option java_multiple_files = true;
+option java_package = "group.v1";
+option objc_class_prefix = GroupV1";
+
+service Group {
+  // 获取基础配置
+  rpc CreateGroup (GetBasicConfigRequest) returns (GetBasicConfigReply)  {
+        option (google.api.http) = {
+          post: "/auth/group/create",
+          body: "*",
+        };
+  }
+}
+
+message CreateGroupRequest {
+}
+
+message CreateGroupReply {
+}
