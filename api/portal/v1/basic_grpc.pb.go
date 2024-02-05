@@ -19,7 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Config_GetCommonConfig_FullMethodName     = "/portal.v1.Config/GetCommonConfig"
+	Config_GetBasicConfig_FullMethodName      = "/portal.v1.Config/GetBasicConfig"
 	Config_GetSocketHostConfig_FullMethodName = "/portal.v1.Config/GetSocketHostConfig"
 )
 
@@ -28,7 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ConfigClient interface {
 	// 获取基础配置
-	GetCommonConfig(ctx context.Context, in *GetCommonConfigRequest, opts ...grpc.CallOption) (*GetCommonConfigReply, error)
+	GetBasicConfig(ctx context.Context, in *GetBasicConfigRequest, opts ...grpc.CallOption) (*GetBasicConfigReply, error)
 	GetSocketHostConfig(ctx context.Context, in *GetSocketHostConfigRequest, opts ...grpc.CallOption) (*GetSocketHostConfigReply, error)
 }
 
@@ -40,9 +40,9 @@ func NewConfigClient(cc grpc.ClientConnInterface) ConfigClient {
 	return &configClient{cc}
 }
 
-func (c *configClient) GetCommonConfig(ctx context.Context, in *GetCommonConfigRequest, opts ...grpc.CallOption) (*GetCommonConfigReply, error) {
-	out := new(GetCommonConfigReply)
-	err := c.cc.Invoke(ctx, Config_GetCommonConfig_FullMethodName, in, out, opts...)
+func (c *configClient) GetBasicConfig(ctx context.Context, in *GetBasicConfigRequest, opts ...grpc.CallOption) (*GetBasicConfigReply, error) {
+	out := new(GetBasicConfigReply)
+	err := c.cc.Invoke(ctx, Config_GetBasicConfig_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *configClient) GetSocketHostConfig(ctx context.Context, in *GetSocketHos
 // for forward compatibility
 type ConfigServer interface {
 	// 获取基础配置
-	GetCommonConfig(context.Context, *GetCommonConfigRequest) (*GetCommonConfigReply, error)
+	GetBasicConfig(context.Context, *GetBasicConfigRequest) (*GetBasicConfigReply, error)
 	GetSocketHostConfig(context.Context, *GetSocketHostConfigRequest) (*GetSocketHostConfigReply, error)
 	mustEmbedUnimplementedConfigServer()
 }
@@ -72,8 +72,8 @@ type ConfigServer interface {
 type UnimplementedConfigServer struct {
 }
 
-func (UnimplementedConfigServer) GetCommonConfig(context.Context, *GetCommonConfigRequest) (*GetCommonConfigReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCommonConfig not implemented")
+func (UnimplementedConfigServer) GetBasicConfig(context.Context, *GetBasicConfigRequest) (*GetBasicConfigReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBasicConfig not implemented")
 }
 func (UnimplementedConfigServer) GetSocketHostConfig(context.Context, *GetSocketHostConfigRequest) (*GetSocketHostConfigReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSocketHostConfig not implemented")
@@ -91,20 +91,20 @@ func RegisterConfigServer(s grpc.ServiceRegistrar, srv ConfigServer) {
 	s.RegisterService(&Config_ServiceDesc, srv)
 }
 
-func _Config_GetCommonConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCommonConfigRequest)
+func _Config_GetBasicConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBasicConfigRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ConfigServer).GetCommonConfig(ctx, in)
+		return srv.(ConfigServer).GetBasicConfig(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Config_GetCommonConfig_FullMethodName,
+		FullMethod: Config_GetBasicConfig_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ConfigServer).GetCommonConfig(ctx, req.(*GetCommonConfigRequest))
+		return srv.(ConfigServer).GetBasicConfig(ctx, req.(*GetBasicConfigRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -135,8 +135,8 @@ var Config_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*ConfigServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetCommonConfig",
-			Handler:    _Config_GetCommonConfig_Handler,
+			MethodName: "GetBasicConfig",
+			Handler:    _Config_GetBasicConfig_Handler,
 		},
 		{
 			MethodName: "GetSocketHostConfig",

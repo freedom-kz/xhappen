@@ -12,7 +12,7 @@ option objc_class_prefix = "PortalV1";
 
 service Config {
   // 获取基础配置
-  rpc GetCommonConfig (GetCommonConfigRequest) returns (GetCommonConfigReply)  {
+  rpc GetBasicConfig (GetBasicConfigRequest) returns (GetBasicConfigReply)  {
         option (google.api.http) = {
           post: "/basic/getconfig",
           body: "*",
@@ -23,7 +23,7 @@ service Config {
 
 }
 
-message GetCommonConfigRequest {
+message GetBasicConfigRequest {
   string clientId = 1 [(validate.rules).string = {
     min_len: 24, 
     max_len: 36
@@ -31,7 +31,7 @@ message GetCommonConfigRequest {
   string userId = 2;
 }
 
-message GetCommonConfigReply {
+message GetBasicConfigReply {
   string socketHost = 1;
   string fileServerHost =2;
 }

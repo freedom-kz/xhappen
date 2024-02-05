@@ -19,42 +19,42 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
-const OperationConfigGetCommonConfig = "/portal.v1.Config/GetCommonConfig"
+const OperationConfigGetBasicConfig = "/portal.v1.Config/GetBasicConfig"
 
 type ConfigHTTPServer interface {
-	// GetCommonConfig 获取基础配置
-	GetCommonConfig(context.Context, *GetCommonConfigRequest) (*GetCommonConfigReply, error)
+	// GetBasicConfig 获取基础配置
+	GetBasicConfig(context.Context, *GetBasicConfigRequest) (*GetBasicConfigReply, error)
 }
 
 func RegisterConfigHTTPServer(s *http.Server, srv ConfigHTTPServer) {
 	r := s.Route("/")
-	r.POST("/basic/getconfig", _Config_GetCommonConfig0_HTTP_Handler(srv))
+	r.POST("/basic/getconfig", _Config_GetBasicConfig0_HTTP_Handler(srv))
 }
 
-func _Config_GetCommonConfig0_HTTP_Handler(srv ConfigHTTPServer) func(ctx http.Context) error {
+func _Config_GetBasicConfig0_HTTP_Handler(srv ConfigHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in GetCommonConfigRequest
+		var in GetBasicConfigRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationConfigGetCommonConfig)
+		http.SetOperation(ctx, OperationConfigGetBasicConfig)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.GetCommonConfig(ctx, req.(*GetCommonConfigRequest))
+			return srv.GetBasicConfig(ctx, req.(*GetBasicConfigRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*GetCommonConfigReply)
+		reply := out.(*GetBasicConfigReply)
 		return ctx.Result(200, reply)
 	}
 }
 
 type ConfigHTTPClient interface {
-	GetCommonConfig(ctx context.Context, req *GetCommonConfigRequest, opts ...http.CallOption) (rsp *GetCommonConfigReply, err error)
+	GetBasicConfig(ctx context.Context, req *GetBasicConfigRequest, opts ...http.CallOption) (rsp *GetBasicConfigReply, err error)
 }
 
 type ConfigHTTPClientImpl struct {
@@ -65,11 +65,11 @@ func NewConfigHTTPClient(client *http.Client) ConfigHTTPClient {
 	return &ConfigHTTPClientImpl{client}
 }
 
-func (c *ConfigHTTPClientImpl) GetCommonConfig(ctx context.Context, in *GetCommonConfigRequest, opts ...http.CallOption) (*GetCommonConfigReply, error) {
-	var out GetCommonConfigReply
+func (c *ConfigHTTPClientImpl) GetBasicConfig(ctx context.Context, in *GetBasicConfigRequest, opts ...http.CallOption) (*GetBasicConfigReply, error) {
+	var out GetBasicConfigReply
 	pattern := "/basic/getconfig"
 	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationConfigGetCommonConfig))
+	opts = append(opts, http.Operation(OperationConfigGetBasicConfig))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

@@ -19,13 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Router_DeviceBind_FullMethodName         = "/sequence.v1.Router/DeviceBind"
-	Router_DeviceAuth_FullMethodName         = "/sequence.v1.Router/DeviceAuth"
-	Router_DeviceUnBind_FullMethodName       = "/sequence.v1.Router/DeviceUnBind"
-	Router_GetServerByID_FullMethodName      = "/sequence.v1.Router/GetServerByID"
-	Router_GetLocalServerByID_FullMethodName = "/sequence.v1.Router/GetLocalServerByID"
-	Router_SaveRoomServer_FullMethodName     = "/sequence.v1.Router/SaveRoomServer"
-	Router_GetRoomServerByID_FullMethodName  = "/sequence.v1.Router/GetRoomServerByID"
+	Router_DeviceBind_FullMethodName              = "/sequence.v1.Router/DeviceBind"
+	Router_DeviceAuth_FullMethodName              = "/sequence.v1.Router/DeviceAuth"
+	Router_DeviceUnBind_FullMethodName            = "/sequence.v1.Router/DeviceUnBind"
+	Router_GetServerByUserIds_FullMethodName      = "/sequence.v1.Router/GetServerByUserIds"
+	Router_GetLocalServerByUserIds_FullMethodName = "/sequence.v1.Router/GetLocalServerByUserIds"
+	Router_SaveRoomServer_FullMethodName          = "/sequence.v1.Router/SaveRoomServer"
+	Router_SaveLocalRoomServer_FullMethodName     = "/sequence.v1.Router/SaveLocalRoomServer"
+	Router_GetRoomServerByID_FullMethodName       = "/sequence.v1.Router/GetRoomServerByID"
+	Router_GetLocalRoomServerByID_FullMethodName  = "/sequence.v1.Router/GetLocalRoomServerByID"
 )
 
 // RouterClient is the client API for Router service.
@@ -34,14 +36,16 @@ const (
 type RouterClient interface {
 	// 设备相关操作
 	DeviceBind(ctx context.Context, in *DeviceBindRequest, opts ...grpc.CallOption) (*DeviceBindReply, error)
-	DeviceAuth(ctx context.Context, in *DeviceBindRequest, opts ...grpc.CallOption) (*DeviceBindReply, error)
-	DeviceUnBind(ctx context.Context, in *DeviceBindRequest, opts ...grpc.CallOption) (*DeviceBindReply, error)
+	DeviceAuth(ctx context.Context, in *DeviceAuthRequest, opts ...grpc.CallOption) (*DeviceAuthReply, error)
+	DeviceUnBind(ctx context.Context, in *DeviceUnBindRequest, opts ...grpc.CallOption) (*DeviceUnBindReply, error)
 	// 查询用户路由
-	GetServerByID(ctx context.Context, in *GetServerByRequest, opts ...grpc.CallOption) (*GetServerByIDReply, error)
-	GetLocalServerByID(ctx context.Context, in *GetServerByRequest, opts ...grpc.CallOption) (*GetServerByIDReply, error)
+	GetServerByUserIds(ctx context.Context, in *GetServerByUserIdsRequest, opts ...grpc.CallOption) (*GetServerByUserIdsReply, error)
+	GetLocalServerByUserIds(ctx context.Context, in *GetLocalServerByUserIdsRequest, opts ...grpc.CallOption) (*GetLocalServerByUserIdsReply, error)
 	// 查询房间路由
-	SaveRoomServer(ctx context.Context, in *GetServerByRequest, opts ...grpc.CallOption) (*GetServerByIDReply, error)
-	GetRoomServerByID(ctx context.Context, in *GetServerByRequest, opts ...grpc.CallOption) (*GetServerByIDReply, error)
+	SaveRoomServer(ctx context.Context, in *SaveRoomServerRequest, opts ...grpc.CallOption) (*SaveRoomServerReply, error)
+	SaveLocalRoomServer(ctx context.Context, in *SaveLocalRoomServerRequest, opts ...grpc.CallOption) (*SaveLocalRoomServerReply, error)
+	GetRoomServerByID(ctx context.Context, in *GetRoomServerByIDRequest, opts ...grpc.CallOption) (*GetRoomServerByIDReply, error)
+	GetLocalRoomServerByID(ctx context.Context, in *GetLocalRoomServerByIDRequest, opts ...grpc.CallOption) (*GetLocalRoomServerByIDReply, error)
 }
 
 type routerClient struct {
@@ -61,8 +65,8 @@ func (c *routerClient) DeviceBind(ctx context.Context, in *DeviceBindRequest, op
 	return out, nil
 }
 
-func (c *routerClient) DeviceAuth(ctx context.Context, in *DeviceBindRequest, opts ...grpc.CallOption) (*DeviceBindReply, error) {
-	out := new(DeviceBindReply)
+func (c *routerClient) DeviceAuth(ctx context.Context, in *DeviceAuthRequest, opts ...grpc.CallOption) (*DeviceAuthReply, error) {
+	out := new(DeviceAuthReply)
 	err := c.cc.Invoke(ctx, Router_DeviceAuth_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -70,8 +74,8 @@ func (c *routerClient) DeviceAuth(ctx context.Context, in *DeviceBindRequest, op
 	return out, nil
 }
 
-func (c *routerClient) DeviceUnBind(ctx context.Context, in *DeviceBindRequest, opts ...grpc.CallOption) (*DeviceBindReply, error) {
-	out := new(DeviceBindReply)
+func (c *routerClient) DeviceUnBind(ctx context.Context, in *DeviceUnBindRequest, opts ...grpc.CallOption) (*DeviceUnBindReply, error) {
+	out := new(DeviceUnBindReply)
 	err := c.cc.Invoke(ctx, Router_DeviceUnBind_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -79,26 +83,26 @@ func (c *routerClient) DeviceUnBind(ctx context.Context, in *DeviceBindRequest, 
 	return out, nil
 }
 
-func (c *routerClient) GetServerByID(ctx context.Context, in *GetServerByRequest, opts ...grpc.CallOption) (*GetServerByIDReply, error) {
-	out := new(GetServerByIDReply)
-	err := c.cc.Invoke(ctx, Router_GetServerByID_FullMethodName, in, out, opts...)
+func (c *routerClient) GetServerByUserIds(ctx context.Context, in *GetServerByUserIdsRequest, opts ...grpc.CallOption) (*GetServerByUserIdsReply, error) {
+	out := new(GetServerByUserIdsReply)
+	err := c.cc.Invoke(ctx, Router_GetServerByUserIds_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *routerClient) GetLocalServerByID(ctx context.Context, in *GetServerByRequest, opts ...grpc.CallOption) (*GetServerByIDReply, error) {
-	out := new(GetServerByIDReply)
-	err := c.cc.Invoke(ctx, Router_GetLocalServerByID_FullMethodName, in, out, opts...)
+func (c *routerClient) GetLocalServerByUserIds(ctx context.Context, in *GetLocalServerByUserIdsRequest, opts ...grpc.CallOption) (*GetLocalServerByUserIdsReply, error) {
+	out := new(GetLocalServerByUserIdsReply)
+	err := c.cc.Invoke(ctx, Router_GetLocalServerByUserIds_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *routerClient) SaveRoomServer(ctx context.Context, in *GetServerByRequest, opts ...grpc.CallOption) (*GetServerByIDReply, error) {
-	out := new(GetServerByIDReply)
+func (c *routerClient) SaveRoomServer(ctx context.Context, in *SaveRoomServerRequest, opts ...grpc.CallOption) (*SaveRoomServerReply, error) {
+	out := new(SaveRoomServerReply)
 	err := c.cc.Invoke(ctx, Router_SaveRoomServer_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -106,9 +110,27 @@ func (c *routerClient) SaveRoomServer(ctx context.Context, in *GetServerByReques
 	return out, nil
 }
 
-func (c *routerClient) GetRoomServerByID(ctx context.Context, in *GetServerByRequest, opts ...grpc.CallOption) (*GetServerByIDReply, error) {
-	out := new(GetServerByIDReply)
+func (c *routerClient) SaveLocalRoomServer(ctx context.Context, in *SaveLocalRoomServerRequest, opts ...grpc.CallOption) (*SaveLocalRoomServerReply, error) {
+	out := new(SaveLocalRoomServerReply)
+	err := c.cc.Invoke(ctx, Router_SaveLocalRoomServer_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *routerClient) GetRoomServerByID(ctx context.Context, in *GetRoomServerByIDRequest, opts ...grpc.CallOption) (*GetRoomServerByIDReply, error) {
+	out := new(GetRoomServerByIDReply)
 	err := c.cc.Invoke(ctx, Router_GetRoomServerByID_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *routerClient) GetLocalRoomServerByID(ctx context.Context, in *GetLocalRoomServerByIDRequest, opts ...grpc.CallOption) (*GetLocalRoomServerByIDReply, error) {
+	out := new(GetLocalRoomServerByIDReply)
+	err := c.cc.Invoke(ctx, Router_GetLocalRoomServerByID_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -121,14 +143,16 @@ func (c *routerClient) GetRoomServerByID(ctx context.Context, in *GetServerByReq
 type RouterServer interface {
 	// 设备相关操作
 	DeviceBind(context.Context, *DeviceBindRequest) (*DeviceBindReply, error)
-	DeviceAuth(context.Context, *DeviceBindRequest) (*DeviceBindReply, error)
-	DeviceUnBind(context.Context, *DeviceBindRequest) (*DeviceBindReply, error)
+	DeviceAuth(context.Context, *DeviceAuthRequest) (*DeviceAuthReply, error)
+	DeviceUnBind(context.Context, *DeviceUnBindRequest) (*DeviceUnBindReply, error)
 	// 查询用户路由
-	GetServerByID(context.Context, *GetServerByRequest) (*GetServerByIDReply, error)
-	GetLocalServerByID(context.Context, *GetServerByRequest) (*GetServerByIDReply, error)
+	GetServerByUserIds(context.Context, *GetServerByUserIdsRequest) (*GetServerByUserIdsReply, error)
+	GetLocalServerByUserIds(context.Context, *GetLocalServerByUserIdsRequest) (*GetLocalServerByUserIdsReply, error)
 	// 查询房间路由
-	SaveRoomServer(context.Context, *GetServerByRequest) (*GetServerByIDReply, error)
-	GetRoomServerByID(context.Context, *GetServerByRequest) (*GetServerByIDReply, error)
+	SaveRoomServer(context.Context, *SaveRoomServerRequest) (*SaveRoomServerReply, error)
+	SaveLocalRoomServer(context.Context, *SaveLocalRoomServerRequest) (*SaveLocalRoomServerReply, error)
+	GetRoomServerByID(context.Context, *GetRoomServerByIDRequest) (*GetRoomServerByIDReply, error)
+	GetLocalRoomServerByID(context.Context, *GetLocalRoomServerByIDRequest) (*GetLocalRoomServerByIDReply, error)
 	mustEmbedUnimplementedRouterServer()
 }
 
@@ -139,23 +163,29 @@ type UnimplementedRouterServer struct {
 func (UnimplementedRouterServer) DeviceBind(context.Context, *DeviceBindRequest) (*DeviceBindReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeviceBind not implemented")
 }
-func (UnimplementedRouterServer) DeviceAuth(context.Context, *DeviceBindRequest) (*DeviceBindReply, error) {
+func (UnimplementedRouterServer) DeviceAuth(context.Context, *DeviceAuthRequest) (*DeviceAuthReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeviceAuth not implemented")
 }
-func (UnimplementedRouterServer) DeviceUnBind(context.Context, *DeviceBindRequest) (*DeviceBindReply, error) {
+func (UnimplementedRouterServer) DeviceUnBind(context.Context, *DeviceUnBindRequest) (*DeviceUnBindReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeviceUnBind not implemented")
 }
-func (UnimplementedRouterServer) GetServerByID(context.Context, *GetServerByRequest) (*GetServerByIDReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetServerByID not implemented")
+func (UnimplementedRouterServer) GetServerByUserIds(context.Context, *GetServerByUserIdsRequest) (*GetServerByUserIdsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetServerByUserIds not implemented")
 }
-func (UnimplementedRouterServer) GetLocalServerByID(context.Context, *GetServerByRequest) (*GetServerByIDReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLocalServerByID not implemented")
+func (UnimplementedRouterServer) GetLocalServerByUserIds(context.Context, *GetLocalServerByUserIdsRequest) (*GetLocalServerByUserIdsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLocalServerByUserIds not implemented")
 }
-func (UnimplementedRouterServer) SaveRoomServer(context.Context, *GetServerByRequest) (*GetServerByIDReply, error) {
+func (UnimplementedRouterServer) SaveRoomServer(context.Context, *SaveRoomServerRequest) (*SaveRoomServerReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveRoomServer not implemented")
 }
-func (UnimplementedRouterServer) GetRoomServerByID(context.Context, *GetServerByRequest) (*GetServerByIDReply, error) {
+func (UnimplementedRouterServer) SaveLocalRoomServer(context.Context, *SaveLocalRoomServerRequest) (*SaveLocalRoomServerReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveLocalRoomServer not implemented")
+}
+func (UnimplementedRouterServer) GetRoomServerByID(context.Context, *GetRoomServerByIDRequest) (*GetRoomServerByIDReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRoomServerByID not implemented")
+}
+func (UnimplementedRouterServer) GetLocalRoomServerByID(context.Context, *GetLocalRoomServerByIDRequest) (*GetLocalRoomServerByIDReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLocalRoomServerByID not implemented")
 }
 func (UnimplementedRouterServer) mustEmbedUnimplementedRouterServer() {}
 
@@ -189,7 +219,7 @@ func _Router_DeviceBind_Handler(srv interface{}, ctx context.Context, dec func(i
 }
 
 func _Router_DeviceAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeviceBindRequest)
+	in := new(DeviceAuthRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -201,13 +231,13 @@ func _Router_DeviceAuth_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: Router_DeviceAuth_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RouterServer).DeviceAuth(ctx, req.(*DeviceBindRequest))
+		return srv.(RouterServer).DeviceAuth(ctx, req.(*DeviceAuthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Router_DeviceUnBind_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeviceBindRequest)
+	in := new(DeviceUnBindRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -219,49 +249,49 @@ func _Router_DeviceUnBind_Handler(srv interface{}, ctx context.Context, dec func
 		FullMethod: Router_DeviceUnBind_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RouterServer).DeviceUnBind(ctx, req.(*DeviceBindRequest))
+		return srv.(RouterServer).DeviceUnBind(ctx, req.(*DeviceUnBindRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Router_GetServerByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetServerByRequest)
+func _Router_GetServerByUserIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetServerByUserIdsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RouterServer).GetServerByID(ctx, in)
+		return srv.(RouterServer).GetServerByUserIds(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Router_GetServerByID_FullMethodName,
+		FullMethod: Router_GetServerByUserIds_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RouterServer).GetServerByID(ctx, req.(*GetServerByRequest))
+		return srv.(RouterServer).GetServerByUserIds(ctx, req.(*GetServerByUserIdsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Router_GetLocalServerByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetServerByRequest)
+func _Router_GetLocalServerByUserIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLocalServerByUserIdsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RouterServer).GetLocalServerByID(ctx, in)
+		return srv.(RouterServer).GetLocalServerByUserIds(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Router_GetLocalServerByID_FullMethodName,
+		FullMethod: Router_GetLocalServerByUserIds_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RouterServer).GetLocalServerByID(ctx, req.(*GetServerByRequest))
+		return srv.(RouterServer).GetLocalServerByUserIds(ctx, req.(*GetLocalServerByUserIdsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Router_SaveRoomServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetServerByRequest)
+	in := new(SaveRoomServerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -273,13 +303,31 @@ func _Router_SaveRoomServer_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: Router_SaveRoomServer_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RouterServer).SaveRoomServer(ctx, req.(*GetServerByRequest))
+		return srv.(RouterServer).SaveRoomServer(ctx, req.(*SaveRoomServerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Router_SaveLocalRoomServer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveLocalRoomServerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RouterServer).SaveLocalRoomServer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Router_SaveLocalRoomServer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RouterServer).SaveLocalRoomServer(ctx, req.(*SaveLocalRoomServerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Router_GetRoomServerByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetServerByRequest)
+	in := new(GetRoomServerByIDRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -291,7 +339,25 @@ func _Router_GetRoomServerByID_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: Router_GetRoomServerByID_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RouterServer).GetRoomServerByID(ctx, req.(*GetServerByRequest))
+		return srv.(RouterServer).GetRoomServerByID(ctx, req.(*GetRoomServerByIDRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Router_GetLocalRoomServerByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetLocalRoomServerByIDRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RouterServer).GetLocalRoomServerByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Router_GetLocalRoomServerByID_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RouterServer).GetLocalRoomServerByID(ctx, req.(*GetLocalRoomServerByIDRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -316,20 +382,28 @@ var Router_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Router_DeviceUnBind_Handler,
 		},
 		{
-			MethodName: "GetServerByID",
-			Handler:    _Router_GetServerByID_Handler,
+			MethodName: "GetServerByUserIds",
+			Handler:    _Router_GetServerByUserIds_Handler,
 		},
 		{
-			MethodName: "GetLocalServerByID",
-			Handler:    _Router_GetLocalServerByID_Handler,
+			MethodName: "GetLocalServerByUserIds",
+			Handler:    _Router_GetLocalServerByUserIds_Handler,
 		},
 		{
 			MethodName: "SaveRoomServer",
 			Handler:    _Router_SaveRoomServer_Handler,
 		},
 		{
+			MethodName: "SaveLocalRoomServer",
+			Handler:    _Router_SaveLocalRoomServer_Handler,
+		},
+		{
 			MethodName: "GetRoomServerByID",
 			Handler:    _Router_GetRoomServerByID_Handler,
+		},
+		{
+			MethodName: "GetLocalRoomServerByID",
+			Handler:    _Router_GetLocalRoomServerByID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
