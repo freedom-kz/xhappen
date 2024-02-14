@@ -6,6 +6,7 @@ import "google/api/annotations.proto";
 import "api/basic/v1/basic.proto";
 import "validate/validate.proto";
 import "errors/errors.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "xhappen/api/portal/v1;v1";
 option java_multiple_files = true;
@@ -131,9 +132,13 @@ message GetSelfProfileReply {
 }
 
 message UpdateProfileRequest {
-  
+  string nickName = 1;
+  string icon = 2;
+  int32 gender = 3;
+  string sign = 4;
+  google.protobuf.Timestamp birth = 5;
 }
 
 message UpdateProfileReply {
-  
+  basic.v1.User user = 1;
 }

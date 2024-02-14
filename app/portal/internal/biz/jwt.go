@@ -42,6 +42,7 @@ func NewJwtUseCase(bc *conf.Bootstrap, repo JWTRepo, logger log.Logger) *JwtUseC
 	}
 }
 
+// 生成并保存token
 func (useCase *JwtUseCase) GenerateToken(ctx context.Context, id int64) (string, error) {
 	idStr := strconv.FormatInt(id, 10)
 	claims := &jwt.RegisteredClaims{
@@ -61,6 +62,7 @@ func (useCase *JwtUseCase) GenerateToken(ctx context.Context, id int64) (string,
 	return tokenStr, err
 }
 
+// 验证获取用户ID
 func (useCase *JwtUseCase) VerifyToken(ctx context.Context, token string) (string, error) {
 	return useCase.repo.VerifyToken(ctx, token)
 }

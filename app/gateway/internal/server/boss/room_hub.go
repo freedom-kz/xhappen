@@ -8,5 +8,8 @@ type RoomHub struct {
 	boss  *Boss
 	index int
 
+	enterRoom chan *Connection
+	leaveRoom chan *Connection
+
 	exitCh chan struct{}
 }

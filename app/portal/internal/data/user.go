@@ -91,3 +91,19 @@ func (r *userRepo) GetUserInfoByIDs(ctx context.Context, ids []int64) ([]biz.Use
 	}
 	return users, err
 }
+
+func (r *userRepo) UpdateUserProfile(ctx context.Context, user *biz.User) error {
+	upProfileSql := `UPDATE users set 
+					nickname =?,
+					icon =?,
+					birth =?,
+					gender =?,
+					sign =?
+					where id = ?`
+	rs, err := r.data.db.MustExec(upProfileSql, user.Nickname, user.Icon, user.Gender, user.Sign, user.Id).RowsAffected()
+	if rs == 1 {
+		return nil
+	} else {
+		return err
+	}
+}

@@ -82,6 +82,7 @@ func main() {
 	}
 	logger.Log(log.LevelDebug, "config", bc.String())
 
+	//2. 注册中心数据配置
 	client, err := etcdclient.New(etcdclient.Config{
 		Endpoints: []string{bc.Data.Etcd.Addr},
 	})
@@ -90,6 +91,13 @@ func main() {
 	}
 
 	r := etcd.New(client)
+
+	/*
+		服务注册于发现逻辑填充，不再用kratos自带业务
+		2.1 尝试加入集群
+		2.2 初始化调用客户端
+		2.3 配置监听
+	*/
 
 	app, cleanup, err := wireApp(&bc, r, logger)
 	if err != nil {

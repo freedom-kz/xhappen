@@ -203,6 +203,53 @@ func (s *UserService) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileR
 	}, nil
 }
 
+func (s *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest) (*pb.UpdateProfileReply, error) {
+	//查询原数据，数据填充
+	//执行变更
+	//查询返回最新数据
+	id, err := GetUserID(ctx)
+	if err != nil {
+		return &pb.UpdateProfileReply{}, err
+	}
+	users, err := s.user.GetUserInfoByIDs(ctx, []int64{id})
+	if err != nil {
+		return &pb.UpdateProfileReply{}, err
+	}
+	if len(users) != 1 {
+		return &pb.UpdateProfileReply{}, v1.ErrorUnknown("user profile %v not found", id)
+	}
+
+	user := users[0]
+
+	user.Birth = req.Birth.AsTime()
+	user.Icon = req.Icon
+	user.Nickname = req.NickName
+	user.Gender = int(req.Gender)
+	user.Sign = req.Sign
+
+	err = s.user.UpdateUserProfile(ctx, &user)
+	if err != nil {
+		return &pb.UpdateProfileReply{}, err
+	}
+	return &pb.UpdateProfileReply{
+		User: &v1.User{
+			Id:       user.Id,
+			HId:      user.UId,
+			Phone:    user.Phone,
+			NickName: user.Nickname,
+			Birth:    timestamppb.New(user.Birth),
+			Icon:     user.Icon,
+			Gender:   int32(user.Gender),
+			Sign:     user.Sign,
+			State:    int32(user.State),
+			Roles:    strings.Split(user.Roles, " "),
+			Created:  user.Created,
+			Updated:  user.Updated,
+			DeleteAt: user.DeleteAt,
+		},
+	}, nil
+}
+
 // filter使用
 func (s *UserService) VerifyToken(ctx context.Context, token string) (string, error) {
 	return s.jwt.VerifyToken(ctx, token)

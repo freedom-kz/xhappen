@@ -43,6 +43,7 @@ type UserRepo interface {
 	SaveUser(ctx context.Context, g *User) (*User, error)
 	UpdateUserStateByID(ctx context.Context, id int64, state int) (bool, error)
 	GetUserInfoByIDs(ctx context.Context, ids []int64) ([]User, error)
+	UpdateUserProfile(ctx context.Context, user *User) error
 }
 
 type UserUseCase struct {
@@ -116,4 +117,8 @@ func (u *UserUseCase) UpdateUserStateByID(ctx context.Context, id int64, state i
 
 func (u *UserUseCase) GetUserInfoByIDs(ctx context.Context, ids []int64) ([]User, error) {
 	return u.userRepo.GetUserInfoByIDs(ctx, ids)
+}
+
+func (u *UserUseCase) UpdateUserProfile(ctx context.Context, user *User) error {
+	return u.userRepo.UpdateUserProfile(ctx, user)
 }
