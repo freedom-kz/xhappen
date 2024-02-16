@@ -14,5 +14,3 @@ type RouterUsecase struct {
 func NewRouterUsecase(logger log.Logger) *RouterUsecase {
 	return &RouterUsecase{log: log.NewHelper(logger)}
 }
-
-

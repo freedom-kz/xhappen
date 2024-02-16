@@ -69,7 +69,7 @@ func (s *RouterService) DeviceAuth(ctx context.Context, in *v1.DeviceAuthRequest
 		2. 远程调用，返回
 		3. 本地调用
 		3.1 获取客户端bind信息
-		
+
 	*/
 	return nil, nil
 }
