@@ -18,12 +18,17 @@ message Server {
   }
   message Info{
     int32 capacity = 1;
+    int32 index = 2;
   }
   GRPC grpc = 1;
   Info info = 2;
 }
 
 message Data {
+  message Database {
+    string driver = 1;
+    string source = 2;
+  }
   message DMS {
     string addr = 1;
     string userName = 2;
@@ -38,6 +43,7 @@ message Data {
     google.protobuf.Duration readTimeout = 3;
     google.protobuf.Duration writeTimeout = 4;
   }
-  DMS dms = 1;
-  Etcd etcd = 2;
+  Database database = 1;
+  DMS dms = 2;
+  Etcd etcd = 3;
 }

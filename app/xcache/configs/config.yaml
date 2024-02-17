@@ -4,7 +4,11 @@ server:
     timeout: 1s
   info:
     capacity: 3
+    index: 0
 data:
+  database:
+    driver: mysql
+    source: root:pwd9527@tcp(192.168.71.69:3306)/xhappen?charset=utf8mb4&parseTime=True
   dms:
     addr: 192.168.71.69:27017
     username: root

@@ -25,7 +25,11 @@ proto:
          api/gateway/v1/service.proto
 
 
-
+    protoc --proto_path=. \
+         --proto_path=./third_party \
+         --go_out=paths=source_relative:. \
+         --go-errors_out=paths=source_relative:. \
+         app/xcache/internal/conf/conf.proto
      
     kratos proto server api/helloworld/v1/demo.proto -t internal/service
 

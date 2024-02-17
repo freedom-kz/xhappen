@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
+	"github.com/jmoiron/sqlx"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
@@ -26,6 +27,7 @@ type collectionMap struct {
 }
 
 type Data struct {
+	db  *sqlx.DB
 	mdb *mongo.Client
 
 	log *log.Helper
@@ -35,6 +37,7 @@ func NewData(c *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	helper := log.NewHelper(log.With(logger, "module", "portal/data"))
 
 	d := &Data{
+		db:  newDB(c, logger),
 		mdb: newMDB(c, logger),
 		log: helper,
 	}
@@ -44,7 +47,13 @@ func NewData(c *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 
 	cleanup := func() {
 		logger.Log(log.LevelInfo, "msg", "closing the data resources")
+
 		ctx, _ := context.WithTimeout(context.Background(), time.Second)
+
+		if err := d.db.Close(); err != nil {
+			log.Error(err)
+		}
+
 		if err := d.mdb.Disconnect(ctx); err != nil {
 			log.Error(err)
 		}
@@ -76,4 +85,19 @@ func newMDB(conf *conf.Bootstrap, logger log.Logger) *mongo.Client {
 		log.Fatalf("Mongo DB 初始化错误:%s\n", err.Error())
 	}
 	return mongoClient
+}
+
+func newDB(conf *conf.Bootstrap, logger log.Logger) *sqlx.DB {
+	log := log.NewHelper(log.With(logger, "module", "portal/data/gorm"))
+
+	db, err := sqlx.Connect("mysql", conf.Data.Database.Source)
+	if err != nil {
+		log.Fatalf("failed opening connection to mysql: %v", err)
+	}
+
+	db.SetMaxIdleConns(10)
+	db.SetMaxOpenConns(100)
+	db.SetConnMaxLifetime(time.Hour)
+	db.SetConnMaxIdleTime(10 * time.Minute)
+	return db
 }
