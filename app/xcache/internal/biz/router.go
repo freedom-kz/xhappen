@@ -5,6 +5,9 @@ import (
 )
 
 type Router struct {
+	device map[string]DeviceRouterInfo
+	user   map[uint64]UserRouterInfo
+	room   map[uint64]RoomRouterInfo
 }
 
 type RouterUsecase struct {
@@ -13,4 +16,13 @@ type RouterUsecase struct {
 
 func NewRouterUsecase(logger log.Logger) *RouterUsecase {
 	return &RouterUsecase{log: log.NewHelper(logger)}
+}
+
+type DeviceRouterInfo struct {
+}
+
+type UserRouterInfo struct {
+}
+
+type RoomRouterInfo struct {
 }
