@@ -19,7 +19,7 @@ service Config {
         };
   }
 
-  //内部使用
+  //仅内部使用
   rpc GetSocketHostConfig (GetSocketHostConfigRequest) returns (GetSocketHostConfigReply)  {}
 
 }

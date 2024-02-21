@@ -5,7 +5,7 @@ import (
 )
 
 type Router struct {
-	device map[string]DeviceRouterInfo
+	device map[string]DeviceRouterInfo 
 	user   map[uint64]UserRouterInfo
 	room   map[uint64]RoomRouterInfo
 }

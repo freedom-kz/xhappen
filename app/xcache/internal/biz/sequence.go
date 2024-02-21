@@ -94,13 +94,7 @@ func (cache *userSequenceCache) incrementSeq(ctx context.Context) (uint64, error
 	return next_sequence, nil
 }
 
-func (cache *userSequenceCache) stepSequence(ctx context.Context) (uint64, error) {
-
-	return 0, nil
-}
-
 func (cache *userSequenceCache) getCurrentSeq() uint64 {
-	//并发读即可
 	return atomic.LoadUint64(cache.currentSequence)
 }
 
