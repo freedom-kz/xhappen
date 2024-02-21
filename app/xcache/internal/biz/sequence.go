@@ -2,57 +2,125 @@ package biz
 
 import (
 	"context"
+	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
 	"xhappen/app/xcache/internal/conf"
+	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
 
-const defaultReplicas = 50
-const defaultMaxEntries = 25 * 10000
-const userSequenceStep = 10000
-const loadDataTimeout = 10 * time.Second
+const DEFAULT_HASH_REPLICAS = 50
+const DEFAULT_CACHE_MAX_ENTRIES = 25 * 10000
+const USER_SECTION = 1000
+const USER_SEQUENCE_STEP = 10000
+const LOAD_DATA_TIMEOUT = 10 * time.Second
 
-// Greeter is a Greeter model.
-type Sequence struct {
-	user map[uint64]*userSequenceCache
-	room map[uint64]*roomSequenceCache
+// GreeterUsecase is a Greeter usecase.
+type SequenceUsecase struct {
+	cfg               *conf.Bootstrap          //基础配置
+	sequenceGenerater *sequenceGenerater       //内存序列号操作
+	userSequence      map[uint64]*UserSequence //用户持久化数据
+	roomSequence      map[uint64]*RoomSequence //房间持久化数据
+	repo              SequenceRepo             //数据库操作
+	log               *log.Helper              //日志接口
 }
 
 // GreeterRepo is a Greater repo.
 type SequenceRepo interface {
 	ReloadAllocationUserSequence(ctx context.Context, index uint64, cap uint64, startId uint64, limit uint64) ([]*UserSequence, error)
 	UpdateMaxSequence(ctx context.Context, id uint64, sequence uint64, maxSequence uint64) error
-	AddUserSequence(ctx context.Context, sequence uint64, max_sequence uint64) (*UserSequence, error)
+	AddUserSectionSequence(ctx context.Context, sequence uint64, max_sequence uint64) (*UserSequence, error)
 }
 
-// GreeterUsecase is a Greeter usecase.
-type SequenceUsecase struct {
-	cfg      *conf.Bootstrap
-	sequence *Sequence
-	repo     SequenceRepo
-	log      *log.Helper
+// Greeter is a Greeter model.
+type sequenceGenerater struct {
+	//key:userid
+	user map[uint64]*userSequenceCache
+	//key:roomid
+	room map[uint64]*roomSequenceCache
 }
 
 type userSequenceCache struct {
-	sync.Mutex
+	sync.RWMutex
+
+	loadGroup       utils.Group
+	useCase         *SequenceUsecase
 	index           uint64
-	currentSequence uint64
-	maxSequence     uint64
+	currentSequence *uint64
+	maxSequence     *uint64
+}
+
+func (cache *userSequenceCache) incrementSeq(ctx context.Context) (uint64, error) {
+
+	// 内存数据递加
+	// 判断是否为有效
+	// 有效返回
+	// 无效，阻塞并且单点进行持久化递进，再次进入判断循环
+
+	next_sequence := atomic.AddUint64(cache.currentSequence, 1)
+	//需要对持久化数据进行更新，并步进内存最大数据
+	if next_sequence >= atomic.LoadUint64(cache.maxSequence) {
+		//防击穿，相同分区索引，仅并发执行一次后返回结果
+		_, err := cache.loadGroup.Do(fmt.Sprintf("%d", cache.index), func() (interface{}, error) {
+			stepSequence := atomic.LoadUint64(cache.maxSequence)
+			setpMaxSequence := atomic.LoadUint64(cache.maxSequence) + USER_SEQUENCE_STEP
+
+			// update db
+			err := cache.useCase.repo.UpdateMaxSequence(ctx, cache.index, stepSequence, setpMaxSequence)
+			if err != nil {
+				return 0, err
+			} else {
+				// 更新内存，最大允许序列号
+				userSequence, ok := cache.useCase.userSequence[cache.index]
+				if ok {
+					atomic.AddUint64(userSequence.MaxSequence, USER_SEQUENCE_STEP)
+				} else {
+					return 0, fmt.Errorf("index %d relation data error", cache.index)
+				}
+				return 0, err
+			}
+		})
+
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	//后面需要注意，看是不是需要再补充一次检查执行
+
+	return next_sequence, nil
+}
+
+func (cache *userSequenceCache) stepSequence(ctx context.Context) (uint64, error) {
+
+	return 0, nil
+}
+
+func (cache *userSequenceCache) getCurrentSeq() uint64 {
+	//并发读即可
+	return atomic.LoadUint64(cache.currentSequence)
 }
 
 type UserSequence struct {
 	Id          uint64
-	Sequence    uint64
-	MaxSequence uint64
+	Sequence    *uint64
+	MaxSequence *uint64
 }
 
 type roomSequenceCache struct {
 	sync.Mutex
 	id              uint64
-	currentSequence uint64
-	maxSequence     uint64
+	currentSequence *uint64
+	maxSequence     *uint64
+}
+
+type RoomSequence struct {
+	Id          uint64
+	Sequence    uint64
+	MaxSequence uint64
 }
 
 // NewGreeterUsecase new a Greeter usecase.
@@ -66,16 +134,19 @@ func NewSequenceUsecase(cfg *conf.Bootstrap, repo SequenceRepo, logger log.Logge
 		3. 提供计算对外提供服务，分流内部计算和远程调用
 	*/
 
-	sequenceUsecase := &SequenceUsecase{cfg: cfg,
-		sequence: &Sequence{user: make(map[uint64]*userSequenceCache), room: make(map[uint64]*roomSequenceCache)},
-		repo:     repo,
-		log:      log.NewHelper(logger)}
+	sequenceUsecase := &SequenceUsecase{
+		cfg:               cfg,
+		sequenceGenerater: &sequenceGenerater{user: make(map[uint64]*userSequenceCache), room: make(map[uint64]*roomSequenceCache)},
+		repo:              repo,
+		log:               log.NewHelper(logger),
+	}
 
 	//加载用户数据
-	ctx, _ := context.WithTimeout(context.Background(), loadDataTimeout)
+	ctx, _ := context.WithTimeout(context.Background(), LOAD_DATA_TIMEOUT)
 	startTime := time.Now()
 	startId := 0
-	limit := 100
+	limit := 1000
+	//加载用户序列号持久化数据，每次取1000条数据
 	for {
 		userSequences, err := repo.ReloadAllocationUserSequence(ctx,
 			uint64(cfg.Server.Info.Index), uint64(cfg.Server.Info.Capacity), uint64(startId), uint64(limit))
@@ -89,9 +160,22 @@ func NewSequenceUsecase(cfg *conf.Bootstrap, repo SequenceRepo, logger log.Logge
 			break
 		}
 
+		//分段数据到内存数据的转换
 		for _, userSequence := range userSequences {
-			sequenceUsecase.sequence.user[userSequence.Id] =
-				&userSequenceCache{index: userSequence.Id, currentSequence: userSequence.Sequence, maxSequence: userSequence.MaxSequence}
+			//保存用户基础数据到内存
+			sequenceUsecase.userSequence[userSequence.Id] = userSequence
+			for i := USER_SECTION*(userSequence.Id-1) + 1; i <= USER_SECTION*userSequence.Id; i++ {
+				//复制
+				sequence := *userSequence.MaxSequence
+				//共同引用
+				maxSequence := userSequence.MaxSequence
+				sequenceUsecase.sequenceGenerater.user[i] =
+					&userSequenceCache{
+						useCase:         sequenceUsecase,
+						index:           userSequence.Id,
+						currentSequence: &sequence,
+						maxSequence:     maxSequence}
+			}
 		}
 	}
 	//加载房间数据
@@ -99,9 +183,28 @@ func NewSequenceUsecase(cfg *conf.Bootstrap, repo SequenceRepo, logger log.Logge
 	return sequenceUsecase
 }
 
-func (useCase *SequenceUsecase) GetLocalSequenceByIds(ids []uint64) {
-	// for _,id := range ids {
+func (useCase *SequenceUsecase) GetLocalSequenceByIds(ctx context.Context, ids []uint64) (map[uint64]uint64, error) {
+	sequences := make(map[uint64]uint64)
+	for _, id := range ids {
+		generater := useCase.sequenceGenerater.user[id]
+		new, err := generater.incrementSeq(ctx)
+		if err != nil {
+			//数据库操作，更新内存数据
+		} else {
+			sequences[id] = new
+		}
+	}
+	return sequences, nil
+}
 
-	// }
+func (useCase *SequenceUsecase) StepUserSequence(ctx context.Context, index uint64) error {
+	//持久化
+	err := useCase.repo.UpdateMaxSequence(ctx, index, index, index)
+	if err != nil {
+		return err
+	}
 
+	//更新内存
+	useCase.userSequence[index] = &UserSequence{}
+	return nil
 }

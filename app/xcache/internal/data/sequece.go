@@ -24,14 +24,15 @@ func NewGreeterRepo(data *Data, logger log.Logger) biz.SequenceRepo {
 }
 
 /*
-分页获取序列号相关数据
+根据ID取模，按分页获取序列号相关数据
 */
 func (r *sequenceRepo) ReloadAllocationUserSequence(ctx context.Context, index uint64, cap uint64, startId uint64, limit uint64) ([]*biz.UserSequence, error) {
 	userSequences := []*biz.UserSequence{}
 	selectSql := `SELECT
 					id, sequence, max_sequence
-				   FROM user_sequecne WHERE id%? = ?
-				   and id >= startId limit ?`
+				   FROM 
+				   	user_sequecne WHERE id%? = ?
+				   	and id >= startId limit ?`
 	err := r.data.db.Select(userSequences,
 		selectSql,
 		cap, index)
@@ -45,12 +46,15 @@ func (r *sequenceRepo) ReloadAllocationUserSequence(ctx context.Context, index u
 }
 
 /*
-更新用户
+更新用户号段序列号和最大序列号
 */
 func (r *sequenceRepo) UpdateMaxSequence(ctx context.Context, id uint64, sequence uint64, maxSequence uint64) error {
-	updateSql := `update user_sequecne set sequence = ?, max_sequence = ? WHERE id = ?`
+	updateSql := `update 
+						user_sequecne set sequence = ?,
+						max_sequence = ?,
+					WHERE id = ?`
 
-	ret, err := r.data.db.Exec(updateSql, sequence, maxSequence, id)
+	ret, err := r.data.db.Exec(updateSql, maxSequence, id)
 	if err != nil {
 		return err
 	}
@@ -65,8 +69,8 @@ func (r *sequenceRepo) UpdateMaxSequence(ctx context.Context, id uint64, sequenc
 	return nil
 }
 
-func (r *sequenceRepo) AddUserSequence(ctx context.Context, sequence uint64, max_sequence uint64) (*biz.UserSequence, error) {
-	insertSql := `insert into user_sequecne(sequence, max_sequence) values (?,?)`
+func (r *sequenceRepo) AddUserSectionSequence(ctx context.Context, sequence uint64, max_sequence uint64) (*biz.UserSequence, error) {
+	insertSql := `insert into user_sequecne(sequence, max_sequence) values (?, ?)`
 
 	ret, err := r.data.db.Exec(insertSql, sequence, max_sequence)
 	if err != nil {
@@ -84,7 +88,7 @@ func (r *sequenceRepo) AddUserSequence(ctx context.Context, sequence uint64, max
 
 	return &biz.UserSequence{
 		Id:          uint64(id),
-		Sequence:    sequence,
-		MaxSequence: max_sequence,
+		Sequence:    &sequence,
+		MaxSequence: &max_sequence,
 	}, nil
 }
