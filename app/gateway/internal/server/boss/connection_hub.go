@@ -263,13 +263,13 @@ func (i *ConnectionIndex) Remove(connection *Connection) {
 	}
 	//用户连接切片
 	userConnections := i.byUserId[connection.UserId]
-	//末尾连接
+	//末尾连接元素
 	last := userConnections[len(userConnections)-1]
-	//删除索引填充末尾元素
+	//删除索引位置填充末尾元素
 	userConnections[userConnIndex] = last
 	//删除末尾元素
 	i.byUserId[connection.UserId] = userConnections[:len(userConnections)-1]
-	//元素索引重置
+	//填充末尾元素，索引重置需重置
 	i.byConnection[last] = userConnIndex
 
 	//删除其他字典缓存

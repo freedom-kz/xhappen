@@ -44,7 +44,7 @@ type Boss struct {
 
 func NewBoss(cfg *conf.Bootstrap, logger log.Logger, passClient *client.PassClient) *Boss {
 	boss := &Boss{
-		GlobalConnectionSequence: 0,
+		GlobalConnectionSequence: 0, //设备运行时连接序列号
 		startTime:                time.Now(),
 		protoVersion:             cfg.Server.Info.ProtoVersion,
 		minSupportProtoVersion:   cfg.Server.Info.MinSupportProtoVersion,
@@ -117,7 +117,7 @@ func (boss *Boss) Start(context.Context) error {
 	boss.waitGroup.Wrap(func() {
 		exitFunc(WsServe(boss.wsListener, bossServer, boss.logger))
 	})
-	//等待第一个运行错误返回
+	//阻塞等待第一个运行错误返回
 	err := <-exitCh
 	return err
 }

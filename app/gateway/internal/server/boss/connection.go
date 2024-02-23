@@ -22,11 +22,12 @@ const (
 )
 
 const (
-	STATE_BIND = iota
-	STATE_AUTH
-	STATE_SYNC
-	STATE_NORMAL
-	STATE_QUIT
+	STATE_INIT   = iota //初始化
+	STATE_BIND          //设备绑定
+	STATE_AUTH          //设备验证
+	STATE_SYNC          //消息同步
+	STATE_NORMAL        //普通收发
+	STATE_QUIT          //退出
 )
 
 type Connection struct {
@@ -98,10 +99,13 @@ func newConnection(conn net.Conn, boss *Boss) *Connection {
 		Conn:              conn,
 		Boss:              boss,
 		logger:            boss.logger,
-		state:             STATE_BIND,
+		state:             STATE_INIT,
 		Hostname:          host,
 		connectSequence:   connectSequence,
 		ConnectTime:       time.Now(),
+		deliverCh:         make(chan *protocol.Deliver, 100),
+		actionCh:          make(chan *protocol.Action, 100),
+		syncCh:            make(chan *protocol.Sync, 100),
 		syncSessions:      make(map[uint64]struct{}),
 		inFlightMessages:  make(map[uint64]*Message),
 		inFlightPQ:        newInFlightPqueue(100),
@@ -147,6 +151,7 @@ func (connection *Connection) String() string {
 
 // 客户端接收状态判断
 func (connection *Connection) IsReadyForMessages() bool {
+	//状态匹配
 	if connection.state != STATE_NORMAL {
 		return false
 	}
@@ -247,17 +252,17 @@ func (connection *Connection) Shutdown(active bool) {
 		}
 
 		if active {
-			//客户端主动关闭，发送状态
+			//预期内关闭（正常收发，多为客户端主动或网络情况触发）
 			connection.sendConnState(STATE_QUIT)
 		} else {
-			//客户端被动关闭，直接关闭连接
+			//预期外关闭（踢下线，服务器关闭等业务执行，少数情况）
 			err = connection.Conn.Close()
 			if err != nil {
 				connection.logger.Log(log.LevelInfo, "msg", "socket closed err.", "err", err, "hosname", connection.String())
 			}
 		}
-		//客户端主动关闭的，后面看是否需要补一次离线消息业务
-		if !active && connection.RoleType != protocol.RoleType_ROLE_CUSTOMER_SERVICE {
+		//预期内关闭的，看后面看是否需要补一次离线消息业务
+		if active && connection.RoleType != protocol.RoleType_ROLE_CUSTOMER_SERVICE {
 			//TODO,离线消息推送
 		}
 	})

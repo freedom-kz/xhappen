@@ -167,6 +167,18 @@ func ErrorTokenExpire(format string, args ...interface{}) *errors.Error {
 	return errors.New(425, ErrorSocketReason_TOKEN_EXPIRE.String(), fmt.Sprintf(format, args...))
 }
 
+func IsSocketStateUnexpected(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorSocketReason_SOCKET_STATE_UNEXPECTED.String() && e.Code == 426
+}
+
+func ErrorSocketStateUnexpected(format string, args ...interface{}) *errors.Error {
+	return errors.New(426, ErrorSocketReason_SOCKET_STATE_UNEXPECTED.String(), fmt.Sprintf(format, args...))
+}
+
 func IsNoDeviceOnline(err error) bool {
 	if err == nil {
 		return false

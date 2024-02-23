@@ -35,11 +35,15 @@ func (connection *Connection) packetProcess() error {
 		}
 
 	}
+	//从受boss管理的连接中移除数据，不会再产生下行业务数据
+	connection.Boss.RemoveConnFromHub(connection)
+	//正常关闭
 	connection.Shutdown(true)
 	return err
 }
 
 func (connection *Connection) exec(packet packets.ControlPacket) error {
+	//走的这里的逻辑状态必定为同步中或者正常状态
 	var err error
 	switch pkt := packet.(type) {
 	case *packets.SubmitPacket:
@@ -66,6 +70,11 @@ func (connection *Connection) ReadPacket() (cp packets.ControlPacket, err error)
 	return packets.ReadPacket(connection)
 }
 
+/*
+bind仅为临时状态，此状态下无业务逻辑可运行
+客户端可以作为网络的验证
+服务端验证客户端合法性
+*/
 func (connection *Connection) processBind() error {
 	connection.sendConnState(STATE_BIND)
 	if connection.DailTimeout > 0 {
@@ -83,7 +92,7 @@ func (connection *Connection) processBind() error {
 
 	bind, ok := packet.(*packets.BindPacket)
 	if !ok {
-		connection.logger.Log(log.LevelError, "msg", "read packet not bind", "body", packet.String())
+		connection.logger.Log(log.LevelError, "msg", "1st read packet not bind", "body", packet.String())
 		return err
 	}
 
@@ -98,7 +107,8 @@ func (connection *Connection) processBind() error {
 	//版本校验
 	if bind.CurVersion < connection.Boss.minSupportProtoVersion {
 		bindAck.BindRet = false
-		bindAck.Err = &basic.ErrorUpgrade("current version:%d.", connection.Boss.protoVersion).Status
+		bindAck.Err = &basic.ErrorUpgrade("version %d not support,current version:%d.",
+			bind.CurVersion, connection.Boss.protoVersion).Status
 
 		err = connection.Write(bindAck)
 		if err != nil {
@@ -168,6 +178,8 @@ func (connection *Connection) processBind() error {
 	return nil
 }
 
+// 授权处理，此后会进入正常逻辑流程
+// 目前的设计，匿名用户也会临时分配一个虚拟用户来进入读取业务，不允许写入逻辑
 func (connection *Connection) processAuth() error {
 	connection.sendConnState(STATE_AUTH)
 	if connection.ReadTimeout > 0 {
@@ -198,7 +210,7 @@ func (connection *Connection) processAuth() error {
 
 	in := &pb.AuthRequest{
 		ClientId:    connection.ClientId,
-		BindVersion: uint64(connection.ConnectTime.UnixNano()),
+		BindVersion: connection.connectSequence,
 		AuthInfo:    &auth.Auth,
 	}
 
@@ -212,7 +224,7 @@ func (connection *Connection) processAuth() error {
 		ack.Err = reply.Err
 	}
 
-	err = connection.Write(auth)
+	err = connection.Write(ack)
 	if err != nil {
 		return err
 	}
@@ -238,6 +250,7 @@ func (connection *Connection) processAuth() error {
 		}
 		connection.sendConnState(STATE_SYNC)
 	}
+	//纳入hub管理
 	connection.Boss.AddConnToHub(connection)
 	return nil
 }
@@ -270,13 +283,14 @@ func (connection *Connection) processSubmit(submit *protocol.Submit) error {
 		ack.SessionId = reply.SessionId
 	}
 
+	//响应数据进行抢占写入
 	err = connection.Write(ack)
 	if err != nil {
 		return err
 	}
-
+	//这里的失败为业务失败，不做处理，对当前业务无影响
 	if !ack.SubmitAck.SubmitRet {
-		return fmt.Errorf(ack.Err.Reason)
+		return nil
 	}
 
 	//这里往发送协程发送一个假的deliver,用来触发按sequence发送deliver逻辑
@@ -285,6 +299,7 @@ func (connection *Connection) processSubmit(submit *protocol.Submit) error {
 	}
 	connection.SendDeliverCh(deliverGhost)
 	return nil
+
 }
 
 func (connection *Connection) processSyncAck(syncAck *protocol.SyncAck) error {
@@ -306,31 +321,45 @@ func (connection *Connection) processSyncAck(syncAck *protocol.SyncAck) error {
 	return nil
 }
 
+// 处理下行响应
 func (connection *Connection) processDeliverAck(deliverAck *protocol.DeliverAck) error {
 	connection.logger.Log(log.LevelDebug, "msg", "process deliver ack")
 	err := connection.FinishDeliver(deliverAck.Sequence)
 	if err != nil {
-		connection.logger.Log(log.LevelError, "msg", "process deliver ack", "error", err)
+		connection.logger.Log(log.LevelError,
+			"msg", "process deliver ack,maybe resend same sequecne",
+			"user", connection.UserId,
+			"sequecne", deliverAck.Sequence,
+			"error", err)
 	}
-	return err
+	//这里业务逻辑不存在关闭异常错误，仅打印日志
+	return nil
 }
 
 func (connection *Connection) processAction(action *protocol.Action) error {
-
+	//业务操作类型，待完善
 	return nil
 }
 
 func (connection *Connection) processActionAck(actionAck *protocol.ActionAck) error {
 	connection.logger.Log(log.LevelDebug, "msg", "process action ack")
 	err := connection.FinishAction(uint64(actionAck.Id))
-	connection.logger.Log(log.LevelError, "msg", "process action ack", "error", err)
-	return err
+	if err != nil {
+		//错误仅打印日志，非业务影响
+		connection.logger.Log(log.LevelError,
+			"msg", "process action ack",
+			"userId", connection.UserId,
+			"ackMsgId", actionAck.Id,
+			"error", err)
+	}
+
+	return nil
 }
 
 // 处理ping消息
 func (connection *Connection) processPing(ping *protocol.Ping) error {
 	pong := &packets.PongPacket{
-		FixedHeader: packets.FixedHeader{MessageType: packets.SUBMITACK},
+		FixedHeader: packets.FixedHeader{MessageType: packets.PONG},
 		Pong:        protocol.Pong{},
 	}
 	err := connection.Write(pong)
