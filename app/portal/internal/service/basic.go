@@ -39,10 +39,10 @@ redis缓存：暂选存储
 */
 func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConfigRequest) (*pb.GetBasicConfigReply, error) {
 	//动态sockethost，无用户参数按照client分配，有用户参数按照用户分配
-	userID, err := GetUserID(ctx)
-	if err != nil {
-		userID = req.ClientId
-	}
+	// , err := GetUserID(ctx)
+	// if err != nil {
+	// 	userID = req.ClientId
+	// }
 
 	return &pb.GetBasicConfigReply{}, nil
 }

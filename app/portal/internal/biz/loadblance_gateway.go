@@ -54,8 +54,24 @@ func (useCase *LoadBlanceUseCase) DispatchByClientID(ctx context.Context, client
 }
 
 func (useCase *LoadBlanceUseCase) DispatchByUserIDWithClientId(ctx context.Context, userID string, clientId string) (string, error) {
-	//1. 删除已有的客户端相关记录
-	//2. 根据用户进行分配，如同客户端单独分配逻辑
+	//1. 已有分配地址，并且当前服务中，获取返回
+	addr, err := useCase.repo.GetDispatchInfo(ctx, clientId, userID)
+	if err != nil {
+		return addr, err
+	}
+	if addr != "" && useCase.repo.IsAlive(addr) {
+		return addr, nil
+	}
+	//2. 为用户分配地址，多个客户端登录同一网关
+	addr, err = useCase.strategyRandom()
+	if err != nil {
+		return addr, err
+	}
+
+	if err := useCase.repo.SaveDispatchInfo(ctx, clientId, userID, addr); err != nil {
+		return addr, basic.ErrorUnknown("server err:%v", err)
+	}
+
 	return "host", nil
 }
 
