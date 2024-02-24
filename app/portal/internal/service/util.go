@@ -11,7 +11,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 )
 
-func GetUserID(ctx context.Context) (int64, error) {
+func GetUserID(ctx context.Context) (uint64, error) {
 	tr, ok := transport.FromServerContext(ctx)
 	if !ok {
 		return 0, v1.ErrorUnknown("context info loss")
@@ -23,7 +23,7 @@ func GetUserID(ctx context.Context) (int64, error) {
 		if err != nil {
 			return 0, v1.ErrorUnknown("can not get userid from kratos context")
 		}
-		return int64(id), nil
+		return uint64(id), nil
 	} else {
 		return 0, errors.Unauthorized("UNAUTHORIZED", "can not get uid from header")
 	}

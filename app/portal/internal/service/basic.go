@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strconv"
 	pb "xhappen/api/portal/v1"
 	"xhappen/app/portal/internal/biz"
 
@@ -39,12 +40,25 @@ redis缓存：暂选存储
 */
 func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConfigRequest) (*pb.GetBasicConfigReply, error) {
 	//动态sockethost，无用户参数按照client分配，有用户参数按照用户分配
-	// , err := GetUserID(ctx)
-	// if err != nil {
-	// 	userID = req.ClientId
-	// }
+	var (
+		addr string
+		err  error
+	)
 
-	return &pb.GetBasicConfigReply{}, nil
+	if userID, err := GetUserID(ctx); err == nil {
+		addr, err = c.lbUseCase.DispatchByClientID(ctx, req.ClientId)
+	} else {
+		idStr := strconv.FormatUint(uint64(userID), 10)
+		addr, err = c.lbUseCase.DispatchByUserIDWithClientId(ctx, req.ClientId, idStr)
+	}
+
+	if err != nil {
+		return nil, err
+	} else {
+		return &pb.GetBasicConfigReply{
+			SocketHost: addr,
+		}, nil
+	}
 }
 
 func (c *ConfigService) GetSocketHostConfig(ctx context.Context, req *pb.GetSocketHostConfigRequest) (*pb.GetSocketHostConfigReply, error) {
