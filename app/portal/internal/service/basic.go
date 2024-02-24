@@ -39,7 +39,7 @@ redis缓存：暂选存储
 持久化存储：读不友好
 */
 func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConfigRequest) (*pb.GetBasicConfigReply, error) {
-	//动态sockethost，无用户参数按照client分配，有用户参数按照用户分配
+	//获取或分配sockethost
 	var (
 		addr string
 		err  error
@@ -61,7 +61,17 @@ func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConf
 	}
 }
 
+// 这里仅获取数据，不做数据变更
 func (c *ConfigService) GetSocketHostConfig(ctx context.Context, req *pb.GetSocketHostConfigRequest) (*pb.GetSocketHostConfigReply, error) {
-
-	return &pb.GetSocketHostConfigReply{}, nil
+	var idStr string
+	if req.UserId != 0 {
+		idStr = strconv.FormatUint(uint64(req.UserId), 10)
+	}
+	addr, err := c.lbUseCase.GetDispatchInfo(ctx, req.ClientId, idStr)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetSocketHostConfigReply{
+		SocketHost: addr,
+	}, nil
 }

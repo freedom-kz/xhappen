@@ -75,6 +75,12 @@ func (useCase *LoadBlanceUseCase) DispatchByUserIDWithClientId(ctx context.Conte
 	return "host", nil
 }
 
+// 仅读取分配信息
+func (useCase *LoadBlanceUseCase) GetDispatchInfo(ctx context.Context, clientId string, userID string) (string, error) {
+	addr, err := useCase.repo.GetDispatchInfo(ctx, clientId, userID)
+	return addr, err
+}
+
 // 随机策略获取网关公网地址
 func (useCase *LoadBlanceUseCase) strategyRandom() (string, error) {
 	ins := useCase.repo.GetGatewayPublicIPs()
