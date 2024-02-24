@@ -10,6 +10,7 @@ message Bootstrap {
   Data data = 2;
   Trace trace = 3;
   Auth auth = 4;
+  INFO info = 5;
 }
 
 message Trace {
@@ -65,4 +66,8 @@ message Data {
   Redis redis = 2;
   Etcd etcd = 3;
   Kafka kafka = 4;
+}
+
+message INFO {
+  string fileServer = 1;
 }

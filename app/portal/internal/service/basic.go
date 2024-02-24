@@ -5,6 +5,7 @@ import (
 	"strconv"
 	pb "xhappen/api/portal/v1"
 	"xhappen/app/portal/internal/biz"
+	"xhappen/app/portal/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -13,12 +14,14 @@ type ConfigService struct {
 	pb.UnimplementedConfigServer
 	lbUseCase *biz.LoadBlanceUseCase
 	log       *log.Helper
+	conf      *conf.Bootstrap
 }
 
-func NewConfigService(lbUseCase *biz.LoadBlanceUseCase, logger log.Logger) *ConfigService {
+func NewConfigService(conf *conf.Bootstrap, lbUseCase *biz.LoadBlanceUseCase, logger log.Logger) *ConfigService {
 	return &ConfigService{
 		lbUseCase: lbUseCase,
 		log:       log.NewHelper(logger),
+		conf:      conf,
 	}
 }
 
@@ -56,7 +59,8 @@ func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConf
 		return nil, err
 	} else {
 		return &pb.GetBasicConfigReply{
-			SocketHost: addr,
+			SocketHost:     addr,
+			FileServerHost: c.conf.Info.FileServer,
 		}, nil
 	}
 }
