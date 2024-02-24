@@ -5,12 +5,14 @@ import (
 
 	v1 "xhappen/api/router/v1"
 	"xhappen/app/xcache/internal/biz"
+
+	"github.com/go-kratos/kratos/v2/errors"
 )
 
 type RouterService struct {
 	v1.UnimplementedRouterServer
 
-	uc *biz.RouterUsecase
+	usecase *biz.RouterUsecase
 }
 
 func NewRouterService(uc *biz.RouterUsecase) *RouterService {
@@ -49,7 +51,16 @@ func (s *RouterService) DeviceBind(ctx context.Context, in *v1.DeviceBindRequest
 		3.1 客户端不存在直接存放返回
 		3.2 客户端存在，进行序列号对比，更新执行/返回错误
 	*/
-	return nil, nil
+	err := s.usecase.DeviceBind(ctx, in)
+	if err != nil {
+		return &v1.DeviceBindReply{
+			Ret: false,
+			Err: &errors.Status{},
+		}, nil
+	}
+	return &v1.DeviceBindReply{
+		Ret: true,
+	}, nil
 }
 
 func (s *RouterService) DeviceUnBind(ctx context.Context, in *v1.DeviceUnBindRequest) (*v1.DeviceUnBindReply, error) {

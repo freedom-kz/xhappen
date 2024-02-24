@@ -13,7 +13,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-var ProviderSet = wire.NewSet(NewData, NewUserRepo, NewJwtRepo, NewSMSRepo)
+var ProviderSet = wire.NewSet(NewData, NewUserRepo, NewJwtRepo, NewSMSRepo, NewLoadBlanceGwRepo)
 
 type Data struct {
 	db  *sqlx.DB

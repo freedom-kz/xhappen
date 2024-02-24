@@ -64,7 +64,6 @@ func newHub(boss *Boss) *Hub {
 }
 
 func (h *Hub) Start() {
-
 	go func() {
 		connIndex := newConnectionIndex()
 
