@@ -25,22 +25,7 @@ func NewConfigService(conf *conf.Bootstrap, lbUseCase *biz.LoadBlanceUseCase, lo
 	}
 }
 
-/*
-插入为低频
-
-	设备在登录前会有一次根据设备进行分配
-	在用户登录时会有一次根据用户进行分配
-	Gateway主机死亡会触发再次进行分配
-
-查询为高频：
-
-	分配即查询
-	每次socket登录也会进行验证
-
-本机应用缓存：剔除
-redis缓存：暂选存储
-持久化存储：读不友好
-*/
+// 基础数据获取，包含动态和静态配置
 func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConfigRequest) (*pb.GetBasicConfigReply, error) {
 	//获取或分配sockethost
 	var (
@@ -65,7 +50,7 @@ func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConf
 	}
 }
 
-// 这里仅获取数据，不做数据变更
+// 这里内部调用，仅获取socket软负载数据，不会对数据进行变更
 func (c *ConfigService) GetSocketHostConfig(ctx context.Context, req *pb.GetSocketHostConfigRequest) (*pb.GetSocketHostConfigReply, error) {
 	var idStr string
 	if req.UserId != 0 {

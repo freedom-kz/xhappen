@@ -43,14 +43,18 @@ func (s *PassService) Bind(ctx context.Context, in *v1.BindRequest) (*v1.BindRep
 	if replyHost.SocketHost == "" || replyHost.SocketHost != in.ServerID {
 		return &v1.BindReply{
 			Ret: false,
-			Err: &basic.ErrorUnknown("socketHost invalidate").Status,
+			Err: &basic.ErrorUnknown("alloc socketHost invalidate").Status,
 		}, nil
 	}
 	//2. 尝试保存更新状态信息
 	bindreply, err := s.xacheClient.DeviceBind(ctx, &router.DeviceBindRequest{
-		BindInfo:       in.BindInfo,
-		ServerID:       in.ServerID,
-		ConnectSequece: in.ConnectSequece,
+		BindInfo: &router.BindInfo{
+			ClientID:       in.BindInfo.ClientID,
+			ServerID:       in.ServerID,
+			ConnectSequece: in.ConnectSequece,
+			CurVersion:     in.BindInfo.CurVersion,
+			DeviceType:     in.BindInfo.DeviceType,
+		},
 	})
 
 	if err != nil {
@@ -59,6 +63,8 @@ func (s *PassService) Bind(ctx context.Context, in *v1.BindRequest) (*v1.BindRep
 			Err: &basic.ErrorSerberUnavailable("internal rpc err %v.", err).Status,
 		}, nil
 	}
+
+	//bindReply中已有连接断连业务处理
 
 	return &v1.BindReply{
 		Ret: bindreply.Ret,

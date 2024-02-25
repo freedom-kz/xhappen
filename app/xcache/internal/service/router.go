@@ -3,20 +3,19 @@ package service
 import (
 	"context"
 
+	basic "xhappen/api/basic/v1"
 	v1 "xhappen/api/router/v1"
 	"xhappen/app/xcache/internal/biz"
-
-	"github.com/go-kratos/kratos/v2/errors"
 )
 
 type RouterService struct {
 	v1.UnimplementedRouterServer
 
-	usecase *biz.RouterUsecase
+	useCase *biz.RouterUsecase
 }
 
-func NewRouterService(uc *biz.RouterUsecase) *RouterService {
-	return &RouterService{uc: uc}
+func NewRouterService(useCase *biz.RouterUsecase) *RouterService {
+	return &RouterService{useCase: useCase}
 }
 
 func (s *RouterService) GetServerByUserIds(ctx context.Context, in *v1.GetServerByUserIdsRequest) (*v1.GetServerByUserIdsReply, error) {
@@ -51,13 +50,18 @@ func (s *RouterService) DeviceBind(ctx context.Context, in *v1.DeviceBindRequest
 		3.1 客户端不存在直接存放返回
 		3.2 客户端存在，进行序列号对比，更新执行/返回错误
 	*/
-	err := s.usecase.DeviceBind(ctx, in)
+	request := biz.DeviceInfo{
+		ClientID: in.BindInfo.ClientID,
+	}
+	exist, err := s.useCase.DeviceBind(ctx, &deviceBindRequest)
 	if err != nil {
 		return &v1.DeviceBindReply{
 			Ret: false,
-			Err: &errors.Status{},
+			Err: &basic.ErrorUnknown(err.Error()).Status,
 		}, nil
 	}
+
+
 	return &v1.DeviceBindReply{
 		Ret: true,
 	}, nil

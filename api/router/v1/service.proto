@@ -3,6 +3,7 @@ syntax = "proto3";
 package sequence.v1;
 
 import "errors/errors.proto";
+import "api/protocol/v1/common.proto";
 import "api/protocol/v1/message.proto";
 
 option go_package = "xhappen/api/router/v1;v1";
@@ -27,21 +28,26 @@ service Router {
   rpc GetLocalRoomServerByID(GetLocalRoomServerByIDRequest) returns (GetLocalRoomServerByIDReply)  {}
 }
 
-message DeviceBindRequest {
-  protocol.v1.Bind bindInfo = 1;
+message DeviceInfo{
+  string clientID = 1;
   string serverID = 2;
   uint64 connectSequece = 3;
+  int32 curVersion = 4;
+  protocol.v1.DeviceType deviceType = 5;
+}
+
+message DeviceBindRequest {
+  DeviceInfo deviceInfo  = 1;
 }
 
 message DeviceBindReply {
   bool ret = 1;
+  DeviceInfo existDeviceInfo = 2;
   errors.Status err = 3;          //kratos通用错误
 }
 
 message DeviceUnBindRequest {
-  protocol.v1.Bind bindInfo = 1;
-  string serverID = 2;
-  uint64 connectSequece = 3;
+  DeviceInfo deviceInfo  = 1;
 }
 
 message DeviceUnBindReply {

@@ -2,7 +2,8 @@ package biz
 
 import (
 	"context"
-	protocol "xhappen/api/protocol"
+	"fmt"
+	protocol "xhappen/api/protocol/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -29,11 +30,11 @@ type RouterUsecase struct {
 }
 
 type DeviceInfo struct {
-	ServerID       string
-	ConnectSequece uint64
 	DeviceType     protocol.DeviceType
 	ClientID       string
 	CurVersion     int32
+	ServerID       string
+	ConnectSequece uint64
 }
 
 type UserRouterInfo struct {
@@ -52,17 +53,22 @@ func NewRouterUsecase(logger log.Logger) *RouterUsecase {
 	}
 }
 
-func (usecase *RouterUsecase) DeviceBind(ctx context.Context, deviceInfo DeviceInfo) error {
-	// usecase.device
+func (usecase *RouterUsecase) DeviceBind(ctx context.Context, deviceInfo *DeviceInfo) (*DeviceInfo, error) {
+	// 无已存在bind信息，
 	existing, ok := usecase.device[deviceInfo.ClientID]
 
 	if !ok {
-		usecase.device[deviceInfo.ClientID] = &deviceInfo
-		return nil
+		//不存在，保存返回
+		usecase.device[deviceInfo.ClientID] = deviceInfo
+		return nil, nil
 	}
 
-	if existing.ServerID != deviceInfo.ServerID {
-
+	//已存入新的数据，不执行，返回错误
+	if deviceInfo.ServerID == existing.ServerID && deviceInfo.ConnectSequece <= existing.ConnectSequece {
+		return nil, fmt.Errorf("device %s maybe later", deviceInfo.ClientID)
 	}
-	return nil
+
+	usecase.device[deviceInfo.ClientID] = deviceInfo
+	return existing, nil
+
 }
