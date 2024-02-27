@@ -2,6 +2,8 @@ package client
 
 import (
 	"context"
+	"errors"
+	"sync"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -18,6 +20,8 @@ const (
 )
 
 type GatewayClient struct {
+	sync.RWMutex
+	log   *log.Helper
 	conns map[string]*srcgrpc.ClientConn
 }
 
@@ -37,12 +41,36 @@ func NewGatewayClient(discovery registry.Discovery, logger log.Logger) (*Gateway
 		conns: make(map[string]*srcgrpc.ClientConn),
 	}
 
+	gwClient.update(services)
+
+	go func() {
+		for {
+			services, err := watcher.Next()
+			if err != nil {
+				if errors.Is(err, context.Canceled) {
+					return
+				}
+				gwClient.log.Errorf("http client watch service %v got unexpected error:=%v", SERVICE_NAME_GATEWAY, err)
+				time.Sleep(time.Second)
+				continue
+			}
+			gwClient.update(services)
+		}
+	}()
+
+	return gwClient, func() {}, nil
+
 }
 
 // 更新服务客户端
 func (repo *GatewayClient) update(services []*registry.ServiceInstance) {
-	for _, service := range services {
-		addr = ""
+	// for _, service := range services {
+	// 	addr = service.Endpoints[0]
 
-	}
+	// }
+	// connGRPC, err := grpc.DialInsecure(
+	// 	context.Background(),
+	// 	grpc.WithEndpoint("discovery:///helloworld"),
+	// 	grpc.WithDiscovery(r),
+	// )
 }

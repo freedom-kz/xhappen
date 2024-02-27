@@ -12,11 +12,13 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 )
 
-const DEFAULT_HASH_REPLICAS = 50
-const DEFAULT_CACHE_MAX_ENTRIES = 25 * 10000
-const USER_SECTION = 1000
-const USER_SEQUENCE_STEP = 10000
-const LOAD_DATA_TIMEOUT = 10 * time.Second
+const (
+	DEFAULT_HASH_REPLICAS     = 50
+	DEFAULT_CACHE_MAX_ENTRIES = 25 * 10000
+	USER_SECTION              = 1000
+	USER_SEQUENCE_STEP        = 10000
+	LOAD_DATA_TIMEOUT         = 10 * time.Second
+)
 
 // GreeterUsecase is a Greeter usecase.
 type SequenceUsecase struct {

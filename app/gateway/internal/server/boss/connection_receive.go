@@ -23,7 +23,7 @@ func (connection *Connection) packetProcess() error {
 		if connection.state == STATE_QUIT {
 			break
 		}
-
+		//走到这里的一定是经过bind和auth业务的
 		packet, err = connection.ReadPacket()
 		if err != nil {
 			break

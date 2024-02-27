@@ -13,17 +13,18 @@ option objc_class_prefix = "RouterV1";
 
 service Router {
   //设备相关操作
-  rpc DeviceBind(DeviceBindRequest) returns (DeviceBindReply)  {}
-  rpc DeviceAuth(DeviceAuthRequest) returns (DeviceAuthReply)  {}
-  rpc DeviceUnBind(DeviceUnBindRequest) returns (DeviceUnBindReply)  {}
+  rpc UserDeviceBind(DeviceBindRequest) returns (DeviceBindReply)  {}
+  rpc UserDeviceUnBind(DeviceUnBindRequest) returns (DeviceUnBindReply)  {}
 
   //查询用户路由
-  rpc GetServerByUserIds(GetServerByUserIdsRequest) returns (GetServerByUserIdsReply)  {}
-  rpc GetLocalServerByUserIds(GetLocalServerByUserIdsRequest) returns (GetLocalServerByUserIdsReply)  {}
+  rpc GetRoutersByUserIds(GetRoutersByUserIdsRequest) returns (GetRoutersByUserIdsReply)  {}
+  rpc GetLocalRoutersByUserIds(GetLocalServerByUserIdsRequest) returns (GetLocalServerByUserIdsReply)  {}
 
-  //查询房间路由
+  //房间路由相关
   rpc SaveRoomServer(SaveRoomServerRequest) returns (SaveRoomServerReply)  {}
   rpc SaveLocalRoomServer(SaveLocalRoomServerRequest) returns (SaveLocalRoomServerReply)  {}
+  rpc DeleteRoomServer(SaveRoomServerRequest) returns (SaveRoomServerReply)  {}
+  rpc DeleteLocalRoomServer(SaveLocalRoomServerRequest) returns (SaveLocalRoomServerReply)  {}
   rpc GetRoomServerByID(GetRoomServerByIDRequest) returns (GetRoomServerByIDReply)  {}
   rpc GetLocalRoomServerByID(GetLocalRoomServerByIDRequest) returns (GetLocalRoomServerByIDReply)  {}
 }
@@ -42,7 +43,7 @@ message DeviceBindRequest {
 
 message DeviceBindReply {
   bool ret = 1;
-  DeviceInfo existDeviceInfo = 2;
+  DeviceInfo exist = 2;
   errors.Status err = 3;          //kratos通用错误
 }
 
@@ -52,39 +53,32 @@ message DeviceUnBindRequest {
 
 message DeviceUnBindReply {
   bool ret = 1;
-  errors.Status err = 3;          //kratos通用错误
+  errors.Status err = 2;          //kratos通用错误
 }
 
-message DeviceAuthRequest {
-  protocol.v1.Bind bindInfo = 1;
-  string serverID = 2;
-  uint64 connectSequece = 3;
+message GetRoutersByUserIdsRequest {
+  repeated uint64 userIds = 1;
 }
 
-message DeviceAuthReply {
+message GetRoutersByUserIdsReply {
+  message UserDevicesRouter{
+    repeated DeviceInfo deviceInfo = 1;
+  }
   bool ret = 1;
-  errors.Status err = 3;          //kratos通用错误
-}
-
-message GetServerByUserIdsRequest {
-  protocol.v1.Bind bindInfo = 1;
-  string serverID = 2;
-  uint64 connectSequece = 3;
-}
-
-message GetServerByUserIdsReply {
-  bool ret = 1;
+  map<string, UserDevicesRouter> userDevicesRouter = 2; 
   errors.Status err = 3;          //kratos通用错误
 }
 
 message GetLocalServerByUserIdsRequest {
-  protocol.v1.Bind bindInfo = 1;
-  string serverID = 2;
-  uint64 connectSequece = 3;
+  repeated uint64 userIds = 1;
 }
 
 message GetLocalServerByUserIdsReply {
+  message UserDevicesRouter{
+    repeated DeviceInfo deviceInfo = 1;
+  }
   bool ret = 1;
+  map<string, UserDevicesRouter> userDevicesRouter = 2; 
   errors.Status err = 3;          //kratos通用错误
 }
 
