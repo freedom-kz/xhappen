@@ -4,7 +4,6 @@ package sequence.v1;
 
 import "errors/errors.proto";
 import "api/protocol/v1/common.proto";
-import "api/protocol/v1/message.proto";
 
 option go_package = "xhappen/api/router/v1;v1";
 option java_multiple_files = true;
@@ -17,16 +16,13 @@ service Router {
   rpc UserDeviceUnBind(DeviceUnBindRequest) returns (DeviceUnBindReply)  {}
 
   //查询用户路由
-  rpc GetRoutersByUserIds(GetRoutersByUserIdsRequest) returns (GetRoutersByUserIdsReply)  {}
-  rpc GetLocalRoutersByUserIds(GetLocalServerByUserIdsRequest) returns (GetLocalServerByUserIdsReply)  {}
+  rpc GetRoutersByUserIds(RoutersByUserIdsRequest) returns (RoutersByUserIdsReply)  {}
+  rpc GetLocalRoutersByUserIds(RoutersByUserIdsRequest) returns (RoutersByUserIdsReply)  {}
 
   //房间路由相关
-  rpc SaveRoomServer(SaveRoomServerRequest) returns (SaveRoomServerReply)  {}
-  rpc SaveLocalRoomServer(SaveLocalRoomServerRequest) returns (SaveLocalRoomServerReply)  {}
-  rpc DeleteRoomServer(SaveRoomServerRequest) returns (SaveRoomServerReply)  {}
-  rpc DeleteLocalRoomServer(SaveLocalRoomServerRequest) returns (SaveLocalRoomServerReply)  {}
-  rpc GetRoomServerByID(GetRoomServerByIDRequest) returns (GetRoomServerByIDReply)  {}
-  rpc GetLocalRoomServerByID(GetLocalRoomServerByIDRequest) returns (GetLocalRoomServerByIDReply)  {}
+  rpc SaveRoomRouter(SaveRoomRouterRequest) returns (SaveRoomRouterReply)  {}
+  rpc DeleteRoomRouter(DeleteRoomServerRequest) returns (SaveRoomServerReply)  {}
+  rpc GetRoomRouterByID(GetRoomRouterByIDRequest) returns (GetRoomRouterByIDReply)  {}
 }
 
 message DeviceInfo{
@@ -56,24 +52,11 @@ message DeviceUnBindReply {
   errors.Status err = 2;          //kratos通用错误
 }
 
-message GetRoutersByUserIdsRequest {
+message RoutersByUserIdsRequest {
   repeated uint64 userIds = 1;
 }
 
-message GetRoutersByUserIdsReply {
-  message UserDevicesRouter{
-    repeated DeviceInfo deviceInfo = 1;
-  }
-  bool ret = 1;
-  map<string, UserDevicesRouter> userDevicesRouter = 2; 
-  errors.Status err = 3;          //kratos通用错误
-}
-
-message GetLocalServerByUserIdsRequest {
-  repeated uint64 userIds = 1;
-}
-
-message GetLocalServerByUserIdsReply {
+message RoutersByUserIdsReply {
   message UserDevicesRouter{
     repeated DeviceInfo deviceInfo = 1;
   }
@@ -83,7 +66,7 @@ message GetLocalServerByUserIdsReply {
 }
 
 message SaveRoomServerRequest {
-  repeated string id = 1;
+  repeated string ids = 1;
 }
 
 message SaveRoomServerReply {
@@ -116,5 +99,36 @@ message GetLocalRoomServerByIDRequest {
 message GetLocalRoomServerByIDReply {
   map<string, string> ids = 1;
   errors.Status err = 2;          //kratos通用错误
+}
+
+message SaveRoomRouterRequest {
+   uint64 roomId = 1;
+   repeated string gwServers = 2;
+}
+
+message SaveRoomRouterReply {
+  bool ret = 1;
+  errors.Status err = 2;          //kratos通用错误
+}
+
+message DeleteRoomServerRequest {
+  uint64 roomId = 1;
+  repeated string gwServers = 2;  //删除的网关地址列表
+}
+
+message DeleteRoomServerReply {
+ bool ret = 1;
+ errors.Status err = 2;          //kratos通用错误
+}
+
+message GetRoomRouterByIDRequest {
+  uint64 roomId = 1;
+  repeated string gwServers = 2;
+}
+
+message GetRoomRouterByIDReply {
+ bool ret = 1;
+ repeated string gwServers = 2;
+ errors.Status err = 3;          //kratos通用错误
 }
 

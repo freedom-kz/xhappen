@@ -11,54 +11,54 @@ option objc_class_prefix = "SequenceV1";
 
 service Sequence {
     //批量获取用户消息序列号（生产消费序列号）
-    rpc GetSequenceByUserIds (GetSequenceByIdsRequest) returns (GetSequenceByIdsReply)  {}
-    rpc GetLocalSequenceByUserIds (GetLocalSequenceByIdsRequest) returns (GetLocalSequenceByIdsReply)  {}
+    rpc GenSequenceByUserIds (GenSequenceByUserIdsRequest) returns (GenSequenceByUserIdsReply)  {}
     
     //批量获取用户当前序列号（获取当前序列号）
-    rpc GetCurrentSequenceByUserIds (GetCurrentSequenceByIdsRequest) returns (GetCurrentSequenceByIdsReply)  {}
-    rpc GetLocalCurrentSequenceByUserIds (GetLocalCurrentSequenceByIdsRequest) returns (GetLocalCurrentSequenceByIdsReply)  {}
+    rpc GetCurrentSequenceByUserIds (GetCurrentSequenceByUserIdsRequest) returns (GetCurrentSequenceByUserIdsReply)  {}
     
     //批量获取房间消息序列号（生产房间消息序列号）
-    rpc GetRoomSequenceByRoomIds (GetLocalCurrentSequenceByIdsRequest) returns (GetLocalCurrentSequenceByIdsReply)  {}
-    rpc GetLocalRoomSequenceByRoomIds (GetLocalCurrentSequenceByIdsRequest) returns (GetLocalCurrentSequenceByIdsReply)  {}
-
+    rpc GenRoomSequenceByRoomIds (GenRoomSequenceByRoomIdsRequest) returns (GenRoomSequenceByRoomIdsReply)  {}
+    
     //批量获取房间当前消息序列号（获取房间当前消息序列号）
-    rpc GetCurrentRoomSequenceByRoomIds (GetLocalCurrentSequenceByIdsRequest) returns (GetLocalCurrentSequenceByIdsReply)  {}
-    rpc GetLocalCurrentRoomSequenceByRoomIds (GetLocalCurrentSequenceByIdsRequest) returns (GetLocalCurrentSequenceByIdsReply)  {}
+    rpc GetCurrentRoomSequenceByRoomIds (GetCurrentSequenceByRoomIdsRequest) returns (GetCurrentSequenceByRoomIdsReply)  {}
 }
 
-message GetSequenceByIdsRequest {
+message GenSequenceByUserIdsRequest {
     repeated string id = 1;
 }
 
-message GetSequenceByIdsReply {
+message GenSequenceByUserIdsReply {
     bool ret = 1;
-    errors.Status err = 2;          //kratos通用错误
+    map<uint64,uint64> ids = 2;
+    errors.Status err = 3;          //kratos通用错误
 }
 
-message GetLocalSequenceByIdsRequest {
-    repeated string id = 1;
-}
-  
-message GetLocalSequenceByIdsReply {
-    bool ret = 1;
-    errors.Status err = 2;          //kratos通用错误
-}
-
-message GetCurrentSequenceByIdsRequest {
+message GetCurrentSequenceByUserIdsRequest {
     repeated string id = 1;
 }
   
-message GetCurrentSequenceByIdsReply {
+message GetCurrentSequenceByUserIdsReply {
     bool ret = 1;
-    errors.Status err = 2;          //kratos通用错误
+    map<uint64,uint64> ids = 2;
+    errors.Status err = 3;          //kratos通用错误
 }
 
-message GetLocalCurrentSequenceByIdsRequest {
+message GenRoomSequenceByRoomIdsRequest {
     repeated string id = 1;
 }
 
-message GetLocalCurrentSequenceByIdsReply {
+message GenRoomSequenceByRoomIdsReply {
     bool ret = 1;
-    errors.Status err = 2;          //kratos通用错误
+    map<uint64,uint64> ids = 2;
+    errors.Status err = 3;          //kratos通用错误
+}
+
+message GetCurrentSequenceByRoomIdsRequest {
+    repeated string id = 1;
+}
+
+message GetCurrentSequenceByRoomIdsReply {
+    bool ret = 1;
+    map<uint64,uint64> ids = 2;
+    errors.Status err = 3;          //kratos通用错误
 }

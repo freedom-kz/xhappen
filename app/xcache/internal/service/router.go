@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 
-	basic "xhappen/api/basic/v1"
 	v1 "xhappen/api/router/v1"
 	"xhappen/app/xcache/internal/biz"
 )
@@ -50,17 +49,16 @@ func (s *RouterService) DeviceBind(ctx context.Context, in *v1.DeviceBindRequest
 		3.1 客户端不存在直接存放返回
 		3.2 客户端存在，进行序列号对比，更新执行/返回错误
 	*/
-	request := biz.DeviceInfo{
-		ClientID: in.BindInfo.ClientID,
-	}
-	exist, err := s.useCase.DeviceBind(ctx, &deviceBindRequest)
-	if err != nil {
-		return &v1.DeviceBindReply{
-			Ret: false,
-			Err: &basic.ErrorUnknown(err.Error()).Status,
-		}, nil
-	}
-
+	// request := biz.DeviceInfo{
+	// 	ClientID: in.BindInfo.ClientID,
+	// }
+	// exist, err := s.useCase.DeviceBind(ctx, &deviceBindRequest)
+	// if err != nil {
+	// 	return &v1.DeviceBindReply{
+	// 		Ret: false,
+	// 		Err: &basic.ErrorUnknown(err.Error()).Status,
+	// 	}, nil
+	// }
 
 	return &v1.DeviceBindReply{
 		Ret: true,
