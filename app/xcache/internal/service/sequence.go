@@ -18,18 +18,18 @@ func NewSequenceService(uc *biz.SequenceUsecase) *SequenceService {
 	return &SequenceService{uc: uc}
 }
 
-func (s *SequenceService) GetSequenceByIds(ctx context.Context, in *v1.GetSequenceByIdsRequest) (*v1.GetSequenceByIdsReply, error) {
+func (s *SequenceService) GenSequenceByUserIds(context.Context, *v1.GenSequenceByUserIdsRequest) (*v1.GenSequenceByUserIdsReply, error) {
 	return nil, nil
 }
 
-func (s *SequenceService) GetLocalSequenceByIds(ctx context.Context, in *v1.GetLocalSequenceByIdsRequest) (*v1.GetLocalSequenceByIdsReply, error) {
+func (s *SequenceService) GetCurrentSequenceByUserIds(ctx context.Context, in *v1.GetCurrentSequenceByUserIdsRequest) (*v1.GetCurrentSequenceByUserIdsReply, error) {
 	return nil, nil
 }
 
-func (s *SequenceService) GetCurrentSequenceByIds(ctx context.Context, in *v1.GetCurrentSequenceByIdsRequest) (*v1.GetCurrentSequenceByIdsReply, error) {
+func (s *SequenceService) GenRoomSequenceByRoomIds(ctx context.Context, in *v1.GenRoomSequenceByRoomIdsRequest) (*v1.GenRoomSequenceByRoomIdsReply, error) {
 	return nil, nil
 }
 
-func (s *SequenceService) GetLocalCurrentSequenceByIds(ctx context.Context, in *v1.GetLocalCurrentSequenceByIdsRequest) (*v1.GetLocalCurrentSequenceByIdsReply, error) {
+func (s *SequenceService) GetCurrentRoomSequenceByRoomIds(ctx context.Context, in *v1.GetCurrentSequenceByRoomIdsRequest) (*v1.GetCurrentSequenceByRoomIdsReply, error) {
 	return nil, nil
 }

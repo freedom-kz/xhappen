@@ -17,7 +17,6 @@ service Router {
 
   //查询用户路由
   rpc GetRoutersByUserIds(RoutersByUserIdsRequest) returns (RoutersByUserIdsReply)  {}
-  rpc GetLocalRoutersByUserIds(RoutersByUserIdsRequest) returns (RoutersByUserIdsReply)  {}
 
   //房间路由相关
   rpc SaveRoomRouter(SaveRoomRouterRequest) returns (SaveRoomRouterReply)  {}

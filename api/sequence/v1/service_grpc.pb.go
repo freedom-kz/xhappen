@@ -19,20 +19,24 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Sequence_GetSequenceByIds_FullMethodName             = "/sequence.v1.Sequence/GetSequenceByIds"
-	Sequence_GetLocalSequenceByIds_FullMethodName        = "/sequence.v1.Sequence/GetLocalSequenceByIds"
-	Sequence_GetCurrentSequenceByIds_FullMethodName      = "/sequence.v1.Sequence/GetCurrentSequenceByIds"
-	Sequence_GetLocalCurrentSequenceByIds_FullMethodName = "/sequence.v1.Sequence/GetLocalCurrentSequenceByIds"
+	Sequence_GenSequenceByUserIds_FullMethodName            = "/sequence.v1.Sequence/GenSequenceByUserIds"
+	Sequence_GetCurrentSequenceByUserIds_FullMethodName     = "/sequence.v1.Sequence/GetCurrentSequenceByUserIds"
+	Sequence_GenRoomSequenceByRoomIds_FullMethodName        = "/sequence.v1.Sequence/GenRoomSequenceByRoomIds"
+	Sequence_GetCurrentRoomSequenceByRoomIds_FullMethodName = "/sequence.v1.Sequence/GetCurrentRoomSequenceByRoomIds"
 )
 
 // SequenceClient is the client API for Sequence service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SequenceClient interface {
-	GetSequenceByIds(ctx context.Context, in *GetSequenceByIdsRequest, opts ...grpc.CallOption) (*GetSequenceByIdsReply, error)
-	GetLocalSequenceByIds(ctx context.Context, in *GetLocalSequenceByIdsRequest, opts ...grpc.CallOption) (*GetLocalSequenceByIdsReply, error)
-	GetCurrentSequenceByIds(ctx context.Context, in *GetCurrentSequenceByIdsRequest, opts ...grpc.CallOption) (*GetCurrentSequenceByIdsReply, error)
-	GetLocalCurrentSequenceByIds(ctx context.Context, in *GetLocalCurrentSequenceByIdsRequest, opts ...grpc.CallOption) (*GetLocalCurrentSequenceByIdsReply, error)
+	// 批量获取用户消息序列号（生产消费序列号）
+	GenSequenceByUserIds(ctx context.Context, in *GenSequenceByUserIdsRequest, opts ...grpc.CallOption) (*GenSequenceByUserIdsReply, error)
+	// 批量获取用户当前序列号（获取当前序列号）
+	GetCurrentSequenceByUserIds(ctx context.Context, in *GetCurrentSequenceByUserIdsRequest, opts ...grpc.CallOption) (*GetCurrentSequenceByUserIdsReply, error)
+	// 批量获取房间消息序列号（生产房间消息序列号）
+	GenRoomSequenceByRoomIds(ctx context.Context, in *GenRoomSequenceByRoomIdsRequest, opts ...grpc.CallOption) (*GenRoomSequenceByRoomIdsReply, error)
+	// 批量获取房间当前消息序列号（获取房间当前消息序列号）
+	GetCurrentRoomSequenceByRoomIds(ctx context.Context, in *GetCurrentSequenceByRoomIdsRequest, opts ...grpc.CallOption) (*GetCurrentSequenceByRoomIdsReply, error)
 }
 
 type sequenceClient struct {
@@ -43,36 +47,36 @@ func NewSequenceClient(cc grpc.ClientConnInterface) SequenceClient {
 	return &sequenceClient{cc}
 }
 
-func (c *sequenceClient) GetSequenceByIds(ctx context.Context, in *GetSequenceByIdsRequest, opts ...grpc.CallOption) (*GetSequenceByIdsReply, error) {
-	out := new(GetSequenceByIdsReply)
-	err := c.cc.Invoke(ctx, Sequence_GetSequenceByIds_FullMethodName, in, out, opts...)
+func (c *sequenceClient) GenSequenceByUserIds(ctx context.Context, in *GenSequenceByUserIdsRequest, opts ...grpc.CallOption) (*GenSequenceByUserIdsReply, error) {
+	out := new(GenSequenceByUserIdsReply)
+	err := c.cc.Invoke(ctx, Sequence_GenSequenceByUserIds_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *sequenceClient) GetLocalSequenceByIds(ctx context.Context, in *GetLocalSequenceByIdsRequest, opts ...grpc.CallOption) (*GetLocalSequenceByIdsReply, error) {
-	out := new(GetLocalSequenceByIdsReply)
-	err := c.cc.Invoke(ctx, Sequence_GetLocalSequenceByIds_FullMethodName, in, out, opts...)
+func (c *sequenceClient) GetCurrentSequenceByUserIds(ctx context.Context, in *GetCurrentSequenceByUserIdsRequest, opts ...grpc.CallOption) (*GetCurrentSequenceByUserIdsReply, error) {
+	out := new(GetCurrentSequenceByUserIdsReply)
+	err := c.cc.Invoke(ctx, Sequence_GetCurrentSequenceByUserIds_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *sequenceClient) GetCurrentSequenceByIds(ctx context.Context, in *GetCurrentSequenceByIdsRequest, opts ...grpc.CallOption) (*GetCurrentSequenceByIdsReply, error) {
-	out := new(GetCurrentSequenceByIdsReply)
-	err := c.cc.Invoke(ctx, Sequence_GetCurrentSequenceByIds_FullMethodName, in, out, opts...)
+func (c *sequenceClient) GenRoomSequenceByRoomIds(ctx context.Context, in *GenRoomSequenceByRoomIdsRequest, opts ...grpc.CallOption) (*GenRoomSequenceByRoomIdsReply, error) {
+	out := new(GenRoomSequenceByRoomIdsReply)
+	err := c.cc.Invoke(ctx, Sequence_GenRoomSequenceByRoomIds_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *sequenceClient) GetLocalCurrentSequenceByIds(ctx context.Context, in *GetLocalCurrentSequenceByIdsRequest, opts ...grpc.CallOption) (*GetLocalCurrentSequenceByIdsReply, error) {
-	out := new(GetLocalCurrentSequenceByIdsReply)
-	err := c.cc.Invoke(ctx, Sequence_GetLocalCurrentSequenceByIds_FullMethodName, in, out, opts...)
+func (c *sequenceClient) GetCurrentRoomSequenceByRoomIds(ctx context.Context, in *GetCurrentSequenceByRoomIdsRequest, opts ...grpc.CallOption) (*GetCurrentSequenceByRoomIdsReply, error) {
+	out := new(GetCurrentSequenceByRoomIdsReply)
+	err := c.cc.Invoke(ctx, Sequence_GetCurrentRoomSequenceByRoomIds_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -83,10 +87,14 @@ func (c *sequenceClient) GetLocalCurrentSequenceByIds(ctx context.Context, in *G
 // All implementations must embed UnimplementedSequenceServer
 // for forward compatibility
 type SequenceServer interface {
-	GetSequenceByIds(context.Context, *GetSequenceByIdsRequest) (*GetSequenceByIdsReply, error)
-	GetLocalSequenceByIds(context.Context, *GetLocalSequenceByIdsRequest) (*GetLocalSequenceByIdsReply, error)
-	GetCurrentSequenceByIds(context.Context, *GetCurrentSequenceByIdsRequest) (*GetCurrentSequenceByIdsReply, error)
-	GetLocalCurrentSequenceByIds(context.Context, *GetLocalCurrentSequenceByIdsRequest) (*GetLocalCurrentSequenceByIdsReply, error)
+	// 批量获取用户消息序列号（生产消费序列号）
+	GenSequenceByUserIds(context.Context, *GenSequenceByUserIdsRequest) (*GenSequenceByUserIdsReply, error)
+	// 批量获取用户当前序列号（获取当前序列号）
+	GetCurrentSequenceByUserIds(context.Context, *GetCurrentSequenceByUserIdsRequest) (*GetCurrentSequenceByUserIdsReply, error)
+	// 批量获取房间消息序列号（生产房间消息序列号）
+	GenRoomSequenceByRoomIds(context.Context, *GenRoomSequenceByRoomIdsRequest) (*GenRoomSequenceByRoomIdsReply, error)
+	// 批量获取房间当前消息序列号（获取房间当前消息序列号）
+	GetCurrentRoomSequenceByRoomIds(context.Context, *GetCurrentSequenceByRoomIdsRequest) (*GetCurrentSequenceByRoomIdsReply, error)
 	mustEmbedUnimplementedSequenceServer()
 }
 
@@ -94,17 +102,17 @@ type SequenceServer interface {
 type UnimplementedSequenceServer struct {
 }
 
-func (UnimplementedSequenceServer) GetSequenceByIds(context.Context, *GetSequenceByIdsRequest) (*GetSequenceByIdsReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSequenceByIds not implemented")
+func (UnimplementedSequenceServer) GenSequenceByUserIds(context.Context, *GenSequenceByUserIdsRequest) (*GenSequenceByUserIdsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenSequenceByUserIds not implemented")
 }
-func (UnimplementedSequenceServer) GetLocalSequenceByIds(context.Context, *GetLocalSequenceByIdsRequest) (*GetLocalSequenceByIdsReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLocalSequenceByIds not implemented")
+func (UnimplementedSequenceServer) GetCurrentSequenceByUserIds(context.Context, *GetCurrentSequenceByUserIdsRequest) (*GetCurrentSequenceByUserIdsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCurrentSequenceByUserIds not implemented")
 }
-func (UnimplementedSequenceServer) GetCurrentSequenceByIds(context.Context, *GetCurrentSequenceByIdsRequest) (*GetCurrentSequenceByIdsReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCurrentSequenceByIds not implemented")
+func (UnimplementedSequenceServer) GenRoomSequenceByRoomIds(context.Context, *GenRoomSequenceByRoomIdsRequest) (*GenRoomSequenceByRoomIdsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenRoomSequenceByRoomIds not implemented")
 }
-func (UnimplementedSequenceServer) GetLocalCurrentSequenceByIds(context.Context, *GetLocalCurrentSequenceByIdsRequest) (*GetLocalCurrentSequenceByIdsReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetLocalCurrentSequenceByIds not implemented")
+func (UnimplementedSequenceServer) GetCurrentRoomSequenceByRoomIds(context.Context, *GetCurrentSequenceByRoomIdsRequest) (*GetCurrentSequenceByRoomIdsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetCurrentRoomSequenceByRoomIds not implemented")
 }
 func (UnimplementedSequenceServer) mustEmbedUnimplementedSequenceServer() {}
 
@@ -119,74 +127,74 @@ func RegisterSequenceServer(s grpc.ServiceRegistrar, srv SequenceServer) {
 	s.RegisterService(&Sequence_ServiceDesc, srv)
 }
 
-func _Sequence_GetSequenceByIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetSequenceByIdsRequest)
+func _Sequence_GenSequenceByUserIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenSequenceByUserIdsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SequenceServer).GetSequenceByIds(ctx, in)
+		return srv.(SequenceServer).GenSequenceByUserIds(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Sequence_GetSequenceByIds_FullMethodName,
+		FullMethod: Sequence_GenSequenceByUserIds_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SequenceServer).GetSequenceByIds(ctx, req.(*GetSequenceByIdsRequest))
+		return srv.(SequenceServer).GenSequenceByUserIds(ctx, req.(*GenSequenceByUserIdsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Sequence_GetLocalSequenceByIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetLocalSequenceByIdsRequest)
+func _Sequence_GetCurrentSequenceByUserIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCurrentSequenceByUserIdsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SequenceServer).GetLocalSequenceByIds(ctx, in)
+		return srv.(SequenceServer).GetCurrentSequenceByUserIds(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Sequence_GetLocalSequenceByIds_FullMethodName,
+		FullMethod: Sequence_GetCurrentSequenceByUserIds_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SequenceServer).GetLocalSequenceByIds(ctx, req.(*GetLocalSequenceByIdsRequest))
+		return srv.(SequenceServer).GetCurrentSequenceByUserIds(ctx, req.(*GetCurrentSequenceByUserIdsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Sequence_GetCurrentSequenceByIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCurrentSequenceByIdsRequest)
+func _Sequence_GenRoomSequenceByRoomIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenRoomSequenceByRoomIdsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SequenceServer).GetCurrentSequenceByIds(ctx, in)
+		return srv.(SequenceServer).GenRoomSequenceByRoomIds(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Sequence_GetCurrentSequenceByIds_FullMethodName,
+		FullMethod: Sequence_GenRoomSequenceByRoomIds_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SequenceServer).GetCurrentSequenceByIds(ctx, req.(*GetCurrentSequenceByIdsRequest))
+		return srv.(SequenceServer).GenRoomSequenceByRoomIds(ctx, req.(*GenRoomSequenceByRoomIdsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Sequence_GetLocalCurrentSequenceByIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetLocalCurrentSequenceByIdsRequest)
+func _Sequence_GetCurrentRoomSequenceByRoomIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCurrentSequenceByRoomIdsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SequenceServer).GetLocalCurrentSequenceByIds(ctx, in)
+		return srv.(SequenceServer).GetCurrentRoomSequenceByRoomIds(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Sequence_GetLocalCurrentSequenceByIds_FullMethodName,
+		FullMethod: Sequence_GetCurrentRoomSequenceByRoomIds_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SequenceServer).GetLocalCurrentSequenceByIds(ctx, req.(*GetLocalCurrentSequenceByIdsRequest))
+		return srv.(SequenceServer).GetCurrentRoomSequenceByRoomIds(ctx, req.(*GetCurrentSequenceByRoomIdsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -199,20 +207,20 @@ var Sequence_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*SequenceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetSequenceByIds",
-			Handler:    _Sequence_GetSequenceByIds_Handler,
+			MethodName: "GenSequenceByUserIds",
+			Handler:    _Sequence_GenSequenceByUserIds_Handler,
 		},
 		{
-			MethodName: "GetLocalSequenceByIds",
-			Handler:    _Sequence_GetLocalSequenceByIds_Handler,
+			MethodName: "GetCurrentSequenceByUserIds",
+			Handler:    _Sequence_GetCurrentSequenceByUserIds_Handler,
 		},
 		{
-			MethodName: "GetCurrentSequenceByIds",
-			Handler:    _Sequence_GetCurrentSequenceByIds_Handler,
+			MethodName: "GenRoomSequenceByRoomIds",
+			Handler:    _Sequence_GenRoomSequenceByRoomIds_Handler,
 		},
 		{
-			MethodName: "GetLocalCurrentSequenceByIds",
-			Handler:    _Sequence_GetLocalCurrentSequenceByIds_Handler,
+			MethodName: "GetCurrentRoomSequenceByRoomIds",
+			Handler:    _Sequence_GetCurrentRoomSequenceByRoomIds_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
