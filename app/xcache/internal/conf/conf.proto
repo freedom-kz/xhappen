@@ -18,7 +18,6 @@ message Server {
   }
   message Info{
     int32 capacity = 1;
-    int32 index = 2;
   }
   GRPC grpc = 1;
   Info info = 2;

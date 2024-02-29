@@ -59,7 +59,7 @@ func NewData(c *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 		}
 	}
 
-	return &Data{}, cleanup, nil
+	return d, cleanup, nil
 }
 
 func newMDB(conf *conf.Bootstrap, logger log.Logger) *mongo.Client {

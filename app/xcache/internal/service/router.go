@@ -18,6 +18,7 @@ func NewRouterService(useCase *biz.RouterUsecase) *RouterService {
 }
 
 func (s *RouterService) UserDeviceBind(ctx context.Context, in *v1.DeviceBindRequest) (*v1.DeviceBindReply, error) {
+	
 	return nil, nil
 }
 
