@@ -4,7 +4,6 @@ server:
     timeout: 1s
   info:
     capacity: 3
-    index: 0
 data:
   database:
     driver: mysql

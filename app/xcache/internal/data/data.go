@@ -47,7 +47,6 @@ func NewData(c *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 
 	cleanup := func() {
 		logger.Log(log.LevelInfo, "msg", "closing the data resources")
-
 		ctx, _ := context.WithTimeout(context.Background(), time.Second)
 
 		if err := d.db.Close(); err != nil {
@@ -63,6 +62,7 @@ func NewData(c *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 }
 
 func newMDB(conf *conf.Bootstrap, logger log.Logger) *mongo.Client {
+	log := log.NewHelper(log.With(logger, "module", "xcache/data/mongo"))
 	opts := options.Client()
 	opts.ApplyURI("mongodb://" + conf.Data.Dms.Addr)
 	opts.SetMaxConnIdleTime(5 * 60 * time.Second) //空闲超时5分钟
@@ -88,7 +88,7 @@ func newMDB(conf *conf.Bootstrap, logger log.Logger) *mongo.Client {
 }
 
 func newDB(conf *conf.Bootstrap, logger log.Logger) *sqlx.DB {
-	log := log.NewHelper(log.With(logger, "module", "portal/data/gorm"))
+	log := log.NewHelper(log.With(logger, "module", "xcache/data/mysql"))
 
 	db, err := sqlx.Connect("mysql", conf.Data.Database.Source)
 	if err != nil {

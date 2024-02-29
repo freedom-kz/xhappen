@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"xhappen/app/xcache/internal/conf"
 
-	// sequence_pb "xhappen/api/sequence"
 	router_pb "xhappen/api/router/v1"
+	sequence_pb "xhappen/api/sequence/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -16,9 +16,10 @@ import (
 )
 
 type XcacheClient struct {
-	peers map[string]router_pb.RouterClient
-	conns map[string]*grpc.ClientConn //服务ID对应的grpc client
-	log   *log.Helper
+	conns         map[string]*grpc.ClientConn //服务ID对应的grpc client
+	RouterPeers   map[string]router_pb.RouterClient
+	SequencePeers map[string]sequence_pb.SequenceClient
+	log           *log.Helper
 }
 
 func NewXcacheClient(conf *conf.Bootstrap, logger log.Logger) (*XcacheClient, func(), error) {
@@ -36,6 +37,7 @@ func NewXcacheClient(conf *conf.Bootstrap, logger log.Logger) (*XcacheClient, fu
 	return client, cleanUp, nil
 }
 
+// 集群节点变化变更
 func (xClient *XcacheClient) update(services []*registry.ServiceInstance) bool {
 	for _, service := range services {
 		md := service.Metadata
@@ -43,7 +45,7 @@ func (xClient *XcacheClient) update(services []*registry.ServiceInstance) bool {
 		if !ok {
 			continue
 		}
-		if _, ok := xClient.peers[endpointAddr]; !ok {
+		if _, ok := xClient.conns[endpointAddr]; !ok {
 			conn, err := transgrpc.DialInsecure(
 				context.Background(),
 				transgrpc.WithEndpoint(endpointAddr),
@@ -55,18 +57,17 @@ func (xClient *XcacheClient) update(services []*registry.ServiceInstance) bool {
 				continue
 			}
 			xClient.conns[endpointAddr] = conn
-			xClient.peers[endpointAddr] = router_pb.NewRouterClient(conn)
+			xClient.RouterPeers[endpointAddr] = router_pb.NewRouterClient(conn)
+			xClient.SequencePeers[endpointAddr] = sequence_pb.NewSequenceClient(conn)
 		}
 	}
 	return true
 }
 
-// UserDeviceBind(ctx context.Context, in *DeviceBindRequest, opts ...grpc.CallOption) (*DeviceBindReply, error)
-
 func (XcacheClient *XcacheClient) UserDeviceBind(ctx context.Context, serverAddr string, req *router_pb.DeviceBindRequest) (*router_pb.DeviceBindReply, error) {
-	peer, ok := XcacheClient.peers[serverAddr]
+	peer, ok := XcacheClient.RouterPeers[serverAddr]
 	if !ok {
-		return nil, fmt.Errorf("%s server is not alive", serverAddr)
+		return nil, fmt.Errorf("router server [%s] is not alive", serverAddr)
 	}
 	return peer.UserDeviceBind(ctx, req)
 }

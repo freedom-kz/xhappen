@@ -22,7 +22,6 @@ const (
 
 // GreeterUsecase is a Greeter usecase.
 type SequenceUsecase struct {
-	cfg               *conf.Bootstrap          //基础配置
 	sequenceGenerater *sequenceGenerater       //内存序列号操作
 	userSequence      map[uint64]*UserSequence //用户持久化数据
 	roomSequence      map[uint64]*RoomSequence //房间持久化数据
@@ -55,7 +54,7 @@ type userSequenceCache struct {
 	maxSequence     *uint64
 }
 
-func (cache *userSequenceCache) incrementSeq(ctx context.Context) (uint64, error) {
+func (cache *userSequenceCache) incrementSequence(ctx context.Context) (uint64, error) {
 
 	// 内存数据递加
 	// 判断是否为有效
@@ -96,7 +95,7 @@ func (cache *userSequenceCache) incrementSeq(ctx context.Context) (uint64, error
 	return next_sequence, nil
 }
 
-func (cache *userSequenceCache) getCurrentSeq() uint64 {
+func (cache *userSequenceCache) getCurrentSequence() uint64 {
 	return atomic.LoadUint64(cache.currentSequence)
 }
 
@@ -131,7 +130,6 @@ func NewSequenceUsecase(cfg *conf.Bootstrap, repo SequenceRepo, logger log.Logge
 	*/
 
 	sequenceUsecase := &SequenceUsecase{
-		cfg:               cfg,
 		sequenceGenerater: &sequenceGenerater{user: make(map[uint64]*userSequenceCache), room: make(map[uint64]*roomSequenceCache)},
 		repo:              repo,
 		log:               log.NewHelper(logger),
@@ -145,7 +143,7 @@ func NewSequenceUsecase(cfg *conf.Bootstrap, repo SequenceRepo, logger log.Logge
 	//加载用户序列号持久化数据，每次取1000条数据
 	for {
 		userSequences, err := repo.ReloadAllocationUserSequence(ctx,
-			uint64(cfg.Server.Info.Index), uint64(cfg.Server.Info.Capacity), uint64(startId), uint64(limit))
+			uint64(1), uint64(cfg.Server.Info.Capacity), uint64(startId), uint64(limit))
 
 		if err != nil {
 			log.Fatalf("load user sequence err: %v", err)
@@ -183,7 +181,7 @@ func (useCase *SequenceUsecase) GetLocalSequenceByIds(ctx context.Context, ids [
 	sequences := make(map[uint64]uint64)
 	for _, id := range ids {
 		generater := useCase.sequenceGenerater.user[id]
-		new, err := generater.incrementSeq(ctx)
+		new, err := generater.incrementSequence(ctx)
 		if err != nil {
 			//数据库操作，更新内存数据
 		} else {
