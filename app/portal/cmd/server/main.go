@@ -92,12 +92,13 @@ func main() {
 
 	r := etcd.New(client)
 
+
 	smsCodeSender, err := event.NewKafkaSender([]string{bc.Data.Kafka.Addr}, bc.Data.Kafka.SmsCodeTopic)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	app, cleanup, err := wireApp(&bc, logger, r, smsCodeSender)
+	app, cleanup, err := wireApp(&bc, logger, r, r, smsCodeSender)
 	if err != nil {
 		panic(err)
 	}

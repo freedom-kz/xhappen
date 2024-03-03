@@ -29,11 +29,12 @@ func NewConfigService(conf *conf.Bootstrap, lbUseCase *biz.LoadBlanceUseCase, lo
 func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConfigRequest) (*pb.GetBasicConfigReply, error) {
 	//获取或分配sockethost
 	var (
-		addr string
-		err  error
+		addr   string
+		userID uint64
+		err    error
 	)
 
-	if userID, err := GetUserID(ctx); err == nil {
+	if userID, err = GetUserID(ctx); err == nil {
 		addr, err = c.lbUseCase.DispatchByClientID(ctx, req.ClientId)
 	} else {
 		idStr := strconv.FormatUint(uint64(userID), 10)

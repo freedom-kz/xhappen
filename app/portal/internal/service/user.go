@@ -134,7 +134,7 @@ func (s *UserService) DeRegister(ctx context.Context, req *pb.DeRegisterRequest)
 		return &pb.DeRegisterReply{}, err
 	}
 	//变更用户状态
-	err = s.user.UpdateUserStateByID(ctx, id, biz.USER_STATE_WAIT_CLEAN)
+	err = s.user.UpdateUserStateByID(ctx, int64(id), biz.USER_STATE_WAIT_CLEAN)
 
 	return &pb.DeRegisterReply{}, err
 }
@@ -176,7 +176,7 @@ func (s *UserService) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileR
 	if err != nil {
 		return &pb.GetSelfProfileReply{}, err
 	}
-	users, err := s.user.GetUserInfoByIDs(ctx, []int64{id})
+	users, err := s.user.GetUserInfoByIDs(ctx, []int64{int64(id)})
 	if err != nil {
 		return &pb.GetSelfProfileReply{}, err
 	}
@@ -211,7 +211,7 @@ func (s *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRe
 	if err != nil {
 		return &pb.UpdateProfileReply{}, err
 	}
-	users, err := s.user.GetUserInfoByIDs(ctx, []int64{id})
+	users, err := s.user.GetUserInfoByIDs(ctx, []int64{int64(id)})
 	if err != nil {
 		return &pb.UpdateProfileReply{}, err
 	}

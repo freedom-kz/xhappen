@@ -5,6 +5,8 @@ import (
 	"errors"
 	"sync"
 	"time"
+	"xhappen/app/portal/internal/biz"
+	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
@@ -29,8 +31,8 @@ type LoadBlanceGwRepo struct {
 	gateway_publicIP []string
 }
 
-func NewLoadBlanceGwRepo(ctx context.Context, data *Data, discovery registry.Discovery, logger log.Logger) *LoadBlanceGwRepo {
-
+func NewLoadBlanceGwRepo(data *Data, discovery registry.Discovery, logger log.Logger) biz.LoadBalanceRepo {
+	ctx := context.Background()
 	services, err := discovery.GetService(ctx, SERVICE_NAME_GATEWAY)
 	if err != nil {
 		log.Fatal("msg", "failed connection to cluster: %v", err)
@@ -85,6 +87,10 @@ func (repo *LoadBlanceGwRepo) GetGatewayPublicIPs() []string {
 	repo.RLock()
 	defer repo.RUnlock()
 	return repo.gateway_publicIP
+}
+
+func (repo *LoadBlanceGwRepo) IsAlive(addr string) bool {
+	return utils.StringInSlice(addr, repo.gateway_publicIP)
 }
 
 func (repo *LoadBlanceGwRepo) SaveDispatchInfo(ctx context.Context, clientId string, userId string, gwAddr string) error {
