@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"os"
+	"time"
 
 	"xhappen/app/xcache/internal/conf"
 	plog "xhappen/pkg/log"
@@ -90,7 +91,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	r := etcd.New(client)
+	r := etcd.New(client, etcd.RegisterTTL(3*time.Second))
 
 	/*
 		服务注册于发现逻辑填充，不再用kratos自带业务

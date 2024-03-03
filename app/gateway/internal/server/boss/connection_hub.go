@@ -11,19 +11,16 @@ import (
 type Hub struct {
 	logger log.Logger
 
-	boss  *Boss
-	index int
-
+	boss                   *Boss
+	index                  int
 	deliverToHub           chan *deliverToHub
 	syncToHub              chan *syncToHub
 	broadcastToHub         chan *broadcastToHub
 	actionToHub            chan *actionToHub
 	disconnectedforceToHub chan *disconnectedforceToHub
-
-	addConn    chan *Connection
-	removeConn chan *Connection
-
-	exitCh chan struct{}
+	addConn                chan *Connection
+	removeConn             chan *Connection
+	exitCh                 chan struct{}
 }
 
 type deliverToHub struct {

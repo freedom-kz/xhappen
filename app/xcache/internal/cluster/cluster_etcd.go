@@ -15,7 +15,7 @@ import (
 const (
 	ENDPOINT_XCACHE_NAME = "/microservices/customtype/xcache"
 	SERVICE_NAME         = "xcache"
-	REGISTER_LEASE_TTL   = 10 * time.Second
+	REGISTER_LEASE_TTL   = 3 * time.Second
 )
 
 type Cluster struct {
@@ -67,7 +67,7 @@ func NewCluster(ctx context.Context,
 	cluster.serveStateListen.stateModify(cluster.state == 1, cluster.index)
 
 	//监听集群节点数据，这里包含热备
-	err = cluster.watchXcacheClusterModify()
+	err = cluster.watchStart()
 	if err != nil {
 		cluster.log.Fatalf("New cluster client watch err:%s", err)
 		return nil, err
@@ -105,7 +105,7 @@ func (cluster *Cluster) Initialize(ctx context.Context) error {
 }
 
 // 注册中心数据监听
-func (cluster *Cluster) watchXcacheClusterModify() error {
+func (cluster *Cluster) watchStart() error {
 	//本机服务状态监控及数据操作
 	//所有节点数据监控，client数据操作
 	return nil

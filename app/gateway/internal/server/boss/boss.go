@@ -160,7 +160,7 @@ func (boss *Boss) Stop(context.Context) error {
 
 // 创建并开启hub
 func (boss *Boss) hubStart() {
-	numberOfHubs := runtime.NumCPU() * 4
+	numberOfHubs := runtime.NumCPU() * 16
 	boss.logger.Log(log.LevelInfo, "hubs", numberOfHubs)
 
 	hubs := make([]*Hub, numberOfHubs)
