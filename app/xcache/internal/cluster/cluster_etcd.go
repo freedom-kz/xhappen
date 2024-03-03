@@ -20,13 +20,13 @@ const (
 
 type Cluster struct {
 	ctx                     context.Context
-	state                   uint
-	index                   int
-	local_ip                string
+	state                   uint   //本机服务状态
+	index                   int    //本机抢占索引
+	local_ip                string //本机IP
 	info                    *conf.Server_Info
 	registry                *etcd.Registry
-	serveStateListen        localServeStateModifyListen
-	clusterNodeModifyListen clusterNodeModifyListen
+	serveStateListen        localServeStateModifyListen //状态变更通知
+	clusterNodeModifyListen clusterNodeModifyListen     //集群节点变化通知
 	log                     *log.Helper
 }
 
@@ -67,11 +67,19 @@ func NewCluster(ctx context.Context,
 	cluster.serveStateListen.stateModify(cluster.state == 1, cluster.index)
 
 	//监听集群节点数据，这里包含热备
-	err = cluster.watchStart()
+	go func() {
+		err = cluster.watchStart(ctx, SERVICE_NAME)
+		if err != nil {
+			cluster.log.Fatalf("New cluster client watch err:%s", err)
+		}
+	}()
+
+	service, err := cluster.registry.GetService(ctx, SERVICE_NAME)
 	if err != nil {
-		cluster.log.Fatalf("New cluster client watch err:%s", err)
-		return nil, err
+		return cluster, err
 	}
+
+	cluster.clusterNodeModifyListen.update(service)
 	return cluster, err
 }
 
@@ -105,21 +113,33 @@ func (cluster *Cluster) Initialize(ctx context.Context) error {
 }
 
 // 注册中心数据监听
-func (cluster *Cluster) watchStart() error {
-	//本机服务状态监控及数据操作
-	//所有节点数据监控，client数据操作
-	return nil
+func (cluster *Cluster) watchStart(ctx context.Context, key string) error {
+	watchChan := cluster.registry.WatchWithPrefix(ctx, key)
+
+	for {
+		select {
+		case <-watchChan:
+			err := cluster.Initialize(ctx)
+			if err != nil {
+				cluster.log.Errorf("cluster watch event initialize instances err:%v", err)
+				continue
+			}
+			ins, err := cluster.registry.GetService(ctx, SERVICE_NAME)
+			if err != nil {
+				cluster.log.Errorf("cluster watch event get instances err:%v", err)
+				continue
+			}
+			cluster.clusterNodeModifyListen.update(ins)
+		case <-ctx.Done():
+			return nil
+		}
+	}
 }
 
 // 注册中心数据操作
 func (cluster *Cluster) tryJoinCluster(ctx context.Context, index int) (bool, error) {
 	indexStr := strconv.Itoa(index)
 	key := ENDPOINT_XCACHE_NAME + "/" + indexStr
-	ok, err := cluster.registry.TryRegisterWithKV(ctx, key, cluster.local_ip, REGISTER_LEASE_TTL)
+	ok, err := cluster.registry.TryRegisterKVWithTTL(ctx, key, cluster.local_ip, REGISTER_LEASE_TTL)
 	return ok, err
-}
-
-func (cluster *Cluster) getXcacheClusterInfo(ctx context.Context) (map[int]string, error) {
-	nodes, err := cluster.registry.GetNodeInfoWithPrefix(ctx, ENDPOINT_XCACHE_NAME)
-	return nodes, err
 }
