@@ -10,7 +10,6 @@ import (
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 )
 
@@ -147,30 +146,20 @@ func (r *Registry) RegisterWithKV(ctx context.Context, key string, value string)
 }
 
 // registerWithKV create a new lease, return current leaseID
-func (r *Registry) TryRegisterKVWithTTL(ctx context.Context, key string, value string, ttl time.Duration) (bool, error) {
+func (r *Registry) TryRegisterKVWithTTL(ctx context.Context, key string, value string, ttl time.Duration) (bool, <-chan *clientv3.LeaseKeepAliveResponse, error) {
 	grant, err := r.lease.Grant(ctx, int64(r.opts.ttl.Seconds()))
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
 	_, err = r.client.Put(ctx, key, value, clientv3.WithLease(grant.ID))
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
 	kac, err := r.client.KeepAlive(ctx, grant.ID)
-	go func() {
-		for {
-			select {
-			case _, ok := <-kac:
-				if !ok {
-					log.Errorf("xcache cluster key:%s value:%s %s", key, value, err)
-					continue
-				}
-			case <-r.opts.ctx.Done():
-				return
-			}
-		}
-	}()
-	return true, nil
+	if err != nil {
+		return false, nil, err
+	}
+	return true, kac, nil
 }
 
 func (r *Registry) WatchWithPrefix(ctx context.Context, key string) clientv3.WatchChan {

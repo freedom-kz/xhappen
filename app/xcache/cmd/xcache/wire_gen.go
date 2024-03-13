@@ -30,7 +30,7 @@ func wireApp(bootstrap *conf.Bootstrap, registrar registry.Registrar, logger log
 		return nil, nil, err
 	}
 	sequenceRepo := data.NewGreeterRepo(dataData, logger)
-	sequenceUsecase := biz.NewSequenceUsecase(sequenceRepo, logger)
+	sequenceUsecase := biz.NewSequenceUsecase(bootstrap, sequenceRepo, logger)
 	sequenceService := service.NewSequenceService(sequenceUsecase)
 	routerUsecase := biz.NewRouterUsecase(logger)
 	routerService := service.NewRouterService(routerUsecase)

@@ -64,11 +64,12 @@ func NewXcache(conf *conf.Bootstrap, logger log.Logger) (*XcahceClient, func(), 
 // 设备绑定
 func (xacheClient *XcahceClient) DeviceBind(ctx context.Context, in *pb.DeviceBindRequest) (*pb.DeviceBindReply, error) {
 	client := pb.NewRouterClient(xacheClient.conn)
-	return client.DeviceBind(ctx, in)
+
+	return client.UserDeviceBind(ctx, in)
 }
 
 // 设备解绑
-func (xacheClient *XcahceClient) DeviceUnBind(ctx context.Context, in *pb.DeviceBindRequest) (*pb.DeviceBindReply, error) {
+func (xacheClient *XcahceClient) DeviceUnBind(ctx context.Context, in *pb.DeviceUnBindRequest) (*pb.DeviceUnBindReply, error) {
 	client := pb.NewRouterClient(xacheClient.conn)
-	return client.DeviceBind(ctx, in)
+	return client.UserDeviceUnBind(ctx, in)
 }

@@ -95,17 +95,19 @@ type clusterNodeModifyListen interface {
 func (cluster *Cluster) Initialize(ctx context.Context) error {
 	cap := int(cluster.info.Capacity)
 	for i := 0; i < cap; i++ {
-		//需进行本机尝试注册
-		ok, err := cluster.tryJoinCluster(ctx, i)
-		if err != nil {
-			cluster.log.Errorf("try register node err:%s", err)
-			return err
-		}
-		if ok {
-			//服务状态变更
-			cluster.state = 1
-			cluster.index = i
-			break
+		//本机为待服务状态，需进行本机尝试注册
+		if cluster.state == 0 {
+			ok, err := cluster.tryJoinCluster(ctx, i)
+			if err != nil {
+				cluster.log.Errorf("try register node err:%s", err)
+				return err
+			}
+			if ok {
+				//服务状态变更
+				cluster.state = 1
+				cluster.index = i
+				break
+			}
 		}
 	}
 
@@ -115,7 +117,6 @@ func (cluster *Cluster) Initialize(ctx context.Context) error {
 // 注册中心数据监听
 func (cluster *Cluster) watchStart(ctx context.Context, key string) error {
 	watchChan := cluster.registry.WatchWithPrefix(ctx, key)
-
 	for {
 		select {
 		case <-watchChan:
@@ -140,6 +141,25 @@ func (cluster *Cluster) watchStart(ctx context.Context, key string) error {
 func (cluster *Cluster) tryJoinCluster(ctx context.Context, index int) (bool, error) {
 	indexStr := strconv.Itoa(index)
 	key := ENDPOINT_XCACHE_NAME + "/" + indexStr
-	ok, err := cluster.registry.TryRegisterKVWithTTL(ctx, key, cluster.local_ip, REGISTER_LEASE_TTL)
-	return ok, err
+	ok, kac, err := cluster.registry.TryRegisterKVWithTTL(ctx, key, cluster.local_ip, REGISTER_LEASE_TTL)
+	if ok {
+		//注册成功对心跳进行处理
+		go func() {
+			for {
+				select {
+				case _, ok := <-kac:
+					if !ok {
+						cluster.log.Errorf("xcache cluster key:%s value:%s %s", key, cluster.index, err)
+						continue
+					}
+				case <-cluster.ctx.Done():
+					return
+				}
+			}
+		}()
+
+		return true, nil
+	}
+
+	return false, err
 }

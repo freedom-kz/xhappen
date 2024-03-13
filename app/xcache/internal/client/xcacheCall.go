@@ -6,7 +6,6 @@ import (
 	"xhappen/app/xcache/internal/conf"
 
 	router_pb "xhappen/api/router/v1"
-	sequence_pb "xhappen/api/sequence/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -16,10 +15,8 @@ import (
 )
 
 type XcacheClient struct {
-	conns         map[string]*grpc.ClientConn //服务ID对应的grpc client
-	RouterPeers   map[string]router_pb.RouterClient
-	SequencePeers map[string]sequence_pb.SequenceClient
-	log           *log.Helper
+	conns map[string]*grpc.ClientConn //服务ID对应的grpc client
+	log   *log.Helper
 }
 
 func NewXcacheClient(conf *conf.Bootstrap, logger log.Logger) (*XcacheClient, func(), error) {
@@ -57,17 +54,17 @@ func (xClient *XcacheClient) update(services []*registry.ServiceInstance) bool {
 				continue
 			}
 			xClient.conns[endpointAddr] = conn
-			xClient.RouterPeers[endpointAddr] = router_pb.NewRouterClient(conn)
-			xClient.SequencePeers[endpointAddr] = sequence_pb.NewSequenceClient(conn)
 		}
 	}
 	return true
 }
 
-func (XcacheClient *XcacheClient) UserDeviceBind(ctx context.Context, serverAddr string, req *router_pb.DeviceBindRequest) (*router_pb.DeviceBindReply, error) {
-	peer, ok := XcacheClient.RouterPeers[serverAddr]
+func (xCacheClient *XcacheClient) UserDeviceBind(ctx context.Context, serverAddr string, req *router_pb.DeviceBindRequest) (*router_pb.DeviceBindReply, error) {
+	conn, ok := xCacheClient.conns[serverAddr]
 	if !ok {
-		return nil, fmt.Errorf("router server [%s] is not alive", serverAddr)
+		return nil, fmt.Errorf("target router server not alive")
 	}
+
+	peer := router_pb.NewRouterClient(conn)
 	return peer.UserDeviceBind(ctx, req)
 }

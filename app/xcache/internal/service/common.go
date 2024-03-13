@@ -1,8 +1,8 @@
 package service
 
 var (
-	servingState    = 0
-	loaclServeIndex = -1
+	servingState = 0
+	serveIndex   = -1
 )
 
 type ServingStaeListen struct {
@@ -10,5 +10,5 @@ type ServingStaeListen struct {
 
 func stateModify(state int, index int) {
 	servingState = int(state)
-	loaclServeIndex = int(index)
+	serveIndex = int(index)
 }

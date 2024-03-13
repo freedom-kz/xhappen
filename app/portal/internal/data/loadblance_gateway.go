@@ -118,7 +118,7 @@ func (repo *LoadBlanceGwRepo) GetDispatchInfo(ctx context.Context, clientId stri
 			err = nil
 		}
 	} else {
-		addr, err = repo.data.rdb.Get(ctx, LOAD_BLANCE_CLIENT_PREFIX+userId).Result()
+		addr, err = repo.data.rdb.Get(ctx, LOAD_BLANCE_CLIENT_PREFIX+clientId).Result()
 		if err == redis.Nil {
 			addr = ""
 			err = nil
