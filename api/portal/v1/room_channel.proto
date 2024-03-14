@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package portal.v1;
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+option go_package = "xhappen/api/portal/v1;v1";
+option java_multiple_files = true;
+option java_package = "channel.v1";
+option objc_class_prefix = ChannelV1";
+
+service Room {
+  // 创建房间
+  rpc CreateRoom (CreateRoomRequest) returns (CreateRoomReply)  {
+    option (google.api.http) = {
+      post: "/auth/room/create",
+      body: "*",
+    };
+  }
+
+  // 移除房间
+  rpc RemoveRoom (RemoveRoomRequest) returns (RemoveRoomReply)  {
+    option (google.api.http) = {
+      post: "/auth/room/remove",
+      body: "*",
+    };
+  }
+
+  // 移除房间
+  rpc ListRoom (ListRoomRequest) returns (ListRoomReply)  {
+    option (google.api.http) = {
+      post: "/auth/room/list",
+      body: "*",
+    };
+  }
+
+  // 更新房间
+  rpc UpdateRoom (UpdateRoomRequest) returns (UpdateRoomReply)  {
+    option (google.api.http) = {
+      post: "/auth/room/update",
+      body: "*",
+    };
+  }
+
+  // 创建频道
+  rpc CreateChannel (CreateChannnelRequest) returns (CreateChannelReply)  {
+        option (google.api.http) = {
+          post: "/auth/room/channnel/create",
+          body: "*",
+        };
+  }
+
+  // 获取频道列表
+  rpc ListChannel (ListChannnelRequest) returns (ListChannelReply)  {
+    option (google.api.http) = {
+      post: "/auth/room/channnel/list",
+      body: "*",
+    };
+  }
+
+   // 移除频道列表
+   rpc RemoveChannel (RemoveChannnelRequest) returns (RemoveChannelReply)  {
+    option (google.api.http) = {
+      post: "/auth/room/channnel/remove",
+      body: "*",
+    };
+  }
+
+  // 更新频道列表
+  rpc UpdateChannel (UpdateChannnelRequest) returns (UpdateChannelReply)  {
+    option (google.api.http) = {
+      post: "/auth/room/channnel/update",
+      body: "*",
+    };
+  }
+}
+
+message CreateChannnelRequest {
+}
+
+message CreateChannelReply {
+}
+
+message ListChannnelRequest {
+}
+
+message ListChannelReply {
+}
+
+message RemoveChannnelRequest {
+}
+
+message RemoveChannelReply {
+}

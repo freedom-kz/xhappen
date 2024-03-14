@@ -7,21 +7,55 @@ import "validate/validate.proto";
 
 option go_package = "xhappen/api/portal/v1;v1";
 option java_multiple_files = true;
-option java_package = "message.v1";
-option objc_class_prefix = MessageV1";
+option java_package = "follows.v1";
+option objc_class_prefix = FollowsV1";
 
-service Group {
-  // 获取基础配置
-  rpc CreateMessage (CreateMessageRequest) returns (CreateMessageReply)  {
+
+service Message {
+  //发送
+  rpc SendMessage(SendMessageRequest) returns (SendMessageReply)  {
         option (google.api.http) = {
-          post: "/auth/group/create",
+          post: "/auth/message/send",
           body: "*",
         };
   }
+
+  //编辑
+  rpc EditMessage(EditMessageRequest) returns (EditMessageReply)  {
+      option (google.api.http) = {
+        post: "/auth/message/send",
+        body: "*",
+      };
+  }
+
+  //撤回
+  rpc RevokeMessage(EditMessageRequest) returns (EditMessageReply)  {
+    option (google.api.http) = {
+      post: "/auth/message/send",
+      body: "*",
+    };
+  }
+
+  //查询
+  rpc ListMessage(EditMessageRequest) returns (EditMessageReply)  {
+    option (google.api.http) = {
+      post: "/auth/message/send",
+      body: "*",
+    };
+  }
+
+  //收藏
+  rpc FavoriteMessage(EditMessageRequest) returns (EditMessageReply)  {
+    option (google.api.http) = {
+      post: "/auth/message/send",
+      body: "*",
+    };
+  }
+  
 }
 
-message CreateMessageRequest {
+message SendMessageRequest {
 }
 
-message CreateMessageReply {
+message SendMessageReply {
 }

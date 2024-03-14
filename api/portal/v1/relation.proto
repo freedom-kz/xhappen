@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package portal.v1;
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+option go_package = "xhappen/api/portal/v1;v1";
+option java_multiple_files = true;
+option java_package = "relation.v1";
+option objc_class_prefix = RelationV1";
+
+service relation {
+  //关注某人
+  rpc FollowSomebody (FollowSomebodyRequest) returns (FollowSomebodyReply)  {
+        option (google.api.http) = {
+          post: "/auth/relation/followsomebody",
+          body: "*",
+        };
+  }
+  //移除关注某人
+  rpc UnFollowSomebody (DeFollowSomebodyRequest) returns (DeFollowSomebodyReply)  {
+    option (google.api.http) = {
+      post: "/auth/relation/unfollowsomebody",
+      body: "*",
+    };
+  }
+
+  //移除跟随者
+  rpc RemoveSomeFollower (RemoveSomeFollowerRequest) returns (RemoveSomeFollowerReply)  {
+    option (google.api.http) = {
+      post: "/auth/relation/followsomebody",
+      body: "*",
+    };
+  }
+
+  //是否关注某人
+  rpc IsFollower (IsFollowerRequest) returns (IsFollowerReply)  {
+    option (google.api.http) = {
+      post: "/auth/relation/isFollower",
+      body: "*",
+    };
+  }
+  //查询跟随者列表
+  rpc ListFollower (IsFollowerRequest) returns (IsFollowerReply)  {
+    option (google.api.http) = {
+      post: "/auth/relation/isFollower",
+      body: "*",
+    };
+  }
+
+  //查询关注列表
+  rpc ListBeFollower (IsFollowerRequest) returns (IsFollowerReply)  {
+    option (google.api.http) = {
+      post: "/auth/relation/isFollower",
+      body: "*",
+    };
+  }
+}
+
+message FollowSomebodyRequest {
+}
+
+message FollowSomebodyReply {
+}
+
+message DeFollowSomebodyRequest {
+}
+
+message DeFollowSomebodyReply {
+}

@@ -78,24 +78,32 @@ func (h *Hub) Start() {
 						deliverToHub.done <- errors.New(460, "NO_DEVICE_ONLINE", "NO_DEVICE_ONLINE")
 					} else {
 						conn.SendDeliverCh(deliverToHub.deliverMessage.Deliver)
+						deliverToHub.done <- nil
 					}
 				} else {
 					//用户下发
 					conns := connIndex.ForUser(deliverToHub.deliverMessage.Userid)
-					for _, conn := range conns {
-						//忽略设备
-						if utils.StringInSlice(conn.ClientId, deliverToHub.deliverMessage.OmitClientids) {
-							continue
+					if len(conns) == 0 {
+						deliverToHub.done <- errors.New(460, "NO_DEVICE_ONLINE", "NO_DEVICE_ONLINE")
+					} else {
+						for _, conn := range conns {
+							//忽略设备
+							if utils.StringInSlice(conn.ClientId, deliverToHub.deliverMessage.OmitClientids) {
+								continue
+							}
+							conn.SendDeliverCh(deliverToHub.deliverMessage.Deliver)
 						}
-						conn.SendDeliverCh(deliverToHub.deliverMessage.Deliver)
+						deliverToHub.done <- nil
 					}
 				}
 			case syncToHub := <-h.syncToHub:
 				conn := connIndex.ForClientId(syncToHub.syncMessage.Clientid)
 				if conn == nil || conn.UserId != syncToHub.syncMessage.Userid || uint64(conn.ConnectTime.UnixNano()) != syncToHub.syncMessage.BindVersion {
 					syncToHub.done <- errors.New(461, "DEVICE_NO_PAIR", "DEVICE_NO_PAIR")
+					continue
 				}
 				conn.SendSyncCh(syncToHub.syncMessage.Sync)
+				syncToHub.done <- nil
 			case actionToHub := <-h.actionToHub:
 				if actionToHub.actionMessage.ClientId != "" {
 					//设备下发
@@ -104,16 +112,22 @@ func (h *Hub) Start() {
 						actionToHub.done <- errors.New(460, "NO_DEVICE_ONLINE", "NO_DEVICE_ONLINE")
 					} else {
 						conn.SendActionCh(actionToHub.actionMessage.Action)
+						actionToHub.done <- nil
 					}
 				} else {
 					//用户下发
 					conns := connIndex.ForUser(actionToHub.actionMessage.Uid)
-					for _, conn := range conns {
-						//忽略设备
-						if utils.StringInSlice(conn.ClientId, actionToHub.actionMessage.OmitClientids) {
-							continue
+					if len(conns) == 0 {
+						actionToHub.done <- errors.New(460, "NO_DEVICE_ONLINE", "NO_DEVICE_ONLINE")
+					} else {
+						for _, conn := range conns {
+							//忽略设备
+							if utils.StringInSlice(conn.ClientId, actionToHub.actionMessage.OmitClientids) {
+								continue
+							}
+							conn.SendActionCh(actionToHub.actionMessage.Action)
 						}
-						conn.SendActionCh(actionToHub.actionMessage.Action)
+						actionToHub.done <- nil
 					}
 				}
 			case broadcastToHub := <-h.broadcastToHub:
@@ -126,7 +140,7 @@ func (h *Hub) Start() {
 					}
 					conn.SendDeliverCh(broadcastToHub.broadcastMessage.Deliver)
 				}
-
+				broadcastToHub.done <- nil
 			case dicconnectforce := <-h.disconnectedforceToHub:
 				conns := connIndex.ForUser(dicconnectforce.disconnectForceMessage.Userid)
 				if dicconnectforce.disconnectForceMessage.Clientid != "" {
