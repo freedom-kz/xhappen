@@ -44,9 +44,8 @@ message AuthReply {
   string uid = 2;
   google.protobuf.Timestamp token_expire = 3;
   repeated uint64 sessions = 4;
-  protocol.v1.RoleType role = 5;
-  protocol.v1.UserType uType = 6;
-  errors.Status err = 7;          //kratos通用错误
+  protocol.v1.UserType uType = 5;
+  errors.Status err = 6;          //kratos通用错误
 }
 
 message SubmitRequest {

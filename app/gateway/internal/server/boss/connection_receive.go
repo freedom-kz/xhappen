@@ -138,6 +138,7 @@ func (connection *Connection) processBind() error {
 		}
 	}
 
+	//业务调用
 	in := &pb.BindRequest{
 		ServerID: connection.Boss.serverId,
 		BindInfo: &bind.Bind,
@@ -214,6 +215,7 @@ func (connection *Connection) processAuth() error {
 		AuthInfo:    &auth.Auth,
 	}
 
+	//直进行后端调用
 	reply, err := connection.Boss.passClient.Auth(context.Background(), in)
 	if err != nil {
 		ack.AuthRet = false

@@ -14,9 +14,9 @@ import (
 
 const (
 	DEFAULT_DAIL_TIMEOUT  = 3 * time.Second
-	DEFAULT_RESEND_TICKER = 10 * time.Second
+	DEFAULT_RESEND_TICKER = 5 * time.Second
 	DEFAULT_READ_TIMEOUT  = 10 * time.Second //默认读超时
-	HandshakeTimeout      = 10 * time.Second //websocket握手超时
+	HandshakeTimeout      = 3 * time.Second  //websocket握手超时
 
 	MESSAGE_ATTEMPTS_MAX = 3
 )

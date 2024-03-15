@@ -63,7 +63,6 @@ func newHub(boss *Boss) *Hub {
 func (h *Hub) Start() {
 	go func() {
 		connIndex := newConnectionIndex()
-
 		for {
 			select {
 			case connection := <-h.addConn:
@@ -172,7 +171,7 @@ func (h *Hub) Start() {
 
 // 发送退出信号
 func (h *Hub) Stop() {
-	h.exitCh <- struct{}{}
+	close(h.exitCh)
 }
 
 func (h *Hub) AddConn(conn *Connection) {

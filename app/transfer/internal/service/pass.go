@@ -2,33 +2,43 @@ package service
 
 import (
 	"context"
-	basic "xhappen/api/basic/v1"
+	pb_basic "xhappen/api/basic/v1"
 	pb_portal "xhappen/api/portal/v1"
+	pb_protocol "xhappen/api/protocol/v1"
+	pb_transfer "xhappen/api/transfer/v1"
 	v1 "xhappen/api/transfer/v1"
+	"xhappen/app/transfer/internal/biz"
 	"xhappen/app/transfer/internal/client"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
 
 type PassService struct {
-	v1.UnimplementedPassServer
+	pb_transfer.UnimplementedPassServer
 
 	portalClient *client.PortalClient
 	xacheClient  *client.XcahceClient
+	message      *biz.MessageUseCase
 
 	log *log.Helper
 }
 
-func NewPassService(portalClient *client.PortalClient, xcacheClient *client.XcahceClient, logger log.Logger) *PassService {
+func NewPassService(
+	portalClient *client.PortalClient,
+	xcacheClient *client.XcahceClient,
+	message *biz.MessageUseCase,
+	logger log.Logger,
+) *PassService {
 	return &PassService{
 		portalClient: portalClient,
 		xacheClient:  xcacheClient,
+		message:      message,
 		log:          log.NewHelper(logger),
 	}
 }
 
-func (s *PassService) Bind(ctx context.Context, in *v1.BindRequest) (*v1.BindReply, error) {
-	//1. 主机验证
+func (s *PassService) Bind(ctx context.Context, in *pb_transfer.BindRequest) (*pb_transfer.BindReply, error) {
+	//1. 进行终端绑定网关信息验证
 	getSocketHostConfigRequest := &pb_portal.GetSocketHostConfigRequest{
 		ClientId: in.BindInfo.ClientID,
 	}
@@ -41,28 +51,9 @@ func (s *PassService) Bind(ctx context.Context, in *v1.BindRequest) (*v1.BindRep
 	if replyHost.SocketHost == "" || replyHost.SocketHost != in.ServerID {
 		return &v1.BindReply{
 			Ret: false,
-			Err: &basic.ErrorUnknown("alloc socketHost invalidate").Status,
+			Err: &pb_basic.ErrorUnknown("alloc socketHost invalidate").Status,
 		}, nil
 	}
-	//2. 尝试保存更新状态信息
-	// bindreply, err := s.xacheClient.DeviceBind(ctx, &router.DeviceBindRequest{
-	// 	BindInfo: &router.BindInfo{
-	// 		ClientID:       in.BindInfo.ClientID,
-	// 		ServerID:       in.ServerID,
-	// 		ConnectSequece: in.ConnectSequece,
-	// 		CurVersion:     in.BindInfo.CurVersion,
-	// 		DeviceType:     in.BindInfo.DeviceType,
-	// 	},
-	// })
-
-	// if err != nil {
-	// 	return &v1.BindReply{
-	// 		Ret: false,
-	// 		Err: &basic.ErrorSerberUnavailable("internal rpc err %v.", err).Status,
-	// 	}, nil
-	// }
-
-	//bindReply中已有连接断连业务处理
 
 	return &v1.BindReply{
 		Ret: true,
@@ -70,27 +61,55 @@ func (s *PassService) Bind(ctx context.Context, in *v1.BindRequest) (*v1.BindRep
 	}, nil
 }
 
-func (s *PassService) Auth(ctx context.Context, in *v1.AuthRequest) (*v1.AuthReply, error) {
-	// tokenAuthRequest := &pb_portal.TokenAuthRequest{
-	// 	Token: in.BindInfo.,
-	// }
+func (pass *PassService) Auth(ctx context.Context, in *pb_transfer.AuthRequest) (*pb_transfer.AuthReply, error) {
+	//1. 验证用户
+	tokenAuthRequest := &pb_portal.TokenAuthRequest{
+		Token: in.AuthInfo.Token,
+	}
 
-	// reply, err := s.portalClient.TokenAuth(ctx, tokenAuthRequest)
-	// if err != nil {
-	// 	return &v1.BindReply{
-	// 		Ret: false,
-	// 		Err: &basic.ErrorAuthTokenInvalid("bindinfo %s.", in.BindInfo).Status,
-	// 	}, nil
-	// }
-	return &v1.AuthReply{}, nil
+	authReply, err := s.portalClient.TokenAuth(ctx, tokenAuthRequest)
+	if err != nil {
+		return &v1.AuthReply{
+			Ret: false,
+			Err: &pb_basic.ErrorAuthTokenInvalid("authinfo %s.", in.AuthInfo).Status,
+		}, nil
+	}
+
+	uType := pb_protocol.UserType_USER_NORMAL
+	if in.AuthInfo.RoleType == pb_protocol.RoleType_ROLE_CUSTOMER_SERVICE {
+		uType = pb_protocol.UserType_USER_VIRTUAL_GROUP
+	}
+
+	//2. 离线同步会话
+	sessions, err := pass.message.ListSyncSessions(ctx)
+
+	if err != nil {
+		return &v1.AuthReply{
+			Ret:         true,
+			Uid:         authReply.Uid,
+			TokenExpire: authReply.TokenExpire,
+			UType:       uType,
+		}, nil
+	}
+	sids := make([]uint64, 0, len(sessions))
+	for _, session := range sessions {
+		sids = append(sids, session.SessionId)
+	}
+	return &v1.AuthReply{
+		Ret:         true,
+		Uid:         authReply.Uid,
+		TokenExpire: authReply.TokenExpire,
+		UType:       uType,
+		Sessions:    sids,
+	}, nil
 }
 
-func (s *PassService) Submit(ctx context.Context, in *v1.SubmitRequest) (*v1.SubmitReply, error) {
+func (s *PassService) Submit(ctx context.Context, in *pb_transfer.SubmitRequest) (*pb_transfer.SubmitReply, error) {
 	return nil, nil
 }
-func (s *PassService) Action(ctx context.Context, in *v1.ActionRequest) (*v1.ActionReply, error) {
+func (s *PassService) Action(ctx context.Context, in *pb_transfer.ActionRequest) (*pb_transfer.ActionReply, error) {
 	return nil, nil
 }
-func (s *PassService) Quit(ctx context.Context, in *v1.QuitRequest) (*v1.QuitReply, error) {
+func (s *PassService) Quit(ctx context.Context, in *pb_transfer.QuitRequest) (*pb_transfer.QuitReply, error) {
 	return nil, nil
 }

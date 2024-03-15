@@ -13,36 +13,40 @@ import (
 
 func (connection *Connection) messagePump(startedChan chan bool) {
 	var (
-		err         error
-		flusherChan <-chan time.Time
-		reSendChan  <-chan time.Time
-		timeoutChan <-chan time.Time
-		dChan       chan *protocol.Deliver = nil
-		aChan       chan *protocol.Action  = nil
-
+		err           error
+		flusherChan   <-chan time.Time
+		reSendChan    <-chan time.Time
+		timeoutChan   <-chan time.Time
 		timeoutTicker *time.Ticker
+		dChan         chan *protocol.Deliver = nil
+		aChan         chan *protocol.Action  = nil
+		sChan                                = connection.syncCh
 	)
-	//开启时进行初始化
-	sChan := connection.syncCh
 
 	reSendTicker := time.NewTicker(DEFAULT_RESEND_TICKER)
 	outputBufferTicker := time.NewTicker(connection.FlushEvery)
 	reSendChan = reSendTicker.C
 	flushed := true
 	close(startedChan)
+
 	for {
-		//同步中状态不走这些逻辑
 		if !connection.IsReadyForMessages() {
 			dChan = nil
 			aChan = nil
-		} else if flushed {
+		}
+		if flushed {
 			flusherChan = nil
-			dChan = connection.deliverCh
-			aChan = connection.actionCh
+			if connection.state == STATE_NORMAL {
+				dChan = connection.deliverCh
+				aChan = connection.actionCh
+			}
 		} else {
 			flusherChan = outputBufferTicker.C
-			dChan = connection.deliverCh
-			aChan = connection.actionCh
+			if connection.state == STATE_NORMAL {
+				dChan = connection.deliverCh
+				aChan = connection.actionCh
+			}
+
 		}
 
 		select {
@@ -126,7 +130,6 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 					timeoutChan = timeoutTicker.C
 				}
 			}
-
 		case a := <-aChan:
 			msg := NewAMessage(a, time.Now().UnixNano())
 			err := connection.StartActionInflight(msg)

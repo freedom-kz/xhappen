@@ -3,10 +3,11 @@ syntax = "proto3";
 package portal.v1;
 
 import "google/api/annotations.proto";
-import "api/basic/v1/basic.proto";
 import "validate/validate.proto";
 import "errors/errors.proto";
 import "google/protobuf/timestamp.proto";
+import "api/basic/v1/basic.proto";
+import "api/protocol/v1/common.proto";
 
 option go_package = "xhappen/api/portal/v1;v1";
 option java_multiple_files = true;
@@ -88,14 +89,17 @@ message LoginByMobileReply {
 message TokenAuthRequest {
   string token = 1;
   string clientId = 2;
+  protocol.v1.RoleType roleType = 3;
 }
 
 message TokenAuthReply {
   bool ret = 1;
   string clientId = 2;
   string uid = 3; 
-  string gwhost = 4;
-  errors.Status err = 5;          //kratos通用错误 
+  google.protobuf.Timestamp token_expire = 4;
+  protocol.v1.UserType uType = 5;
+  string gwHost = 6;
+  errors.Status err = 7;          //kratos通用错误 
 }
 
 message LogoutRequest {

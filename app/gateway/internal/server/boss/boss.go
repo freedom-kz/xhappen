@@ -94,7 +94,7 @@ func NewBoss(cfg *conf.Bootstrap, logger log.Logger, passClient *client.PassClie
 	return boss
 }
 
-// 会被kratos启动执行
+// 启动执行
 func (boss *Boss) Start(context.Context) error {
 	exitCh := make(chan error)
 	var once sync.Once
