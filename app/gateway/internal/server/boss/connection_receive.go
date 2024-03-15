@@ -240,7 +240,7 @@ func (connection *Connection) processAuth() error {
 	}
 	//信息填充
 	connection.UserId = reply.Uid
-	connection.RoleType = reply.Role
+	connection.RoleType = auth.RoleType //用户认证角色
 	connection.UserType = reply.UType
 	connection.tokenExpire = reply.TokenExpire.AsTime()
 

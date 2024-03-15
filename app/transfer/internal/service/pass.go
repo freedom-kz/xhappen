@@ -61,13 +61,13 @@ func (s *PassService) Bind(ctx context.Context, in *pb_transfer.BindRequest) (*p
 	}, nil
 }
 
-func (pass *PassService) Auth(ctx context.Context, in *pb_transfer.AuthRequest) (*pb_transfer.AuthReply, error) {
+func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthRequest) (*pb_transfer.AuthReply, error) {
 	//1. 验证用户
 	tokenAuthRequest := &pb_portal.TokenAuthRequest{
 		Token: in.AuthInfo.Token,
 	}
 
-	authReply, err := s.portalClient.TokenAuth(ctx, tokenAuthRequest)
+	authReply, err := service.portalClient.TokenAuth(ctx, tokenAuthRequest)
 	if err != nil {
 		return &v1.AuthReply{
 			Ret: false,
@@ -81,8 +81,7 @@ func (pass *PassService) Auth(ctx context.Context, in *pb_transfer.AuthRequest) 
 	}
 
 	//2. 离线同步会话
-	sessions, err := pass.message.ListSyncSessions(ctx)
-
+	sessions, err := service.message.ListSyncSessions(ctx)
 	if err != nil {
 		return &v1.AuthReply{
 			Ret:         true,

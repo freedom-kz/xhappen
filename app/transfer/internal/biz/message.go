@@ -24,7 +24,7 @@ func NewMessageUseCase(repo MessageRepo, logger log.Logger) *MessageUseCase {
 
 type MessageRepo interface {
 	SaveMessage(ctx context.Context) (err error)
-	ListSyncSessions(ctx context.Context) (err error)
+	ListSyncSessions(ctx context.Context) (sessions []*Session, err error)
 }
 
 func (useCase *MessageUseCase) ListSyncSessions(ctx context.Context) ([]*Session, error) {

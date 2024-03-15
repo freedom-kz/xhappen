@@ -7,31 +7,48 @@
 package main
 
 import (
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/registry"
 	"xhappen/app/transfer/internal/biz"
+	"xhappen/app/transfer/internal/client"
 	"xhappen/app/transfer/internal/conf"
 	"xhappen/app/transfer/internal/data"
 	"xhappen/app/transfer/internal/server"
 	"xhappen/app/transfer/internal/service"
+)
 
-	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/log"
+import (
+	_ "go.uber.org/automaxprocs"
 )
 
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, logger)
+func wireApp(bootstrap *conf.Bootstrap, registrar registry.Registrar, logger log.Logger) (*kratos.App, func(), error) {
+	portalClient, cleanup, err := client.NewPortalClient(bootstrap, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	greeterRepo := data.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, logger)
-	app := newApp(logger, grpcServer, httpServer)
+	xcahceClient, cleanup2, err := client.NewXcache(bootstrap, logger)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	dataData, cleanup3, err := data.NewData(bootstrap, logger)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	messageRepo := data.NewMessageRepo(dataData, logger)
+	messageUseCase := biz.NewMessageUseCase(messageRepo, logger)
+	passService := service.NewPassService(portalClient, xcahceClient, messageUseCase, logger)
+	grpcServer := server.NewGRPCServer(bootstrap, passService, logger)
+	app := newApp(logger, grpcServer, registrar)
 	return app, func() {
+		cleanup3()
+		cleanup2()
 		cleanup()
 	}, nil
 }
