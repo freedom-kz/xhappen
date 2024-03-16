@@ -6,6 +6,7 @@ import (
 	pb "xhappen/api/portal/v1"
 	"xhappen/app/portal/internal/biz"
 	"xhappen/app/portal/internal/conf"
+	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -27,19 +28,19 @@ func NewConfigService(conf *conf.Bootstrap, lbUseCase *biz.LoadBlanceUseCase, lo
 
 // 基础数据获取，包含动态和静态配置
 func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConfigRequest) (*pb.GetBasicConfigReply, error) {
-	//获取或分配sockethost
+	//1. 获取或分配sockethost
 	var (
 		addr   string
 		userID uint64
 		err    error
 	)
 
-	if userID, err = GetUserID(ctx); err == nil {
-		addr, err = c.lbUseCase.DispatchByClientID(ctx, req.ClientId)
-	} else {
-		idStr := strconv.FormatUint(uint64(userID), 10)
-		addr, err = c.lbUseCase.DispatchByUserIDWithClientId(ctx, req.ClientId, idStr)
+	if userID, err = GetUserID(ctx); err != nil {
+		userID = utils.Hash(req.ClientId)
 	}
+
+	idStr := strconv.FormatUint(uint64(userID), 10)
+	addr, err = c.lbUseCase.DispatchByUserIDWithClientId(ctx, req.ClientId, idStr)
 
 	if err != nil {
 		return nil, err
@@ -57,11 +58,14 @@ func (c *ConfigService) GetSocketHostConfig(ctx context.Context, req *pb.GetSock
 	if req.UserId != 0 {
 		idStr = strconv.FormatUint(uint64(req.UserId), 10)
 	}
-	addr, err := c.lbUseCase.GetDispatchInfo(ctx, req.ClientId, idStr)
+	info, exist, err := c.lbUseCase.GetDispatchInfo(ctx, req.ClientId, idStr)
 	if err != nil {
 		return nil, err
 	}
+	if !exist {
+		return &pb.GetSocketHostConfigReply{}, nil
+	}
 	return &pb.GetSocketHostConfigReply{
-		SocketHost: addr,
+		SocketHost: info.GwAddr,
 	}, nil
 }

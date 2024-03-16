@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"xhappen/app/xcache/internal/conf"
+	"xhappen/pkg/utils"
 
 	router_pb "xhappen/api/router/v1"
 
@@ -15,14 +16,21 @@ import (
 )
 
 type XcacheClient struct {
-	conns map[string]*grpc.ClientConn //服务ID对应的grpc client
-	log   *log.Helper
+	conns     map[string]*grpc.ClientConn //服务ID对应的grpc client
+	localHost string
+	log       *log.Helper
 }
 
 func NewXcacheClient(conf *conf.Bootstrap, logger log.Logger) (*XcacheClient, func(), error) {
+	host, err := utils.GetLocalIp()
+	if err != nil {
+		return nil, func() {}, err
+	}
 
 	client := &XcacheClient{
-		log: log.NewHelper(log.With(logger, "module", "client/xcache")),
+		log:       log.NewHelper(log.With(logger, "module", "client/xcache")),
+		localHost: host,
+		conns:     make(map[string]*grpc.ClientConn, 0),
 	}
 
 	cleanUp := func() {
@@ -36,31 +44,47 @@ func NewXcacheClient(conf *conf.Bootstrap, logger log.Logger) (*XcacheClient, fu
 
 // 集群节点变化变更
 func (xClient *XcacheClient) update(services []*registry.ServiceInstance) bool {
+	//构建新的存储结构
+	conns := make(map[string]*grpc.ClientConn)
 	for _, service := range services {
 		md := service.Metadata
-		endpointAddr, ok := md["endpointAddr"]
-		if !ok {
+		endpointHost, ok := md["host"]
+		if !ok || endpointHost == xClient.localHost {
+			xClient.log.Log(log.LevelError, "msg", "registry service instance info missing.", "info", service)
 			continue
 		}
-		if _, ok := xClient.conns[endpointAddr]; !ok {
+
+		if exist, ok := xClient.conns[endpointHost]; !ok {
 			conn, err := transgrpc.DialInsecure(
 				context.Background(),
-				transgrpc.WithEndpoint(endpointAddr),
+				transgrpc.WithEndpoint(endpointHost),
 				transgrpc.WithMiddleware(
 					recovery.Recovery(),
 				),
 			)
 			if err != nil {
+				xClient.log.Log(log.LevelError, "msg", "grpc dial error", "error", err)
 				continue
 			}
-			xClient.conns[endpointAddr] = conn
+			conns[endpointHost] = conn
+		} else {
+			conns[endpointHost] = exist
 		}
 	}
+
+	//删除不需要的连接
+	for host, conn := range xClient.conns {
+		if _, ok := conns[host]; !ok {
+			conn.Close()
+		}
+	}
+	//进行存储替换
+	xClient.conns = conns
 	return true
 }
 
-func (xCacheClient *XcacheClient) UserDeviceBind(ctx context.Context, serverAddr string, req *router_pb.DeviceBindRequest) (*router_pb.DeviceBindReply, error) {
-	conn, ok := xCacheClient.conns[serverAddr]
+func (xCacheClient *XcacheClient) UserDeviceBind(ctx context.Context, target string, req *router_pb.DeviceBindRequest) (*router_pb.DeviceBindReply, error) {
+	conn, ok := xCacheClient.conns[target]
 	if !ok {
 		return nil, fmt.Errorf("target router server not alive")
 	}

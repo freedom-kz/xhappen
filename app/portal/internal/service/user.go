@@ -72,6 +72,8 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 		return nil, err
 	}
 
+	//TODO,设备上的其他长连接需要踢下线
+
 	//返回信息
 	return &pb.LoginByMobileReply{
 		Token: tokenStr,

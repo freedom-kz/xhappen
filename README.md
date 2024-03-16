@@ -96,3 +96,6 @@ docker:
   quay.io/minio/minio server /data --console-address ":9001"
 
   ANnKuRRWMbmEp0o8JdfX/quckuk-vosJor-9mapva
+
+
+  mmuser:mostest

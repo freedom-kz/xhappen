@@ -13,11 +13,17 @@ type LoadBlanceUseCase struct {
 	repo LoadBalanceRepo
 }
 
+type DispatchInfo struct {
+	ClientId string `redis:"cid"`
+	UserId   string `redis:"uid"`
+	GwAddr   string `redis:"gw"`
+}
+
 type LoadBalanceRepo interface {
 	GetGatewayPublicIPs() []string
 	IsAlive(addr string) bool
-	SaveDispatchInfo(ctx context.Context, clientId string, userId string, gwAddr string) error
-	GetDispatchInfo(ctx context.Context, clientId string, userId string) (string, error)
+	UpsertDispatchInfo(ctx context.Context, clientId string, userId string, gwAddr string) (*DispatchInfo, error)
+	GetDispatchInfo(ctx context.Context, clientId string, userId string) (*DispatchInfo, bool, error)
 }
 
 func NewLoadBlanceUseCase(repo LoadBalanceRepo, logger log.Logger) *LoadBlanceUseCase {
@@ -27,58 +33,33 @@ func NewLoadBlanceUseCase(repo LoadBalanceRepo, logger log.Logger) *LoadBlanceUs
 	}
 }
 
-func (useCase *LoadBlanceUseCase) DispatchByClientID(ctx context.Context, clientId string) (string, error) {
-	//1. 查询分配记录
-	//2.1 不存在，分配记录并返回
-	//2.2 已存在，并且目标服务器存活，返回；目标服务器不可达，重新分配
-	addr, err := useCase.repo.GetDispatchInfo(ctx, clientId, "")
-
+func (useCase *LoadBlanceUseCase) DispatchByUserIDWithClientId(ctx context.Context, userID string, clientId string) (string, error) {
+	//1. 已有分配地址，并且当前服务中，获取返回
+	dispatchInfo, exist, err := useCase.repo.GetDispatchInfo(ctx, clientId, userID)
 	if err != nil {
-		return addr, err
+		return "", err
+	}
+	if exist {
+		return dispatchInfo.GwAddr, nil
 	}
 
-	if addr != "" && useCase.repo.IsAlive(addr) {
-		return addr, nil
-	}
-
-	addr, err = useCase.strategyRandom()
+	//2. 为用户分配地址，多个客户端登录同一网关
+	addr, err := useCase.strategyRandom()
 	if err != nil {
-		return addr, err
+		return "", err
 	}
 
-	if err := useCase.repo.SaveDispatchInfo(ctx, clientId, "", addr); err != nil {
-		return addr, basic.ErrorUnknown("server err:%v", err)
+	if _, err = useCase.repo.UpsertDispatchInfo(ctx, clientId, userID, addr); err != nil {
+		//客户端原本已有网关分配绑定关系，则进行一次下线处理，新的绑定关系已形成，原客户端登录会进行校验
+		return "", basic.ErrorUnknown("server err:%v", err)
 	}
 
 	return addr, nil
 }
 
-func (useCase *LoadBlanceUseCase) DispatchByUserIDWithClientId(ctx context.Context, userID string, clientId string) (string, error) {
-	//1. 已有分配地址，并且当前服务中，获取返回
-	addr, err := useCase.repo.GetDispatchInfo(ctx, clientId, userID)
-	if err != nil {
-		return addr, err
-	}
-	if addr != "" && useCase.repo.IsAlive(addr) {
-		return addr, nil
-	}
-	//2. 为用户分配地址，多个客户端登录同一网关
-	addr, err = useCase.strategyRandom()
-	if err != nil {
-		return addr, err
-	}
-
-	if err := useCase.repo.SaveDispatchInfo(ctx, clientId, userID, addr); err != nil {
-		return addr, basic.ErrorUnknown("server err:%v", err)
-	}
-
-	return "host", nil
-}
-
 // 仅读取分配信息
-func (useCase *LoadBlanceUseCase) GetDispatchInfo(ctx context.Context, clientId string, userID string) (string, error) {
-	addr, err := useCase.repo.GetDispatchInfo(ctx, clientId, userID)
-	return addr, err
+func (useCase *LoadBlanceUseCase) GetDispatchInfo(ctx context.Context, clientId string, userID string) (*DispatchInfo, bool, error) {
+	return useCase.repo.GetDispatchInfo(ctx, clientId, userID)
 }
 
 // 随机策略获取网关公网地址
