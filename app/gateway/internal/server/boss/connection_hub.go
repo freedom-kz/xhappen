@@ -19,6 +19,7 @@ type Hub struct {
 	actionToHub            chan *actionToHub
 	disconnectedforceToHub chan *disconnectedforceToHub
 	addConn                chan *Connection
+	rmConnByCid            chan string
 	removeConn             chan *Connection
 	exitCh                 chan struct{}
 }
@@ -53,6 +54,7 @@ func newHub(boss *Boss) *Hub {
 		boss:                   boss,
 		addConn:                make(chan *Connection),
 		removeConn:             make(chan *Connection),
+		rmConnByCid:            make(chan string),
 		syncToHub:              make(chan *syncToHub, 1000),
 		deliverToHub:           make(chan *deliverToHub, 1000),
 		broadcastToHub:         make(chan *broadcastToHub, 1000),
@@ -67,6 +69,10 @@ func (h *Hub) Start() {
 			select {
 			case connection := <-h.addConn:
 				connIndex.Add(connection)
+			case cid := <-h.rmConnByCid:
+				if conn := connIndex.ForClientId(cid); conn != nil {
+					connIndex.Remove(conn)
+				}
 			case connection := <-h.removeConn:
 				connIndex.Remove(connection)
 			case deliverToHub := <-h.deliverToHub:

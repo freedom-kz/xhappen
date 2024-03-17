@@ -30,6 +30,10 @@ type Cluster struct {
 	log                     *log.Helper
 }
 
+/*
+1. 节点状态维护（加入和离开集群）
+2. 服务节点数据变更
+*/
 func NewCluster(ctx context.Context,
 	conf *conf.Bootstrap,
 	registry *etcd.Registry,
@@ -74,6 +78,7 @@ func NewCluster(ctx context.Context,
 		}
 	}()
 
+	//集群节点首次获取
 	service, err := cluster.registry.GetService(ctx, SERVICE_NAME)
 	if err != nil {
 		return cluster, err
@@ -110,7 +115,6 @@ func (cluster *Cluster) Initialize(ctx context.Context) error {
 			}
 		}
 	}
-
 	return nil
 }
 

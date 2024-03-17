@@ -38,7 +38,6 @@ func (r *userRepo) SaveUser(ctx context.Context, u *biz.User) (*biz.User, error)
 		u.Id, _ = ret.LastInsertId()
 		return u, err
 	}
-
 }
 
 func (r *userRepo) UpdateUserStateByID(ctx context.Context, id int64, state int) (bool, error) {

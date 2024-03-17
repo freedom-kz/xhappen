@@ -215,7 +215,7 @@ func (connection *Connection) processAuth() error {
 		AuthInfo:    &auth.Auth,
 	}
 
-	//直进行后端调用
+	//直进行验证后端调用
 	reply, err := connection.Boss.passClient.Auth(context.Background(), in)
 	if err != nil {
 		ack.AuthRet = false

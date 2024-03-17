@@ -145,14 +145,20 @@ func (r *Registry) RegisterWithKV(ctx context.Context, key string, value string)
 	return grant.ID, nil
 }
 
-// registerWithKV create a new lease, return current leaseID
+// 存在则添加失败
 func (r *Registry) TryRegisterKVWithTTL(ctx context.Context, key string, value string, ttl time.Duration) (bool, <-chan *clientv3.LeaseKeepAliveResponse, error) {
 	grant, err := r.lease.Grant(ctx, int64(r.opts.ttl.Seconds()))
 	if err != nil {
 		return false, nil, err
 	}
-	_, err = r.client.Put(ctx, key, value, clientv3.WithLease(grant.ID))
+	cmp := clientv3.Compare(clientv3.CreateRevision(key), "=", 0)
+	put := clientv3.OpPut(key, value, clientv3.WithLease(grant.ID))
+	resp, err := r.client.Txn(ctx).If(cmp).Then(put).Commit()
 	if err != nil {
+		return false, nil, err
+	}
+
+	if !resp.Succeeded {
 		return false, nil, err
 	}
 	kac, err := r.client.KeepAlive(ctx, grant.ID)
