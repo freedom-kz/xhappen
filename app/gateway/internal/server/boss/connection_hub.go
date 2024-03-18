@@ -19,8 +19,8 @@ type Hub struct {
 	actionToHub            chan *actionToHub
 	disconnectedforceToHub chan *disconnectedforceToHub
 	addConn                chan *Connection
-	rmConnByCid            chan string
 	removeConn             chan *Connection
+	rmConnByCid            chan string
 	exitCh                 chan struct{}
 }
 

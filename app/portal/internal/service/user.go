@@ -94,6 +94,7 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 		},
 	}, nil
 }
+
 func (s *UserService) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.LogoutReply, error) {
 
 	//强制离线
@@ -115,6 +116,7 @@ func (s *UserService) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.Lo
 	err = s.jwt.RemoveToken(ctx, token)
 	return &pb.LogoutReply{}, err
 }
+
 func (s *UserService) DeRegister(ctx context.Context, req *pb.DeRegisterRequest) (*pb.DeRegisterReply, error) {
 	//强制离线
 	id, err := GetUserID(ctx)

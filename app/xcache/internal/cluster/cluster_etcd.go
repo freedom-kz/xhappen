@@ -153,8 +153,12 @@ func (cluster *Cluster) tryJoinCluster(ctx context.Context, index int) (bool, er
 				select {
 				case _, ok := <-kac:
 					if !ok {
-						cluster.log.Errorf("xcache cluster key:%s value:%s %s", key, cluster.index, err)
-						continue
+						cluster.log.Errorf("xcache cluster key:%s value:%s loss alive", key, cluster.index)
+						//服务状态变更
+						cluster.state = 0
+						cluster.index = -1
+						cluster.serveStateListen.stateModify(cluster.state == 1, cluster.index)
+						return
 					}
 				case <-cluster.ctx.Done():
 					return

@@ -50,7 +50,7 @@ func (xClient *XcacheClient) update(services []*registry.ServiceInstance) bool {
 		md := service.Metadata
 		endpointHost, ok := md["host"]
 		if !ok || endpointHost == xClient.localHost {
-			xClient.log.Log(log.LevelError, "msg", "registry service instance info missing.", "info", service)
+			xClient.log.Log(log.LevelError, "msg", "registry service instance info missing or local", "info", service)
 			continue
 		}
 
