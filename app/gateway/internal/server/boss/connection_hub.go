@@ -14,13 +14,13 @@ type Hub struct {
 	boss                   *Boss
 	index                  int
 	deliverToHub           chan *deliverToHub
+	connByCIDFromHub       chan *connByCIDFromHub
 	syncToHub              chan *syncToHub
 	broadcastToHub         chan *broadcastToHub
 	actionToHub            chan *actionToHub
 	disconnectedforceToHub chan *disconnectedforceToHub
 	addConn                chan *Connection
 	removeConn             chan *Connection
-	rmConnByCid            chan string
 	exitCh                 chan struct{}
 }
 
@@ -49,12 +49,16 @@ type disconnectedforceToHub struct {
 	disconnectForceMessage *pb.DisconnectForceRequest
 }
 
+type connByCIDFromHub struct {
+	ret chan *Connection
+	cid string
+}
+
 func newHub(boss *Boss) *Hub {
 	return &Hub{
 		boss:                   boss,
 		addConn:                make(chan *Connection),
 		removeConn:             make(chan *Connection),
-		rmConnByCid:            make(chan string),
 		syncToHub:              make(chan *syncToHub, 1000),
 		deliverToHub:           make(chan *deliverToHub, 1000),
 		broadcastToHub:         make(chan *broadcastToHub, 1000),
@@ -69,12 +73,11 @@ func (h *Hub) Start() {
 			select {
 			case connection := <-h.addConn:
 				connIndex.Add(connection)
-			case cid := <-h.rmConnByCid:
-				if conn := connIndex.ForClientId(cid); conn != nil {
-					connIndex.Remove(conn)
-				}
 			case connection := <-h.removeConn:
 				connIndex.Remove(connection)
+			case getConnByCid := <-h.connByCIDFromHub:
+				conn := connIndex.ForClientId(getConnByCid.cid)
+				getConnByCid.ret <- conn
 			case deliverToHub := <-h.deliverToHub:
 				if deliverToHub.deliverMessage.Clientid != "" {
 					//设备下发
@@ -192,6 +195,19 @@ func (h *Hub) RemoveConn(conn *Connection) {
 	case h.removeConn <- conn:
 	case <-h.exitCh:
 	}
+}
+
+func (h *Hub) GetConnByCid(cid string) *Connection {
+	req := &connByCIDFromHub{
+		ret: make(chan *Connection),
+		cid: cid,
+	}
+	select {
+	case h.connByCIDFromHub <- req:
+	case <-h.exitCh:
+		return nil
+	}
+	return <-req.ret
 }
 
 func (h *Hub) SendDeliverToConn(done chan *errors.Error, deliver *pb.DeliverRequest) {

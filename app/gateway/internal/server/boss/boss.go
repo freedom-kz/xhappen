@@ -196,6 +196,16 @@ func (boss *Boss) RemoveConnFromHub(conn *Connection) {
 	hub.RemoveConn(conn)
 }
 
+func (boss *Boss) GetConnFromHub(clientId string) *Connection {
+	for _, hub := range boss.hubs {
+		conn := hub.GetConnByCid(clientId)
+		if conn != nil {
+			return conn
+		}
+	}
+	return nil
+}
+
 func (boss *Boss) SendDeliverToHubConn(done chan *errors.Error, deliver *pb.DeliverRequest) {
 	hub := boss.getHubForUserId(deliver.Userid)
 	hub.SendDeliverToConn(done, deliver)

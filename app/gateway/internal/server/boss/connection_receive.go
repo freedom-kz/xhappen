@@ -252,6 +252,12 @@ func (connection *Connection) processAuth() error {
 		}
 		connection.sendConnState(STATE_SYNC)
 	}
+
+	//本次为手动登录，需要对之前设备上的连接信息进行清理
+	if conn := connection.Boss.GetConnFromHub(connection.ClientId); conn != nil {
+		conn.Close()
+	}
+
 	//纳入hub管理
 	connection.Boss.AddConnToHub(connection)
 	return nil
