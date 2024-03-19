@@ -5,8 +5,8 @@ import (
 	pb_basic "xhappen/api/basic/v1"
 	pb_portal "xhappen/api/portal/v1"
 	pb_protocol "xhappen/api/protocol/v1"
+	pb_router "xhappen/api/router/v1"
 	pb_transfer "xhappen/api/transfer/v1"
-	v1 "xhappen/api/transfer/v1"
 	"xhappen/app/transfer/internal/biz"
 	"xhappen/app/transfer/internal/client"
 
@@ -49,13 +49,13 @@ func (s *PassService) Bind(ctx context.Context, in *pb_transfer.BindRequest) (*p
 		return nil, err
 	}
 	if replyHost.SocketHost == "" || replyHost.SocketHost != in.ServerID {
-		return &v1.BindReply{
+		return &pb_transfer.BindReply{
 			Ret: false,
 			Err: &pb_basic.ErrorUnknown("alloc socketHost invalidate").Status,
 		}, nil
 	}
 
-	return &v1.BindReply{
+	return &pb_transfer.BindReply{
 		Ret: true,
 		Err: nil,
 	}, nil
@@ -69,7 +69,7 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 
 	authReply, err := service.portalClient.TokenAuth(ctx, tokenAuthRequest)
 	if err != nil {
-		return &v1.AuthReply{
+		return &pb_transfer.AuthReply{
 			Ret: false,
 			Err: &pb_basic.ErrorAuthTokenInvalid("authinfo %s.", in.AuthInfo).Status,
 		}, nil
@@ -83,7 +83,7 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 	//2. 离线同步会话
 	sessions, err := service.message.ListSyncSessions(ctx)
 	if err != nil {
-		return &v1.AuthReply{
+		return &pb_transfer.AuthReply{
 			Ret:         true,
 			Uid:         authReply.Uid,
 			TokenExpire: authReply.TokenExpire,
@@ -94,7 +94,21 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 	for _, session := range sessions {
 		sids = append(sids, session.SessionId)
 	}
-	return &v1.AuthReply{
+
+	//3. 路由数据存放
+	deviceBindReq := &pb_router.DeviceBindRequest{}
+	deviceBindRsp, err := service.xacheClient.DeviceBind(ctx, deviceBindReq)
+	if err != nil {
+		return nil, err
+	}
+	if !deviceBindRsp.Ret {
+		return &pb_transfer.AuthReply{
+			Ret: false,
+			Err: deviceBindRsp.Err,
+		}, nil
+	}
+
+	return &pb_transfer.AuthReply{
 		Ret:         true,
 		Uid:         authReply.Uid,
 		TokenExpire: authReply.TokenExpire,
