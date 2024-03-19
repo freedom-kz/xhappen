@@ -43,7 +43,7 @@ func NewXcacheClient(conf *conf.Bootstrap, logger log.Logger) (*XcacheClient, fu
 }
 
 // 集群节点变化变更
-func (xClient *XcacheClient) update(services []*registry.ServiceInstance) bool {
+func (xClient *XcacheClient) Update(services []*registry.ServiceInstance) bool {
 	//构建新的存储结构
 	conns := make(map[string]*grpc.ClientConn)
 	for _, service := range services {

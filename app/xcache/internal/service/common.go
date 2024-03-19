@@ -1,14 +1,14 @@
 package service
 
 var (
-	servingState = 0
+	servingState = false
 	serveIndex   = -1
 )
 
 type ServingStaeListen struct {
 }
 
-func stateModify(state int, index int) {
-	servingState = int(state)
-	serveIndex = int(index)
+func StateModify(state bool, index int) {
+	servingState = state
+	serveIndex = index
 }

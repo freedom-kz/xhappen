@@ -4,12 +4,13 @@ import (
 	"context"
 	"strconv"
 	"time"
+	"xhappen/app/xcache/internal/client"
 	"xhappen/app/xcache/internal/conf"
+	"xhappen/app/xcache/internal/service"
 	"xhappen/pkg/etcd"
 	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"
-	"github.com/go-kratos/kratos/v2/registry"
 )
 
 const (
@@ -19,15 +20,15 @@ const (
 )
 
 type Cluster struct {
-	ctx                     context.Context
-	state                   uint   //本机服务状态
-	index                   int    //本机抢占索引
-	local_ip                string //本机IP
-	info                    *conf.Server_Info
-	registry                *etcd.Registry
-	serveStateListen        localServeStateModifyListen //状态变更通知
-	clusterNodeModifyListen clusterNodeModifyListen     //集群节点变化通知
-	log                     *log.Helper
+	ctx      context.Context
+	state    uint   //本机服务状态
+	index    int    //本机抢占索引
+	local_ip string //本机IP
+	info     *conf.Server_Info
+	registry *etcd.Registry
+
+	xcahceClient *client.XcacheClient
+	log          *log.Helper
 }
 
 /*
@@ -37,19 +38,17 @@ type Cluster struct {
 func NewCluster(ctx context.Context,
 	conf *conf.Bootstrap,
 	registry *etcd.Registry,
-	serveStateListen localServeStateModifyListen,
-	clusterNodeModifyListen clusterNodeModifyListen,
+	xcahceClient *client.XcacheClient,
 	logger log.Logger,
 ) (*Cluster, error) {
 
 	cluster := &Cluster{
-		ctx:                     ctx,
-		state:                   0,
-		info:                    conf.Server.Info,
-		registry:                registry,
-		serveStateListen:        serveStateListen,
-		clusterNodeModifyListen: clusterNodeModifyListen,
-		log:                     log.NewHelper(log.With(logger, "module", "cluser/cluster_state")),
+		ctx:          ctx,
+		state:        0,
+		info:         conf.Server.Info,
+		registry:     registry,
+		xcahceClient: xcahceClient,
+		log:          log.NewHelper(log.With(logger, "module", "cluser/cluster_state")),
 	}
 
 	local_IP, err := utils.GetLocalIp()
@@ -68,8 +67,7 @@ func NewCluster(ctx context.Context,
 		return nil, err
 	}
 	//对本机发送当前状态
-	cluster.serveStateListen.stateModify(cluster.state == 1, cluster.index)
-
+	service.StateModify(cluster.state == 1, cluster.index)
 	//监听集群节点数据，这里包含热备
 	go func() {
 		err = cluster.watchStart(ctx, SERVICE_NAME)
@@ -84,16 +82,8 @@ func NewCluster(ctx context.Context,
 		return cluster, err
 	}
 
-	cluster.clusterNodeModifyListen.update(service)
+	cluster.xcahceClient.Update(service)
 	return cluster, err
-}
-
-type localServeStateModifyListen interface {
-	stateModify(serving bool, index int)
-}
-
-type clusterNodeModifyListen interface {
-	update(services []*registry.ServiceInstance)
 }
 
 // 按需加入集群
@@ -134,7 +124,7 @@ func (cluster *Cluster) watchStart(ctx context.Context, key string) error {
 				cluster.log.Errorf("cluster watch event get instances err:%v", err)
 				continue
 			}
-			cluster.clusterNodeModifyListen.update(ins)
+			cluster.xcahceClient.Update(ins)
 		case <-ctx.Done():
 			return nil
 		}
@@ -157,7 +147,7 @@ func (cluster *Cluster) tryJoinCluster(ctx context.Context, index int) (bool, er
 						//服务状态变更
 						cluster.state = 0
 						cluster.index = -1
-						cluster.serveStateListen.stateModify(cluster.state == 1, cluster.index)
+						service.StateModify(cluster.state == 1, cluster.index)
 						return
 					}
 				case <-cluster.ctx.Done():
