@@ -31,14 +31,14 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RouterClient interface {
-	// 设备相关操作
-	UserDeviceBind(ctx context.Context, in *DeviceBindRequest, opts ...grpc.CallOption) (*DeviceBindReply, error)
-	UserDeviceUnBind(ctx context.Context, in *DeviceUnBindRequest, opts ...grpc.CallOption) (*DeviceUnBindReply, error)
+	// 用户设备相关操作
+	UserDeviceBind(ctx context.Context, in *UserDeviceBindRequest, opts ...grpc.CallOption) (*UserDeviceBindReply, error)
+	UserDeviceUnBind(ctx context.Context, in *UserDeviceUnBindRequest, opts ...grpc.CallOption) (*UserDeviceUnBindReply, error)
 	// 查询用户路由
 	GetRoutersByUserIds(ctx context.Context, in *RoutersByUserIdsRequest, opts ...grpc.CallOption) (*RoutersByUserIdsReply, error)
 	// 房间路由相关
-	SaveRoomRouter(ctx context.Context, in *SaveRoomRouterRequest, opts ...grpc.CallOption) (*SaveRoomRouterReply, error)
-	DeleteRoomRouter(ctx context.Context, in *DeleteRoomServerRequest, opts ...grpc.CallOption) (*SaveRoomServerReply, error)
+	SaveRoomRouter(ctx context.Context, in *RoomRouterBindRequest, opts ...grpc.CallOption) (*RoomRouterBindReply, error)
+	DeleteRoomRouter(ctx context.Context, in *RoomRouterUnbindRequest, opts ...grpc.CallOption) (*RoomRouterUnbindReply, error)
 	GetRoomRouterByID(ctx context.Context, in *GetRoomRouterByIDRequest, opts ...grpc.CallOption) (*GetRoomRouterByIDReply, error)
 }
 
@@ -50,8 +50,8 @@ func NewRouterClient(cc grpc.ClientConnInterface) RouterClient {
 	return &routerClient{cc}
 }
 
-func (c *routerClient) UserDeviceBind(ctx context.Context, in *DeviceBindRequest, opts ...grpc.CallOption) (*DeviceBindReply, error) {
-	out := new(DeviceBindReply)
+func (c *routerClient) UserDeviceBind(ctx context.Context, in *UserDeviceBindRequest, opts ...grpc.CallOption) (*UserDeviceBindReply, error) {
+	out := new(UserDeviceBindReply)
 	err := c.cc.Invoke(ctx, Router_UserDeviceBind_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -59,8 +59,8 @@ func (c *routerClient) UserDeviceBind(ctx context.Context, in *DeviceBindRequest
 	return out, nil
 }
 
-func (c *routerClient) UserDeviceUnBind(ctx context.Context, in *DeviceUnBindRequest, opts ...grpc.CallOption) (*DeviceUnBindReply, error) {
-	out := new(DeviceUnBindReply)
+func (c *routerClient) UserDeviceUnBind(ctx context.Context, in *UserDeviceUnBindRequest, opts ...grpc.CallOption) (*UserDeviceUnBindReply, error) {
+	out := new(UserDeviceUnBindReply)
 	err := c.cc.Invoke(ctx, Router_UserDeviceUnBind_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -77,8 +77,8 @@ func (c *routerClient) GetRoutersByUserIds(ctx context.Context, in *RoutersByUse
 	return out, nil
 }
 
-func (c *routerClient) SaveRoomRouter(ctx context.Context, in *SaveRoomRouterRequest, opts ...grpc.CallOption) (*SaveRoomRouterReply, error) {
-	out := new(SaveRoomRouterReply)
+func (c *routerClient) SaveRoomRouter(ctx context.Context, in *RoomRouterBindRequest, opts ...grpc.CallOption) (*RoomRouterBindReply, error) {
+	out := new(RoomRouterBindReply)
 	err := c.cc.Invoke(ctx, Router_SaveRoomRouter_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -86,8 +86,8 @@ func (c *routerClient) SaveRoomRouter(ctx context.Context, in *SaveRoomRouterReq
 	return out, nil
 }
 
-func (c *routerClient) DeleteRoomRouter(ctx context.Context, in *DeleteRoomServerRequest, opts ...grpc.CallOption) (*SaveRoomServerReply, error) {
-	out := new(SaveRoomServerReply)
+func (c *routerClient) DeleteRoomRouter(ctx context.Context, in *RoomRouterUnbindRequest, opts ...grpc.CallOption) (*RoomRouterUnbindReply, error) {
+	out := new(RoomRouterUnbindReply)
 	err := c.cc.Invoke(ctx, Router_DeleteRoomRouter_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -108,14 +108,14 @@ func (c *routerClient) GetRoomRouterByID(ctx context.Context, in *GetRoomRouterB
 // All implementations must embed UnimplementedRouterServer
 // for forward compatibility
 type RouterServer interface {
-	// 设备相关操作
-	UserDeviceBind(context.Context, *DeviceBindRequest) (*DeviceBindReply, error)
-	UserDeviceUnBind(context.Context, *DeviceUnBindRequest) (*DeviceUnBindReply, error)
+	// 用户设备相关操作
+	UserDeviceBind(context.Context, *UserDeviceBindRequest) (*UserDeviceBindReply, error)
+	UserDeviceUnBind(context.Context, *UserDeviceUnBindRequest) (*UserDeviceUnBindReply, error)
 	// 查询用户路由
 	GetRoutersByUserIds(context.Context, *RoutersByUserIdsRequest) (*RoutersByUserIdsReply, error)
 	// 房间路由相关
-	SaveRoomRouter(context.Context, *SaveRoomRouterRequest) (*SaveRoomRouterReply, error)
-	DeleteRoomRouter(context.Context, *DeleteRoomServerRequest) (*SaveRoomServerReply, error)
+	SaveRoomRouter(context.Context, *RoomRouterBindRequest) (*RoomRouterBindReply, error)
+	DeleteRoomRouter(context.Context, *RoomRouterUnbindRequest) (*RoomRouterUnbindReply, error)
 	GetRoomRouterByID(context.Context, *GetRoomRouterByIDRequest) (*GetRoomRouterByIDReply, error)
 	mustEmbedUnimplementedRouterServer()
 }
@@ -124,19 +124,19 @@ type RouterServer interface {
 type UnimplementedRouterServer struct {
 }
 
-func (UnimplementedRouterServer) UserDeviceBind(context.Context, *DeviceBindRequest) (*DeviceBindReply, error) {
+func (UnimplementedRouterServer) UserDeviceBind(context.Context, *UserDeviceBindRequest) (*UserDeviceBindReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UserDeviceBind not implemented")
 }
-func (UnimplementedRouterServer) UserDeviceUnBind(context.Context, *DeviceUnBindRequest) (*DeviceUnBindReply, error) {
+func (UnimplementedRouterServer) UserDeviceUnBind(context.Context, *UserDeviceUnBindRequest) (*UserDeviceUnBindReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UserDeviceUnBind not implemented")
 }
 func (UnimplementedRouterServer) GetRoutersByUserIds(context.Context, *RoutersByUserIdsRequest) (*RoutersByUserIdsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRoutersByUserIds not implemented")
 }
-func (UnimplementedRouterServer) SaveRoomRouter(context.Context, *SaveRoomRouterRequest) (*SaveRoomRouterReply, error) {
+func (UnimplementedRouterServer) SaveRoomRouter(context.Context, *RoomRouterBindRequest) (*RoomRouterBindReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveRoomRouter not implemented")
 }
-func (UnimplementedRouterServer) DeleteRoomRouter(context.Context, *DeleteRoomServerRequest) (*SaveRoomServerReply, error) {
+func (UnimplementedRouterServer) DeleteRoomRouter(context.Context, *RoomRouterUnbindRequest) (*RoomRouterUnbindReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRoomRouter not implemented")
 }
 func (UnimplementedRouterServer) GetRoomRouterByID(context.Context, *GetRoomRouterByIDRequest) (*GetRoomRouterByIDReply, error) {
@@ -156,7 +156,7 @@ func RegisterRouterServer(s grpc.ServiceRegistrar, srv RouterServer) {
 }
 
 func _Router_UserDeviceBind_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeviceBindRequest)
+	in := new(UserDeviceBindRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -168,13 +168,13 @@ func _Router_UserDeviceBind_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: Router_UserDeviceBind_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RouterServer).UserDeviceBind(ctx, req.(*DeviceBindRequest))
+		return srv.(RouterServer).UserDeviceBind(ctx, req.(*UserDeviceBindRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Router_UserDeviceUnBind_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeviceUnBindRequest)
+	in := new(UserDeviceUnBindRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func _Router_UserDeviceUnBind_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: Router_UserDeviceUnBind_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RouterServer).UserDeviceUnBind(ctx, req.(*DeviceUnBindRequest))
+		return srv.(RouterServer).UserDeviceUnBind(ctx, req.(*UserDeviceUnBindRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -210,7 +210,7 @@ func _Router_GetRoutersByUserIds_Handler(srv interface{}, ctx context.Context, d
 }
 
 func _Router_SaveRoomRouter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SaveRoomRouterRequest)
+	in := new(RoomRouterBindRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -222,13 +222,13 @@ func _Router_SaveRoomRouter_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: Router_SaveRoomRouter_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RouterServer).SaveRoomRouter(ctx, req.(*SaveRoomRouterRequest))
+		return srv.(RouterServer).SaveRoomRouter(ctx, req.(*RoomRouterBindRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Router_DeleteRoomRouter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRoomServerRequest)
+	in := new(RoomRouterUnbindRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -240,7 +240,7 @@ func _Router_DeleteRoomRouter_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: Router_DeleteRoomRouter_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RouterServer).DeleteRoomRouter(ctx, req.(*DeleteRoomServerRequest))
+		return srv.(RouterServer).DeleteRoomRouter(ctx, req.(*RoomRouterUnbindRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

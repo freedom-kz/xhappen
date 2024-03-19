@@ -96,7 +96,15 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 	}
 
 	//3. 路由数据存放
-	deviceBindReq := &pb_router.DeviceBindRequest{}
+	deviceBindReq := &pb_router.DeviceBindRequest{
+		DeviceInfo: &pb_router.DeviceInfo{
+			ClientID:       in.ClientId,
+			ServerID:       in.ServerID,
+			ConnectSequece: in.ConnectSequece,
+			CurVersion:     in.CurVersion,
+			DeviceType:     in.DeviceType,
+		},
+	}
 	deviceBindRsp, err := service.xacheClient.DeviceBind(ctx, deviceBindReq)
 	if err != nil {
 		return nil, err

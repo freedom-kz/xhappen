@@ -25,7 +25,6 @@ service Pass {
 message BindRequest {
   protocol.v1.Bind bindInfo = 1;
   string serverID = 2;
-  uint64 connectSequece = 3;
 }
 
 message BindReply {
@@ -35,8 +34,12 @@ message BindReply {
 
 message AuthRequest {
   string clientId = 1;
-  uint64 bindVersion = 2;
-  protocol.v1.Auth authInfo = 3;
+  string serverID = 2;
+  uint64 connectSequece = 3;
+  protocol.v1.LoginType loginType = 4;
+  protocol.v1.DeviceType deviceType = 5;
+  int32 curVersion = 6;
+  protocol.v1.Auth authInfo = 7;
 }
 
 message AuthReply {

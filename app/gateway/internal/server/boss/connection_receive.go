@@ -140,7 +140,6 @@ func (connection *Connection) processBind() error {
 
 	//业务调用
 	in := &pb.BindRequest{
-		ServerID: connection.Boss.serverId,
 		BindInfo: &bind.Bind,
 	}
 
@@ -210,9 +209,8 @@ func (connection *Connection) processAuth() error {
 	}
 
 	in := &pb.AuthRequest{
-		ClientId:    connection.ClientId,
-		BindVersion: connection.connectSequence,
-		AuthInfo:    &auth.Auth,
+		ClientId: connection.ClientId,
+		AuthInfo: &auth.Auth,
 	}
 
 	//直进行验证后端调用

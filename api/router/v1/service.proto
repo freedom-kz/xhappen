@@ -11,42 +11,46 @@ option java_package = "router.v1";
 option objc_class_prefix = "RouterV1";
 
 service Router {
-  //设备相关操作
-  rpc UserDeviceBind(DeviceBindRequest) returns (DeviceBindReply)  {}
-  rpc UserDeviceUnBind(DeviceUnBindRequest) returns (DeviceUnBindReply)  {}
+  //用户设备相关操作
+  rpc UserDeviceBind(UserDeviceBindRequest) returns (UserDeviceBindReply)  {}
+  rpc UserDeviceUnBind(UserDeviceUnBindRequest) returns (UserDeviceUnBindReply)  {}
 
   //查询用户路由
   rpc GetRoutersByUserIds(RoutersByUserIdsRequest) returns (RoutersByUserIdsReply)  {}
 
   //房间路由相关
-  rpc SaveRoomRouter(SaveRoomRouterRequest) returns (SaveRoomRouterReply)  {}
-  rpc DeleteRoomRouter(DeleteRoomServerRequest) returns (SaveRoomServerReply)  {}
+  rpc SaveRoomRouter(RoomRouterBindRequest) returns (RoomRouterBindReply)  {}
+  rpc DeleteRoomRouter(RoomRouterUnbindRequest) returns (RoomRouterUnbindReply)  {}
   rpc GetRoomRouterByID(GetRoomRouterByIDRequest) returns (GetRoomRouterByIDReply)  {}
 }
 
-message DeviceInfo{
-  string clientID = 1;
-  string serverID = 2;
-  uint64 connectSequece = 3;
-  int32 curVersion = 4;
-  protocol.v1.DeviceType deviceType = 5;
+message UserDeviceBindInfo{
+  uint64 uid = 1;
+  string clientID = 2;
+  string serverID = 3;
+  uint64 connectSequece = 4;
+  int32 curVersion = 5;
+  protocol.v1.DeviceType deviceType = 6;
 }
 
-message DeviceBindRequest {
-  DeviceInfo deviceInfo  = 1;
+message UserDeviceBindRequest {
+  UserDeviceBindInfo userDeviceBindInfo = 1;
 }
 
-message DeviceBindReply {
+message UserDeviceBindReply {
   bool ret = 1;
-  DeviceInfo exist = 2;
+  UserDeviceBindInfo exist = 2;
   errors.Status err = 3;          //kratos通用错误
 }
 
-message DeviceUnBindRequest {
-  DeviceInfo deviceInfo  = 1;
+message UserDeviceUnBindRequest {
+  uint64 uid = 1;
+  string clientID = 2;
+  string serverID = 3;
+  uint64 connectSequece = 4;
 }
 
-message DeviceUnBindReply {
+message UserDeviceUnBindReply {
   bool ret = 1;
   errors.Status err = 2;          //kratos通用错误
 }
@@ -56,78 +60,45 @@ message RoutersByUserIdsRequest {
 }
 
 message RoutersByUserIdsReply {
-  message UserDevicesRouter{
-    repeated DeviceInfo deviceInfo = 1;
+  message UserDeviceRouters{
+    repeated UserDeviceBindInfo userDeviceBindInfos = 1;
   }
   bool ret = 1;
-  map<string, UserDevicesRouter> userDevicesRouter = 2; 
+  map<string, UserDeviceRouters> userDevicesRouter = 2; 
   errors.Status err = 3;          //kratos通用错误
 }
 
-message SaveRoomServerRequest {
-  repeated string ids = 1;
+message RoomRouterBindRequest {
+  uint64 roomId = 1;
+  string serverID = 2;
 }
 
-message SaveRoomServerReply {
-  map<string, string> ids = 1;
-  errors.Status err = 2;          //kratos通用错误
-}
-
-message SaveLocalRoomServerRequest {
-  repeated string id = 1;
-}
-
-message SaveLocalRoomServerReply {
-  map<string, string> ids = 1;
-  errors.Status err = 2;          //kratos通用错误
-}
-
-message GetRoomServerByIDRequest {
-  repeated string id = 1;
-}
-
-message GetRoomServerByIDReply {
-  map<string, string> ids = 1;
-  errors.Status err = 2;          //kratos通用错误
-}
-
-message GetLocalRoomServerByIDRequest {
-  repeated string id = 1;
-}
-
-message GetLocalRoomServerByIDReply {
-  map<string, string> ids = 1;
-  errors.Status err = 2;          //kratos通用错误
-}
-
-message SaveRoomRouterRequest {
-   uint64 roomId = 1;
-   repeated string gwServers = 2;
-}
-
-message SaveRoomRouterReply {
+message RoomRouterBindReply {
   bool ret = 1;
   errors.Status err = 2;          //kratos通用错误
 }
 
-message DeleteRoomServerRequest {
+message RoomRouterUnbindRequest {
   uint64 roomId = 1;
-  repeated string gwServers = 2;  //删除的网关地址列表
+  string serverID = 2;
 }
 
-message DeleteRoomServerReply {
- bool ret = 1;
- errors.Status err = 2;          //kratos通用错误
+message RoomRouterUnbindReply {
+  bool ret = 1;
+  errors.Status err = 2;          //kratos通用错误
 }
 
 message GetRoomRouterByIDRequest {
-  uint64 roomId = 1;
-  repeated string gwServers = 2;
+  repeated uint64 roomId = 1;
 }
 
 message GetRoomRouterByIDReply {
- bool ret = 1;
- repeated string gwServers = 2;
- errors.Status err = 3;          //kratos通用错误
+  message RoomServers{
+    repeated string serverId = 1;
+  }
+
+  bool ret = 1;
+  map<uint64, RoomServers> roomRouters = 2;
+  errors.Status err = 3;          //kratos通用错误
 }
 
