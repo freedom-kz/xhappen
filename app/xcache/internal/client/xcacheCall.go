@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"xhappen/app/xcache/internal/conf"
-	"xhappen/pkg/utils"
 
 	router_pb "xhappen/api/router/v1"
 
@@ -16,21 +15,16 @@ import (
 )
 
 type XcacheClient struct {
-	conns     map[string]*grpc.ClientConn //服务ID对应的grpc client
-	localHost string
-	log       *log.Helper
+	conns      map[int]*grpc.ClientConn //服务索引对应的grpc client
+	localIndex int
+	log        *log.Helper
 }
 
 func NewXcacheClient(conf *conf.Bootstrap, logger log.Logger) (*XcacheClient, func(), error) {
-	host, err := utils.GetLocalIp()
-	if err != nil {
-		return nil, func() {}, err
-	}
-
 	client := &XcacheClient{
-		log:       log.NewHelper(log.With(logger, "module", "client/xcache")),
-		localHost: host,
-		conns:     make(map[string]*grpc.ClientConn, 0),
+		log:        log.NewHelper(log.With(logger, "module", "client/xcache")),
+		localIndex: -1,
+		conns:      make(map[int]*grpc.ClientConn, 0),
 	}
 
 	cleanUp := func() {
@@ -43,18 +37,22 @@ func NewXcacheClient(conf *conf.Bootstrap, logger log.Logger) (*XcacheClient, fu
 }
 
 // 集群节点变化变更
-func (xClient *XcacheClient) Update(services []*registry.ServiceInstance) bool {
+func (xClient *XcacheClient) UpdateService(services map[int]*registry.ServiceInstance) bool {
 	//构建新的存储结构
-	conns := make(map[string]*grpc.ClientConn)
-	for _, service := range services {
-		md := service.Metadata
-		endpointHost, ok := md["host"]
-		if !ok || endpointHost == xClient.localHost {
-			xClient.log.Log(log.LevelError, "msg", "registry service instance info missing or local", "info", service)
+	conns := make(map[int]*grpc.ClientConn)
+	for index, service := range services {
+		//本机索引，不创建连接
+		if index == xClient.localIndex {
+			continue
+		}
+		//数据缺失
+		endpointHost, ok := service.Metadata["host"]
+		if !ok {
 			continue
 		}
 
-		if exist, ok := xClient.conns[endpointHost]; !ok {
+		//新建/复用
+		if exist, ok := xClient.conns[index]; !ok {
 			conn, err := transgrpc.DialInsecure(
 				context.Background(),
 				transgrpc.WithEndpoint(endpointHost),
@@ -66,15 +64,17 @@ func (xClient *XcacheClient) Update(services []*registry.ServiceInstance) bool {
 				xClient.log.Log(log.LevelError, "msg", "grpc dial error", "error", err)
 				continue
 			}
-			conns[endpointHost] = conn
+			conns[index] = conn
 		} else {
-			conns[endpointHost] = exist
+			conns[index] = exist
 		}
 	}
 
 	//删除不需要的连接
-	for host, conn := range xClient.conns {
-		if _, ok := conns[host]; !ok {
+	for index, conn := range xClient.conns {
+		if curConn, ok := conns[index]; !ok {
+			conn.Close()
+		} else if conn != curConn {
 			conn.Close()
 		}
 	}
@@ -83,12 +83,19 @@ func (xClient *XcacheClient) Update(services []*registry.ServiceInstance) bool {
 	return true
 }
 
-func (xCacheClient *XcacheClient) UserDeviceBind(ctx context.Context, target string, req *router_pb.DeviceBindRequest) (*router_pb.DeviceBindReply, error) {
+func (xCacheClient *XcacheClient) LocalStateModify(state bool, index int) {
+	if state {
+		xCacheClient.localIndex = index
+	} else {
+		xCacheClient.localIndex = -1
+	}
+}
+
+func (xCacheClient *XcacheClient) UserDeviceBind(ctx context.Context, target int, req *router_pb.UserDeviceBindRequest) (*router_pb.UserDeviceBindReply, error) {
 	conn, ok := xCacheClient.conns[target]
 	if !ok {
 		return nil, fmt.Errorf("target router server not alive")
 	}
-
 	peer := router_pb.NewRouterClient(conn)
 	return peer.UserDeviceBind(ctx, req)
 }

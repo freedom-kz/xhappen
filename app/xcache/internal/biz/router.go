@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 	"time"
-	protocol "xhappen/api/protocol/v1"
+	pb_protocol "xhappen/api/protocol/v1"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -30,7 +30,7 @@ type RouterUsecase struct {
 
 type DeviceRouterInfo struct {
 	IndexOfUserRouter int
-	DeviceType        protocol.DeviceType
+	DeviceType        pb_protocol.DeviceType
 	ClientID          string
 	CurVersion        int32
 	GatewayID         string

@@ -17,11 +17,11 @@ func NewRouterService(useCase *biz.RouterUsecase) *RouterService {
 	return &RouterService{useCase: useCase}
 }
 
-func (s *RouterService) UserDeviceBind(ctx context.Context, in *v1.DeviceBindRequest) (*v1.DeviceBindReply, error) {
+func (s *RouterService) UserDeviceBind(ctx context.Context, in *v1.UserDeviceBindRequest) (*v1.UserDeviceBindReply, error) {
 	return nil, nil
 }
 
-func (s *RouterService) UserDeviceUnBind(ctx context.Context, in *v1.DeviceUnBindRequest) (*v1.DeviceUnBindReply, error) {
+func (s *RouterService) UserDeviceUnBind(ctx context.Context, in *v1.UserDeviceUnBindRequest) (*v1.UserDeviceUnBindReply, error) {
 	return nil, nil
 }
 
@@ -29,11 +29,11 @@ func (s *RouterService) GetRoutersByUserIds(ctx context.Context, in *v1.RoutersB
 	return nil, nil
 }
 
-func (s *RouterService) SaveRoomRouter(ctx context.Context, in *v1.SaveRoomRouterRequest) (*v1.SaveRoomRouterReply, error) {
+func (s *RouterService) SaveRoomRouter(ctx context.Context, in *v1.RoomRouterBindRequest) (*v1.RoomRouterBindReply, error) {
 	return nil, nil
 }
 
-func (s *RouterService) DeleteRoomRouter(ctx context.Context, in *v1.DeleteRoomServerRequest) (*v1.SaveRoomServerReply, error) {
+func (s *RouterService) DeleteRoomRouter(ctx context.Context, in *v1.RoomRouterUnbindRequest) (*v1.RoomRouterUnbindReply, error) {
 	return nil, nil
 }
 

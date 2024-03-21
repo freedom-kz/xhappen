@@ -146,7 +146,7 @@ func (r *Registry) RegisterWithKV(ctx context.Context, key string, value string)
 }
 
 // 存在则添加失败
-func (r *Registry) TryRegisterKVWithTTL(ctx context.Context, key string, value string, ttl time.Duration) (bool, <-chan *clientv3.LeaseKeepAliveResponse, error) {
+func (r *Registry) TryJoinCluster(ctx context.Context, key string, value string, ttl time.Duration) (bool, <-chan *clientv3.LeaseKeepAliveResponse, error) {
 	grant, err := r.lease.Grant(ctx, int64(r.opts.ttl.Seconds()))
 	if err != nil {
 		return false, nil, err
@@ -168,9 +168,54 @@ func (r *Registry) TryRegisterKVWithTTL(ctx context.Context, key string, value s
 	return true, kac, nil
 }
 
+func (r *Registry) GetClusterService(ctx context.Context, prefix, name string) (map[int]*registry.ServiceInstance, error) {
+	//集群节点首次获取
+	services, err := r.GetService(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	key := fmt.Sprintf("%s/%s", prefix, name)
+	nodes, err := r.GetClusterNodes(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	ret := make(map[int]*registry.ServiceInstance)
+	for idx, target := range nodes {
+		for _, service := range services {
+			host := service.Metadata["host"]
+			if target == host {
+				ret[idx] = service
+				break
+			}
+		}
+	}
+	return ret, nil
+}
+
+func (r *Registry) GetClusterNodes(ctx context.Context, key string) (map[int]string, error) {
+	rsp, err := r.client.Get(ctx, key, clientv3.WithPrefix())
+	if err != nil {
+		return nil, err
+	}
+	ret := make(map[int]string)
+	for _, kvs := range rsp.Kvs {
+		key := string(kvs.Key)
+		idx := strings.Index(key, "/")
+		str := key[idx:]
+		index, err := strconv.Atoi(str)
+		if err != nil {
+			fmt.Printf("GetClusterNodes strconv err:%v\n", err)
+			continue
+		}
+		ret[index] = string(kvs.Value)
+	}
+	return ret, err
+}
+
 func (r *Registry) WatchWithPrefix(ctx context.Context, key string) clientv3.WatchChan {
 	watcher := clientv3.NewWatcher(r.client)
-	watchChan := watcher.Watch(ctx, key, clientv3.WithPrefix(), clientv3.WithRev(0))
+	watchChan := watcher.Watch(ctx, key, clientv3.WithPrefix())
 	return watchChan
 }
 

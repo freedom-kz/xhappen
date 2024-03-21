@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 	"xhappen/app/xcache/internal/client"
@@ -14,19 +15,18 @@ import (
 )
 
 const (
-	ENDPOINT_XCACHE_NAME = "/microservices/customtype/xcache"
-	SERVICE_NAME         = "xcache"
-	REGISTER_LEASE_TTL   = 3 * time.Second
+	ENDPOINT_CUSTOM_PREFIX = "/microservices/customtype"
+	SERVICE_NAME           = "xcache"
+	REGISTER_LEASE_TTL     = 3 * time.Second
 )
 
 type Cluster struct {
-	ctx      context.Context
-	state    uint   //本机服务状态
-	index    int    //本机抢占索引
-	local_ip string //本机IP
-	info     *conf.Server_Info
-	registry *etcd.Registry
-
+	ctx          context.Context
+	state        uint //本机服务状态
+	index        int  //本机抢占索引
+	info         *conf.Server_Info
+	host         string
+	registry     *etcd.Registry
 	xcahceClient *client.XcacheClient
 	log          *log.Helper
 }
@@ -51,14 +51,14 @@ func NewCluster(ctx context.Context,
 		log:          log.NewHelper(log.With(logger, "module", "cluser/cluster_state")),
 	}
 
-	local_IP, err := utils.GetLocalIp()
+	localHost, err := utils.GetLocalIp()
 
 	if err != nil {
 		cluster.log.Fatalf("New cluster client get local ip err:%s", err)
 		return nil, err
 	}
 
-	cluster.local_ip = local_IP
+	cluster.host = localHost
 
 	//抢占进行服务，为真正服务node
 	err = cluster.Initialize(ctx)
@@ -70,19 +70,23 @@ func NewCluster(ctx context.Context,
 	service.StateModify(cluster.state == 1, cluster.index)
 	//监听集群节点数据，这里包含热备
 	go func() {
-		err = cluster.watchStart(ctx, SERVICE_NAME)
+		key := fmt.Sprintf("%s/%s", ENDPOINT_CUSTOM_PREFIX, SERVICE_NAME)
+		err = cluster.watchStart(ctx, key)
 		if err != nil {
 			cluster.log.Fatalf("New cluster client watch err:%s", err)
 		}
 	}()
 
-	//集群节点首次获取
-	service, err := cluster.registry.GetService(ctx, SERVICE_NAME)
+	nodes, err := cluster.registry.GetClusterService(ctx, ENDPOINT_CUSTOM_PREFIX, SERVICE_NAME)
 	if err != nil {
 		return cluster, err
 	}
 
-	cluster.xcahceClient.Update(service)
+	if len(nodes) != int(conf.Server.Info.Capacity) {
+		cluster.log.Infof("cluster is waiting join")
+	} else {
+		cluster.xcahceClient.UpdateService(nodes)
+	}
 	return cluster, err
 }
 
@@ -119,12 +123,18 @@ func (cluster *Cluster) watchStart(ctx context.Context, key string) error {
 				cluster.log.Errorf("cluster watch event initialize instances err:%v", err)
 				continue
 			}
-			ins, err := cluster.registry.GetService(ctx, SERVICE_NAME)
+
+			nodes, err := cluster.registry.GetClusterService(ctx, ENDPOINT_CUSTOM_PREFIX, SERVICE_NAME)
 			if err != nil {
-				cluster.log.Errorf("cluster watch event get instances err:%v", err)
+				cluster.log.Errorf("cluster watch event get GetClusterService err:%v", err)
 				continue
 			}
-			cluster.xcahceClient.Update(ins)
+
+			if len(nodes) != int(cluster.info.Capacity) {
+				cluster.log.Infof("cluster is waiting join")
+			} else {
+				cluster.xcahceClient.UpdateService(nodes)
+			}
 		case <-ctx.Done():
 			return nil
 		}
@@ -134,8 +144,8 @@ func (cluster *Cluster) watchStart(ctx context.Context, key string) error {
 // 注册中心数据操作
 func (cluster *Cluster) tryJoinCluster(ctx context.Context, index int) (bool, error) {
 	indexStr := strconv.Itoa(index)
-	key := ENDPOINT_XCACHE_NAME + "/" + indexStr
-	ok, kac, err := cluster.registry.TryRegisterKVWithTTL(ctx, key, cluster.local_ip, REGISTER_LEASE_TTL)
+	key := fmt.Sprintf("%s/%s/%s", ENDPOINT_CUSTOM_PREFIX, SERVICE_NAME, indexStr)
+	ok, kac, err := cluster.registry.TryJoinCluster(ctx, key, cluster.host, REGISTER_LEASE_TTL)
 	if ok {
 		//注册成功对心跳进行处理
 		go func() {
