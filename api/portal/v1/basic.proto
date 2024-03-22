@@ -14,7 +14,7 @@ service Config {
   // 获取基础配置
   rpc GetBasicConfig (GetBasicConfigRequest) returns (GetBasicConfigReply)  {
         option (google.api.http) = {
-          post: "/basic/getconfig",
+          post: "/basic/config",
           body: "*",
         };
   }
@@ -41,7 +41,6 @@ message GetSocketHostConfigRequest {
     min_len: 24, 
     max_len: 36
   }];
-  uint64 userId = 2;
 }
 
 message GetSocketHostConfigReply {

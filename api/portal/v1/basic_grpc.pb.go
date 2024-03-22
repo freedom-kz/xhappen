@@ -29,6 +29,7 @@ const (
 type ConfigClient interface {
 	// 获取基础配置
 	GetBasicConfig(ctx context.Context, in *GetBasicConfigRequest, opts ...grpc.CallOption) (*GetBasicConfigReply, error)
+	// 仅内部使用
 	GetSocketHostConfig(ctx context.Context, in *GetSocketHostConfigRequest, opts ...grpc.CallOption) (*GetSocketHostConfigReply, error)
 }
 
@@ -64,6 +65,7 @@ func (c *configClient) GetSocketHostConfig(ctx context.Context, in *GetSocketHos
 type ConfigServer interface {
 	// 获取基础配置
 	GetBasicConfig(context.Context, *GetBasicConfigRequest) (*GetBasicConfigReply, error)
+	// 仅内部使用
 	GetSocketHostConfig(context.Context, *GetSocketHostConfigRequest) (*GetSocketHostConfigReply, error)
 	mustEmbedUnimplementedConfigServer()
 }

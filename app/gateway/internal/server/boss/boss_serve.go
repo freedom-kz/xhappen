@@ -32,6 +32,6 @@ func (bossServer *BossServer) Handle(conn net.Conn) {
 			"ReceiveBytes", connnection.ReceiveBytes,
 			"hosname", connnection.String())
 	} else {
-		bossServer.boss.logger.Log(log.LevelInfo, "msg", "initiative quit", "hosname", connnection.String())
+		bossServer.boss.logger.Log(log.LevelInfo, "msg", "graceful quit", "hosname", connnection.String())
 	}
 }

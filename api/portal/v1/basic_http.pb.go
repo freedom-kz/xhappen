@@ -28,7 +28,7 @@ type ConfigHTTPServer interface {
 
 func RegisterConfigHTTPServer(s *http.Server, srv ConfigHTTPServer) {
 	r := s.Route("/")
-	r.POST("/basic/getconfig", _Config_GetBasicConfig0_HTTP_Handler(srv))
+	r.POST("/basic/config", _Config_GetBasicConfig0_HTTP_Handler(srv))
 }
 
 func _Config_GetBasicConfig0_HTTP_Handler(srv ConfigHTTPServer) func(ctx http.Context) error {
@@ -67,7 +67,7 @@ func NewConfigHTTPClient(client *http.Client) ConfigHTTPClient {
 
 func (c *ConfigHTTPClientImpl) GetBasicConfig(ctx context.Context, in *GetBasicConfigRequest, opts ...http.CallOption) (*GetBasicConfigReply, error) {
 	var out GetBasicConfigReply
-	pattern := "/basic/getconfig"
+	pattern := "/basic/config"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationConfigGetBasicConfig))
 	opts = append(opts, http.PathTemplate(pattern))

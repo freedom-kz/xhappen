@@ -325,6 +325,7 @@ func (i *ConnectionIndex) All() map[*Connection]int {
 	return i.byConnection
 }
 
+
 func (i *ConnectionIndex) Clear() {
 	//这里按照正常退出处理，避免非正常断开业务造成的大量离线业务处理
 	for conn := range i.byConnection {

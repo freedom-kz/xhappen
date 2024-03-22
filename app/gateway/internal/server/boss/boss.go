@@ -43,6 +43,7 @@ type Boss struct {
 }
 
 func NewBoss(cfg *conf.Bootstrap, logger log.Logger, passClient *client.PassClient) *Boss {
+
 	boss := &Boss{
 		GlobalConnectionSequence: 0, //设备运行时连接序列号
 		startTime:                time.Now(),
@@ -53,6 +54,14 @@ func NewBoss(cfg *conf.Bootstrap, logger log.Logger, passClient *client.PassClie
 		passClient:               passClient,
 	}
 
+	host, err := utils.GetLocalIp()
+
+	if err != nil {
+		boss.logger.Log(log.LevelFatal, "get local ip", err)
+		os.Exit(1)
+	}
+
+	boss.serverId = host
 	boss.ctx, boss.ctxCancel = context.WithCancel(context.Background())
 	boss.SwapOpts(cfg.Socket)
 	boss.errValue.Store(errStore{})

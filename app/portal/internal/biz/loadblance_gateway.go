@@ -22,8 +22,9 @@ type DispatchInfo struct {
 type LoadBalanceRepo interface {
 	GetGatewayPublicIPs() []string
 	IsAlive(addr string) bool
-	UpsertDispatchInfo(ctx context.Context, clientId string, userId string, gwAddr string) (*DispatchInfo, error)
-	GetDispatchInfo(ctx context.Context, clientId string, userId string) (*DispatchInfo, bool, error)
+	SaveDispatchInfo(ctx context.Context, clientId string, userId string, gwAddr string) error
+	GetDispatchInfoByClientID(ctx context.Context, clientId string) (*DispatchInfo, bool, error)
+	GetDispatchInfoByUserID(ctx context.Context, uid string) (*DispatchInfo, bool, error)
 }
 
 func NewLoadBlanceUseCase(repo LoadBalanceRepo, logger log.Logger) *LoadBlanceUseCase {
@@ -34,32 +35,39 @@ func NewLoadBlanceUseCase(repo LoadBalanceRepo, logger log.Logger) *LoadBlanceUs
 }
 
 func (useCase *LoadBlanceUseCase) DispatchByUserIDWithClientId(ctx context.Context, userID string, clientId string) (string, error) {
-	//1. 已有分配地址，并且当前服务中，获取返回
-	dispatchInfo, exist, err := useCase.repo.GetDispatchInfo(ctx, clientId, userID)
+	dispatchInfo, exist, err := useCase.repo.GetDispatchInfoByClientID(ctx, clientId)
 	if err != nil {
 		return "", err
 	}
-	if exist {
+	if exist && dispatchInfo.UserId == userID && useCase.repo.IsAlive(dispatchInfo.GwAddr) {
+		//1. 已有绑定信息，信息匹配，并且服务器存活，则返回
 		return dispatchInfo.GwAddr, nil
 	}
-
-	//2. 为用户分配地址，多个客户端登录同一网关
-	addr, err := useCase.strategyRandom()
+	var addr string
+	dispatchInfo, exist, err = useCase.repo.GetDispatchInfoByUserID(ctx, userID)
 	if err != nil {
-		return "", err
+		return "", basic.ErrorUnknown("server err:%v", err)
 	}
 
-	if _, err = useCase.repo.UpsertDispatchInfo(ctx, clientId, userID, addr); err != nil {
-		//客户端原本已有网关分配绑定关系，则进行一次下线处理，新的绑定关系已形成，原客户端登录会进行校验
-		return "", basic.ErrorUnknown("server err:%v", err)
+	if exist && useCase.repo.IsAlive(dispatchInfo.GwAddr) {
+		addr = dispatchInfo.GwAddr
+	} else {
+		addr, err = useCase.strategyRandom()
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if err = useCase.repo.SaveDispatchInfo(ctx, clientId, userID, addr); err != nil {
+		return "", err
 	}
 
 	return addr, nil
 }
 
 // 仅读取分配信息
-func (useCase *LoadBlanceUseCase) GetDispatchInfo(ctx context.Context, clientId string, userID string) (*DispatchInfo, bool, error) {
-	return useCase.repo.GetDispatchInfo(ctx, clientId, userID)
+func (useCase *LoadBlanceUseCase) GetDispatchInfo(ctx context.Context, clientId string) (*DispatchInfo, bool, error) {
+	return useCase.repo.GetDispatchInfoByClientID(ctx, clientId)
 }
 
 // 随机策略获取网关公网地址
