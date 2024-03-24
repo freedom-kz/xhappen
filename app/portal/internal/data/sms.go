@@ -79,7 +79,7 @@ func (user *userRepo) VerifyLoginAuthCode(ctx context.Context, mobile string, cl
 			return false, errors.New("smsCode expire")
 		}
 	} else {
-		return false, errors.New("smsCode expire")
+		return false, errors.New("internal err:smsCode missing")
 	}
 
 	if kvs[common.CLIENTID_KEY] != clientId {
