@@ -3,7 +3,6 @@ package boss
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -168,7 +167,7 @@ func (connection *Connection) processBind() error {
 	//填充信息
 	connection.ClientId = bind.ClientID
 	connection.KeepAlive = time.Duration(bind.KeepAlive)
-	connection.Version = strconv.Itoa(int(bind.CurVersion))
+	connection.Version = int(bind.CurVersion)
 	connection.Os = bind.DeviceType
 	if bind.QueueSize > connection.Boss.GetConfig().Queue.MaxRdyCount {
 		bind.QueueSize = connection.Boss.GetConfig().Queue.MaxRdyCount
@@ -209,8 +208,13 @@ func (connection *Connection) processAuth() error {
 	}
 
 	in := &pb.AuthRequest{
-		ClientId: connection.ClientId,
-		AuthInfo: &auth.Auth,
+		ClientId:       connection.ClientId,
+		ServerID:       connection.Boss.serverId,
+		ConnectSequece: connection.connectSequence,
+		LoginType:      connection.LoginType,
+		DeviceType:     connection.Os,
+		CurVersion:     int32(connection.Version),
+		AuthInfo:       &auth.Auth,
 	}
 
 	//直进行验证后端调用

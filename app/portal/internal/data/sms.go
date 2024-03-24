@@ -65,7 +65,6 @@ func (r *userRepo) GetAuthInfo(ctx context.Context, mobile string) (map[string]s
 
 func (user *userRepo) VerifyLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (bool, error) {
 	key := LOGIN_AUTHCODE_PREFIX + mobile
-
 	kvs, err := user.data.rdb.HGetAll(ctx, key).Result()
 
 	if err != nil {

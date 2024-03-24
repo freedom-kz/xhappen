@@ -14,7 +14,7 @@ service SMS {
   // Sends SMS code
   rpc SendSMSCode (SMSCodeRequest) returns (SMSCodeReply)  {
         option (google.api.http) = {
-          post: "/user/smscode",
+          post: "/basic/smscode",
           body: "*",
         };
   }
@@ -25,7 +25,7 @@ message SMSCodeRequest {
     pattern: "^1(3\\d|4[0-14-9]|5[0-35-9]|6[2567]|7[0-8]|8\\d|9[0-35-9])\\d{8}$",
     len: 11, 
   }];
-  string clientId = 2 [(validate.rules).string = {
+  string deviceId = 2 [(validate.rules).string = {
     min_len: 24, 
     max_len: 36
   }];

@@ -28,7 +28,7 @@ type SMSHTTPServer interface {
 
 func RegisterSMSHTTPServer(s *http.Server, srv SMSHTTPServer) {
 	r := s.Route("/")
-	r.POST("/user/smscode", _SMS_SendSMSCode0_HTTP_Handler(srv))
+	r.POST("/basic/smscode", _SMS_SendSMSCode0_HTTP_Handler(srv))
 }
 
 func _SMS_SendSMSCode0_HTTP_Handler(srv SMSHTTPServer) func(ctx http.Context) error {
@@ -67,7 +67,7 @@ func NewSMSHTTPClient(client *http.Client) SMSHTTPClient {
 
 func (c *SMSHTTPClientImpl) SendSMSCode(ctx context.Context, in *SMSCodeRequest, opts ...http.CallOption) (*SMSCodeReply, error) {
 	var out SMSCodeReply
-	pattern := "/user/smscode"
+	pattern := "/basic/smscode"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSMSSendSMSCode))
 	opts = append(opts, http.PathTemplate(pattern))

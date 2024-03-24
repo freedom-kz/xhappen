@@ -2,10 +2,10 @@ trace:
   endpoint: http://127.0.0.1:14268/api/traces
 server:
   http:
-    addr: 0.0.0.0:8000
+    addr: 0.0.0.0:10080
     timeout: 3s
   grpc:
-    addr: 0.0.0.0:9000
+    addr: 0.0.0.0:10090
     timeout: 3s
 auth:
   jwt:
@@ -14,21 +14,21 @@ auth:
 data:
   database:
     driver: mysql
-    source: root:pwd9527@tcp(192.168.71.69:3306)/xhappen?charset=utf8mb4&parseTime=True
+    source: root:pwd9527@tcp(172.16.49.239:3306)/xhappen?charset=utf8mb4&parseTime=True
   redis:
-    addr: 192.168.71.69:6379
+    addr: 172.16.49.239:6379
     password: pwd9527
     db: 1
     dialTimeout: 0.3s
     readTimeout: 0.3s
     writeTimeout: 0.3s
   etcd:
-    addr: 192.168.71.69:2379
+    addr: 172.16.49.239:2379
     dialTimeout: 1s
     readTimeout: 1s
     writeTimeout: 1s
   kafka:
-    addr: 192.168.71.69:9092
+    addr: 172.16.49.239:9092
     smsCodeTopic: smscode
 info:
-  fileServer:https://xhappen.com/
+  fileServer: https://xhappen.com/

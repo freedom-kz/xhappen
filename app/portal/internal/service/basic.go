@@ -41,7 +41,7 @@ func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConf
 	}
 
 	idStr := strconv.FormatUint(uint64(userID), 10)
-	addr, err = c.lbUseCase.DispatchByUserIDWithClientId(ctx, req.ClientId, idStr)
+	addr, err = c.lbUseCase.DispatchUserClient(ctx, req.ClientId, idStr)
 
 	if err != nil {
 		return nil, err

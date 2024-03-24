@@ -34,15 +34,15 @@ func NewLoadBlanceUseCase(repo LoadBalanceRepo, logger log.Logger) *LoadBlanceUs
 	}
 }
 
-func (useCase *LoadBlanceUseCase) DispatchByUserIDWithClientId(ctx context.Context, userID string, clientId string) (string, error) {
+func (useCase *LoadBlanceUseCase) DispatchUserClient(ctx context.Context, userID string, clientId string) (string, error) {
 	dispatchInfo, exist, err := useCase.repo.GetDispatchInfoByClientID(ctx, clientId)
 	if err != nil {
 		return "", err
 	}
 	if exist && dispatchInfo.UserId == userID && useCase.repo.IsAlive(dispatchInfo.GwAddr) {
-		//1. 已有绑定信息，信息匹配，并且服务器存活，则返回
 		return dispatchInfo.GwAddr, nil
 	}
+
 	var addr string
 	dispatchInfo, exist, err = useCase.repo.GetDispatchInfoByUserID(ctx, userID)
 	if err != nil {
@@ -62,6 +62,7 @@ func (useCase *LoadBlanceUseCase) DispatchByUserIDWithClientId(ctx context.Conte
 		return "", err
 	}
 
+	//客户端bind关系发生变化，踢出原绑定关系下客户端
 	return addr, nil
 }
 

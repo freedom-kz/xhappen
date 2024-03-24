@@ -45,7 +45,7 @@ type Connection struct {
 	UserType        protocol.UserType
 	RoleType        protocol.RoleType
 	LoginType       protocol.LoginType
-	Version         string
+	Version         int
 	state           int
 
 	deliverCh chan *protocol.Deliver

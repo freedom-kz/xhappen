@@ -99,3 +99,5 @@ docker:
 
 
   mmuser:mostest
+
+  初始化管理员账号成功,账号名："admin@admin.com"，密码："ymfe.org"

@@ -64,7 +64,9 @@ func (s *PassService) Bind(ctx context.Context, in *pb_transfer.BindRequest) (*p
 func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthRequest) (*pb_transfer.AuthReply, error) {
 	//1. 验证用户
 	tokenAuthRequest := &pb_portal.TokenAuthRequest{
-		Token: in.AuthInfo.Token,
+		Token:    in.AuthInfo.Token,
+		ClientId: in.ClientId,
+		RoleType: in.AuthInfo.RoleType,
 	}
 
 	authReply, err := service.portalClient.TokenAuth(ctx, tokenAuthRequest)
@@ -78,6 +80,13 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 	uType := pb_protocol.UserType_USER_NORMAL
 	if in.AuthInfo.RoleType == pb_protocol.RoleType_ROLE_CUSTOMER_SERVICE {
 		uType = pb_protocol.UserType_USER_VIRTUAL_GROUP
+	}
+
+	switch in.LoginType {
+	case pb_protocol.LoginType_AUTO:
+		//判断设备最后一次的bind关系，如不是当前用户，返回特定失败
+	case pb_protocol.LoginType_MANUAL:
+		//剔除当前设备上的用户
 	}
 
 	//2. 离线同步会话

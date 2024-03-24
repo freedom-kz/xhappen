@@ -41,7 +41,7 @@ func wireApp(bootstrap *conf.Bootstrap, logger log.Logger, registrar registry.Re
 	configService := service.NewConfigService(bootstrap, loadBlanceUseCase, logger)
 	grpcServer := server.NewGRPCServer(bootstrap, userService, configService, logger)
 	smsUseCase := biz.NewSMSUseCase(smsRepo, sender, logger)
-	smsService := service.NewSMSService(userUseCase, jwtUseCase, smsUseCase, logger)
+	smsService := service.NewSMSService(smsUseCase, logger)
 	httpServer := server.NewHTTPServer(bootstrap, userService, smsService, configService, logger)
 	app := newApp(logger, grpcServer, httpServer, registrar)
 	return app, func() {
