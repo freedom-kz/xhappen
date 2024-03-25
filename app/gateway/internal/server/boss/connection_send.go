@@ -197,7 +197,7 @@ exit:
 	}
 	connection.Shutdown(true)
 	if err != nil {
-		connection.logger.Log(log.LevelError, "msg", "io send goroutine exit", "clientId", connection.ClientId, "userId", connection.UserId, "err", err)
+		connection.logger.Log(log.LevelError, "msg", "io send goroutine exit", "deviceId", connection.DeviceId, "userId", connection.UserId, "err", err)
 	}
 }
 

@@ -121,9 +121,9 @@ func (connection *Connection) processBind() error {
 		}
 	}
 	//客户端ID校验
-	if IsValidClientId(bind.ClientID) {
+	if IsValidDeviceId(bind.DeviceId) {
 		bindAck.BindRet = false
-		bindAck.Err = &basic.ErrorClientidRejected("invalid clientId:%s.", bind.ClientID).Status
+		bindAck.Err = &basic.ErrorClientidRejected("invalid deviceId:%s.", bind.DeviceId).Status
 
 		err = connection.Write(bindAck)
 		if err != nil {
@@ -161,11 +161,11 @@ func (connection *Connection) processBind() error {
 	}
 	//返回错误，关闭连接
 	if !bindAck.BindRet {
-		connection.logger.Log(log.LevelDebug, "msg", "Bind failure", "clientId", connection.ClientId, "err", reply.Err)
+		connection.logger.Log(log.LevelDebug, "msg", "Bind failure", "deviceId", connection.DeviceId, "err", reply.Err)
 		return fmt.Errorf(bindAck.Err.Reason)
 	}
 	//填充信息
-	connection.ClientId = bind.ClientID
+	connection.DeviceId = bind.DeviceId
 	connection.KeepAlive = time.Duration(bind.KeepAlive)
 	connection.Version = int(bind.CurVersion)
 	connection.Os = bind.DeviceType
@@ -208,7 +208,7 @@ func (connection *Connection) processAuth() error {
 	}
 
 	in := &pb.AuthRequest{
-		ClientId:       connection.ClientId,
+		DeviceId:       connection.DeviceId,
 		ServerID:       connection.Boss.serverId,
 		ConnectSequece: connection.connectSequence,
 		LoginType:      connection.LoginType,
@@ -237,7 +237,7 @@ func (connection *Connection) processAuth() error {
 		return err
 	}
 	if !ack.AuthRet {
-		connection.logger.Log(log.LevelDebug, "msg", "auth failure", "clientId", connection.ClientId, "err", reply.Err)
+		connection.logger.Log(log.LevelDebug, "msg", "auth failure", "deviceId", connection.DeviceId, "err", reply.Err)
 		return fmt.Errorf(ack.Err.Reason)
 	}
 	//信息填充
@@ -255,7 +255,7 @@ func (connection *Connection) processAuth() error {
 		connection.sendConnState(STATE_SYNC)
 	}
 
-	if conn := connection.Boss.GetConnFromHub(connection.ClientId); conn != nil {
+	if conn := connection.Boss.GetConnFromHub(connection.DeviceId); conn != nil {
 		conn.Close()
 	}
 
@@ -267,7 +267,7 @@ func (connection *Connection) processAuth() error {
 func (connection *Connection) processSubmit(submit *protocol.Submit) error {
 	in := &pb.SubmitRequest{
 		Userid:   connection.UserId,
-		Clientid: connection.ClientId,
+		DeviceId: connection.DeviceId,
 		Submit:   submit,
 	}
 	reply, err := connection.Boss.passClient.Submit(context.Background(), in)
@@ -416,6 +416,6 @@ func (connection *Connection) FinishedMessage() {
 	connection.tryUpdateReadyState()
 }
 
-func IsValidClientId(clientId string) bool {
-	return len(clientId) >= 24 && len(clientId) <= 36
+func IsValidDeviceId(deviceId string) bool {
+	return len(deviceId) >= 24 && len(deviceId) <= 36
 }

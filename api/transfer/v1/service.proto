@@ -33,7 +33,7 @@ message BindReply {
 }
 
 message AuthRequest {
-  string clientId = 1;
+  string deviceId = 1;
   string serverID = 2;
   uint64 connectSequece = 3;
   protocol.v1.LoginType loginType = 4;
@@ -53,7 +53,7 @@ message AuthReply {
 
 message SubmitRequest {
   string userid = 1; //用户ID
-  string clientid = 2; //设备ID
+  string deviceId = 2; //设备ID
   protocol.v1.Submit submit = 3;
 }
 
@@ -68,7 +68,7 @@ message SubmitReply {
 
 message ActionRequest {
   string uid = 1;
-  string clientId = 2;
+  string deviceId = 2;
   protocol.v1.Action action = 3;
 }
 
@@ -81,7 +81,7 @@ message ActionReply {
 
 message QuitRequest {
   string userId = 1;
-  string clientId = 2;
+  string deviceId = 2;
   protocol.v1.DeviceType deviceType = 3;
 }
 

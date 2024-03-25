@@ -40,7 +40,7 @@ func NewPassService(
 func (s *PassService) Bind(ctx context.Context, in *pb_transfer.BindRequest) (*pb_transfer.BindReply, error) {
 	//1. 进行终端绑定网关信息验证
 	getSocketHostConfigRequest := &pb_portal.GetSocketHostConfigRequest{
-		ClientId: in.BindInfo.ClientID,
+		DeviceId: in.BindInfo.DeviceId,
 	}
 
 	replyHost, err := s.portalClient.GetSocketHostConfig(ctx, getSocketHostConfigRequest)
@@ -65,7 +65,7 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 	//1. 验证用户
 	tokenAuthRequest := &pb_portal.TokenAuthRequest{
 		Token:    in.AuthInfo.Token,
-		ClientId: in.ClientId,
+		DeviceId: in.DeviceId,
 		RoleType: in.AuthInfo.RoleType,
 	}
 
@@ -107,7 +107,7 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 	//3. 路由数据存放
 	deviceBindReq := &pb_router.UserDeviceBindRequest{
 		UserDeviceBindInfo: &pb_router.UserDeviceBindInfo{
-			ClientID:       in.ClientId,
+			DeviceID:       in.DeviceId,
 			ServerID:       in.ServerID,
 			ConnectSequece: in.ConnectSequece,
 			CurVersion:     in.CurVersion,

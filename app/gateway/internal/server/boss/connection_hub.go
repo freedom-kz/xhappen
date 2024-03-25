@@ -76,12 +76,12 @@ func (h *Hub) Start() {
 			case connection := <-h.removeConn:
 				connIndex.Remove(connection)
 			case getConnByCid := <-h.connByCIDFromHub:
-				conn := connIndex.ForClientId(getConnByCid.cid)
+				conn := connIndex.ForDeviceId(getConnByCid.cid)
 				getConnByCid.ret <- conn
 			case deliverToHub := <-h.deliverToHub:
-				if deliverToHub.deliverMessage.Clientid != "" {
+				if deliverToHub.deliverMessage.DeviceId != "" {
 					//设备下发
-					conn := connIndex.ForClientId(deliverToHub.deliverMessage.Clientid)
+					conn := connIndex.ForDeviceId(deliverToHub.deliverMessage.DeviceId)
 					if conn == nil || conn.UserId != deliverToHub.deliverMessage.Userid {
 						deliverToHub.done <- errors.New(460, "NO_DEVICE_ONLINE", "NO_DEVICE_ONLINE")
 					} else {
@@ -96,7 +96,7 @@ func (h *Hub) Start() {
 					} else {
 						for _, conn := range conns {
 							//忽略设备
-							if utils.StringInSlice(conn.ClientId, deliverToHub.deliverMessage.OmitClientids) {
+							if utils.StringInSlice(conn.DeviceId, deliverToHub.deliverMessage.OmitDeviceIds) {
 								continue
 							}
 							conn.SendDeliverCh(deliverToHub.deliverMessage.Deliver)
@@ -105,7 +105,7 @@ func (h *Hub) Start() {
 					}
 				}
 			case syncToHub := <-h.syncToHub:
-				conn := connIndex.ForClientId(syncToHub.syncMessage.Clientid)
+				conn := connIndex.ForDeviceId(syncToHub.syncMessage.DeviceId)
 				if conn == nil || conn.UserId != syncToHub.syncMessage.Userid || uint64(conn.ConnectTime.UnixNano()) != syncToHub.syncMessage.BindVersion {
 					syncToHub.done <- errors.New(461, "DEVICE_NO_PAIR", "DEVICE_NO_PAIR")
 					continue
@@ -113,9 +113,9 @@ func (h *Hub) Start() {
 				conn.SendSyncCh(syncToHub.syncMessage.Sync)
 				syncToHub.done <- nil
 			case actionToHub := <-h.actionToHub:
-				if actionToHub.actionMessage.ClientId != "" {
+				if actionToHub.actionMessage.DeviceId != "" {
 					//设备下发
-					conn := connIndex.ForClientId(actionToHub.actionMessage.ClientId)
+					conn := connIndex.ForDeviceId(actionToHub.actionMessage.DeviceId)
 					if conn == nil || conn.UserId != actionToHub.actionMessage.Uid {
 						actionToHub.done <- errors.New(460, "NO_DEVICE_ONLINE", "NO_DEVICE_ONLINE")
 					} else {
@@ -130,7 +130,7 @@ func (h *Hub) Start() {
 					} else {
 						for _, conn := range conns {
 							//忽略设备
-							if utils.StringInSlice(conn.ClientId, actionToHub.actionMessage.OmitClientids) {
+							if utils.StringInSlice(conn.DeviceId, actionToHub.actionMessage.OmitDeviceIds) {
 								continue
 							}
 							conn.SendActionCh(actionToHub.actionMessage.Action)
@@ -143,7 +143,7 @@ func (h *Hub) Start() {
 				for conn := range connIndex.All() {
 					//用户或者设备忽略
 					if utils.StringInSlice(conn.UserId, broadcastToHub.broadcastMessage.OmitUserIds) ||
-						utils.StringInSlice(conn.ClientId, broadcastToHub.broadcastMessage.OmitClientids) {
+						utils.StringInSlice(conn.DeviceId, broadcastToHub.broadcastMessage.OmitDeviceIds) {
 						continue
 					}
 					conn.SendDeliverCh(broadcastToHub.broadcastMessage.Deliver)
@@ -151,10 +151,10 @@ func (h *Hub) Start() {
 				broadcastToHub.done <- nil
 			case dicconnectforce := <-h.disconnectedforceToHub:
 				conns := connIndex.ForUser(dicconnectforce.disconnectForceMessage.Userid)
-				if dicconnectforce.disconnectForceMessage.Clientid != "" {
+				if dicconnectforce.disconnectForceMessage.DeviceId != "" {
 					//设备连接关闭
 					for _, conn := range conns {
-						if conn.ClientId == dicconnectforce.disconnectForceMessage.Clientid {
+						if conn.DeviceId == dicconnectforce.disconnectForceMessage.DeviceId {
 							conn.Shutdown(false)
 						}
 					}
@@ -269,21 +269,21 @@ func (h *Hub) DisconnectedConn(done chan *errors.Error, disconnectConn *pb.Disco
 type ConnectionIndex struct {
 	byUserId     map[string][]*Connection
 	byConnection map[*Connection]int
-	byClientId   map[string]*Connection
+	byDeviceId   map[string]*Connection
 }
 
 func newConnectionIndex() *ConnectionIndex {
 	return &ConnectionIndex{
 		byUserId:     make(map[string][]*Connection),
 		byConnection: make(map[*Connection]int),
-		byClientId:   make(map[string]*Connection),
+		byDeviceId:   make(map[string]*Connection),
 	}
 }
 
 func (i *ConnectionIndex) Add(connection *Connection) {
 	i.byUserId[connection.UserId] = append(i.byUserId[connection.UserId], connection)
 	i.byConnection[connection] = len(i.byUserId[connection.UserId]) - 1
-	i.byClientId[connection.ClientId] = connection
+	i.byDeviceId[connection.DeviceId] = connection
 }
 
 func (i *ConnectionIndex) Remove(connection *Connection) {
@@ -305,7 +305,7 @@ func (i *ConnectionIndex) Remove(connection *Connection) {
 
 	//删除其他字典缓存
 	delete(i.byConnection, connection)
-	delete(i.byClientId, connection.ClientId)
+	delete(i.byDeviceId, connection.DeviceId)
 }
 
 func (i *ConnectionIndex) Has(connection *Connection) bool {
@@ -317,14 +317,13 @@ func (i *ConnectionIndex) ForUser(id string) []*Connection {
 	return i.byUserId[id]
 }
 
-func (i *ConnectionIndex) ForClientId(clientId string) *Connection {
-	return i.byClientId[clientId]
+func (i *ConnectionIndex) ForDeviceId(deviceId string) *Connection {
+	return i.byDeviceId[deviceId]
 }
 
 func (i *ConnectionIndex) All() map[*Connection]int {
 	return i.byConnection
 }
-
 
 func (i *ConnectionIndex) Clear() {
 	//这里按照正常退出处理，避免非正常断开业务造成的大量离线业务处理
@@ -332,7 +331,7 @@ func (i *ConnectionIndex) Clear() {
 		conn.Shutdown(false)
 	}
 	//数据置空
-	i.byClientId = nil
+	i.byDeviceId = nil
 	i.byConnection = nil
 	i.byUserId = nil
 }

@@ -12,7 +12,7 @@ option objc_class_prefix = "ProtocolV1";
 
 message Bind{
     DeviceType deviceType = 1;      //设备类型
-    string  deviceID = 2;           //客户端ID
+    string  deviceId = 2;           //客户端ID
     LoginType loginType = 3;        //登录类型
     int32 curVersion = 4;           //客户端当前协议版本
     string magic = 5;               //版本魔法数

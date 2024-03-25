@@ -27,7 +27,7 @@ func (bossServer *BossServer) Handle(conn net.Conn) {
 		bossServer.boss.logger.Log(log.LevelInfo,
 			"msg", "socket io err",
 			"err", err,
-			"clientId", connnection.ClientId,
+			"deviceId", connnection.DeviceId,
 			"SendBytes", connnection.SendBytes,
 			"ReceiveBytes", connnection.ReceiveBytes,
 			"hosname", connnection.String())

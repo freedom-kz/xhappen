@@ -26,7 +26,7 @@ service Router {
 
 message UserDeviceBindInfo{
   uint64 uid = 1;
-  string clientID = 2;
+  string deviceID = 2;
   string serverID = 3;
   uint64 connectSequece = 4;
   int32 curVersion = 5;
@@ -45,7 +45,7 @@ message UserDeviceBindReply {
 
 message UserDeviceUnBindRequest {
   uint64 uid = 1;
-  string clientID = 2;
+  string deviceID = 2;
   string serverID = 3;
   uint64 connectSequece = 4;
 }

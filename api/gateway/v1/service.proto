@@ -39,7 +39,7 @@ service GatewaySrv {
 
 message SyncRequest {
     string userid = 1;          //接收用户ID
-    string clientid = 2;        //接收的客户端标志
+    string deviceId = 2;        //接收的客户端标志
     uint64 bindVersion = 3;     //连接时间戳，作为连接版本过滤重复登录同步数据
     protocol.v1.Sync sync = 4;  //数据包
 }
@@ -50,7 +50,7 @@ message SyncReply {
 }
 
 message BroadcastRequest {
-    repeated string omitClientids = 1; //忽略设备ID
+    repeated string omitDeviceIds = 1; //忽略设备ID
     repeated string omitUserIds = 2; //忽略设备ID
     protocol.v1.Deliver deliver = 3; //消息
 }
@@ -62,8 +62,8 @@ message BroadcastReply {
 
 message DeliverRequest {
     string userid = 1; //用户ID
-    string clientid = 2; //设备ID
-    repeated string omitClientids = 3; //忽略设备ID
+    string deviceId = 2; //设备ID
+    repeated string omitDeviceIds = 3; //忽略设备ID
     protocol.v1.Deliver deliver = 4; //消息
 }
 
@@ -74,8 +74,8 @@ message DeliverReply {
 
 message ActionRequest {
   string uid = 1;
-  string clientId = 2;
-  repeated string omitClientids = 3; //忽略设备ID
+  string deviceId = 2;
+  repeated string omitDeviceIds = 3; //忽略设备ID
   protocol.v1.Action action = 4;
 }
 
@@ -88,7 +88,7 @@ message ActionReply {
 
 message DisconnectForceRequest {
     string userid = 1; //用户ID
-    string clientid = 2; //设备ID
+    string deviceId = 2; //设备ID
     protocol.v1.DeviceType deviceType = 3; //设备类型
 }
 

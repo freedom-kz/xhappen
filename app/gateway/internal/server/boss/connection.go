@@ -37,7 +37,7 @@ type Connection struct {
 	Boss            *Boss
 	ConnectTime     time.Time
 	connectSequence uint64
-	ClientId        string
+	DeviceId        string
 	UserId          string
 	tokenExpire     time.Time
 	Hostname        string
