@@ -47,7 +47,7 @@ func (s *UserService) TokenAuth(ctx context.Context, req *pb.TokenAuthRequest) (
 // 登录手机号
 func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRequest) (*pb.LoginByMobileReply, error) {
 	//登录或者注册手机号
-	user, err := s.user.LoginByMobile(ctx, req.Mobile, req.ClientId, req.SmsCode)
+	user, err := s.user.LoginByMobile(ctx, req.Mobile, req.DeviceId, req.SmsCode)
 	if err != nil {
 		return nil, err
 	}

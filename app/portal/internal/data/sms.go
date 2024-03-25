@@ -36,12 +36,12 @@ func NewSMSRepo(data *Data, logger log.Logger) biz.SMSRepo {
 
 /*
 保存手机验证码数据
-当前保存map中的key有，clientID，expire
+当前保存map中的key有，deviceId，expire
 */
-func (r *userRepo) SaveLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (err error) {
+func (r *userRepo) SaveLoginAuthCode(ctx context.Context, mobile string, deviceId string, smsCode string) (err error) {
 	key := LOGIN_AUTHCODE_PREFIX + mobile
 	values := make(map[string]string)
-	values[common.CLIENTID_KEY] = clientId
+	values[common.DEVICEID_KEY] = deviceId
 	values[common.SMSCODE_KEY] = smsCode
 
 	//这里放入expire主要是担心失效时间设置错误导致的数据存在问题,进行双重验证
@@ -63,7 +63,7 @@ func (r *userRepo) GetAuthInfo(ctx context.Context, mobile string) (map[string]s
 	return kvs, err
 }
 
-func (user *userRepo) VerifyLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (bool, error) {
+func (user *userRepo) VerifyLoginAuthCode(ctx context.Context, mobile string, deviceId string, smsCode string) (bool, error) {
 	key := LOGIN_AUTHCODE_PREFIX + mobile
 	kvs, err := user.data.rdb.HGetAll(ctx, key).Result()
 
@@ -82,7 +82,7 @@ func (user *userRepo) VerifyLoginAuthCode(ctx context.Context, mobile string, cl
 		return false, errors.New("internal err:smsCode missing")
 	}
 
-	if kvs[common.CLIENTID_KEY] != clientId {
+	if kvs[common.DEVICEID_KEY] != deviceId {
 		return false, errors.New("smsCode not match device")
 	}
 

@@ -2,6 +2,6 @@ package common
 
 const (
 	EXPIRE_KEY   = "expire"
-	CLIENTID_KEY = "clientId"
+	DEVICEID_KEY = "deviceId"
 	SMSCODE_KEY  = "smsCode"
 )

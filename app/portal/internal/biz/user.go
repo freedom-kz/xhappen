@@ -62,9 +62,9 @@ func NewUserUseCase(userRepo UserRepo, smsRepo SMSRepo, sender event.Sender, log
 	}
 }
 
-func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, clienrId string, smsCode string) (*User, error) {
+func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, deviceId string, smsCode string) (*User, error) {
 	//验证authcode
-	authRet, err := u.smsRepo.VerifyLoginAuthCode(ctx, mobile, clienrId, smsCode)
+	authRet, err := u.smsRepo.VerifyLoginAuthCode(ctx, mobile, deviceId, smsCode)
 	if err != nil {
 		return nil, err
 	}

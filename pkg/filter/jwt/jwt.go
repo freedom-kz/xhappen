@@ -22,7 +22,7 @@ const (
 	// reason holds the error reason.
 	reason string = "UNAUTHORIZED"
 
-	VERIFY string = "/auth"
+	VERIFY_PATH string = "/auth"
 
 	AUTHEDKEY = "UID"
 )
@@ -128,7 +128,7 @@ func Server(keyFunc jwt.Keyfunc, verifyToken func(ctx context.Context, token str
 				return
 			}
 
-			if strings.HasPrefix(r.URL.Path, VERIFY) {
+			if strings.HasPrefix(r.URL.Path, VERIFY_PATH) {
 				//需要验证
 				auths := strings.SplitN(r.Header.Get(AuthorizationKey), " ", 2)
 				if len(auths) != 2 || !strings.EqualFold(auths[0], BearerWord) {
