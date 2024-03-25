@@ -163,11 +163,11 @@ func (s *UserService) GetUserProfile(ctx context.Context, in *pb.GetUserProfileR
 		profiles[u.Id] = u
 	}
 
-	for _, id := range in.Ids {
-		if _, ok := profiles[id]; !ok {
-			profiles[id] = &v1.UserProfile{}
-		}
-	}
+	// for _, id := range in.Ids {
+	// 	if _, ok := profiles[id]; !ok {
+	// 		profiles[id] = &v1.UserProfile{}
+	// 	}
+	// }
 
 	return &pb.GetUserProfileReply{
 		Users: profiles,

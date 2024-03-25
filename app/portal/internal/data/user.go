@@ -99,7 +99,7 @@ func (r *userRepo) UpdateUserProfile(ctx context.Context, user *biz.User) error 
 					gender =?,
 					sign =?
 					where id = ?`
-	rs, err := r.data.db.MustExec(upProfileSql, user.Nickname, user.Icon, user.Gender, user.Sign, user.Id).RowsAffected()
+	rs, err := r.data.db.MustExec(upProfileSql, user.Nickname, user.Icon, user.Birth, user.Gender, user.Sign, user.Id).RowsAffected()
 	if rs == 1 {
 		return nil
 	} else {
