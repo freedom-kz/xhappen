@@ -12,6 +12,15 @@ func TimeFromMillis(millis int64) time.Time {
 	return time.Unix(0, millis*int64(time.Millisecond))
 }
 
+func DateFromString(dateString string) (time.Time, error) {
+	date, err := time.Parse("2006-01-02", dateString)
+	return date, err
+}
+
+func DateToString(date time.Time) string {
+	return date.Format("2006-01-02")
+}
+
 func StartOfDay(t time.Time) time.Time {
 	year, month, day := t.Date()
 	return time.Date(year, month, day, 0, 0, 0, 0, t.Location())

@@ -37,11 +37,11 @@ func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConf
 
 	if userID, err = GetUserID(ctx); err != nil {
 		//无用户，生成对应设备默认匿名用户
-		userID = utils.Hash(req.ClientId)
+		userID = utils.Hash(req.DeviceId)
 	}
 
 	idStr := strconv.FormatUint(uint64(userID), 10)
-	addr, err = c.lbUseCase.DispatchUserClient(ctx, req.ClientId, idStr)
+	addr, err = c.lbUseCase.DispatchUserDevice(ctx, req.DeviceId, idStr)
 
 	if err != nil {
 		return nil, err
@@ -55,7 +55,7 @@ func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConf
 
 // 这里内部调用，仅获取socket软负载数据，不会对数据进行变更
 func (c *ConfigService) GetSocketHostConfig(ctx context.Context, req *pb.GetSocketHostConfigRequest) (*pb.GetSocketHostConfigReply, error) {
-	info, exist, err := c.lbUseCase.GetDispatchInfo(ctx, req.ClientId)
+	info, exist, err := c.lbUseCase.GetDispatchInfo(ctx, req.DeviceId)
 	if err != nil {
 		return nil, err
 	}

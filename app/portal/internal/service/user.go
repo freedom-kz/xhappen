@@ -7,9 +7,10 @@ import (
 	v1 "xhappen/api/basic/v1"
 	pb "xhappen/api/portal/v1"
 	"xhappen/app/portal/internal/biz"
+	"xhappen/pkg/utils"
 
+	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
-	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type UserService struct {
@@ -82,7 +83,7 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 			HId:      user.UId,
 			Phone:    user.Phone,
 			NickName: user.Nickname,
-			Birth:    timestamppb.New(user.Birth),
+			Birth:    utils.DateToString(user.Birth),
 			Icon:     user.Icon,
 			Gender:   int32(user.Gender),
 			Sign:     user.Sign,
@@ -194,7 +195,7 @@ func (s *UserService) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileR
 			HId:      user.UId,
 			Phone:    user.Phone,
 			NickName: user.Nickname,
-			Birth:    timestamppb.New(user.Birth),
+			Birth:    utils.DateToString(user.Birth),
 			Icon:     user.Icon,
 			Gender:   int32(user.Gender),
 			Sign:     user.Sign,
@@ -225,7 +226,10 @@ func (s *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRe
 
 	user := users[0]
 
-	user.Birth = req.Birth.AsTime()
+	user.Birth, err = utils.DateFromString(req.Birth)
+	if err != nil {
+		return &pb.UpdateProfileReply{}, errors.BadRequest("Validator Birth", err.Error()).WithCause(err)
+	}
 	user.Icon = req.Icon
 	user.Nickname = req.NickName
 	user.Gender = int(req.Gender)
@@ -241,7 +245,7 @@ func (s *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRe
 			HId:      user.UId,
 			Phone:    user.Phone,
 			NickName: user.Nickname,
-			Birth:    timestamppb.New(user.Birth),
+			Birth:    utils.DateToString(user.Birth),
 			Icon:     user.Icon,
 			Gender:   int32(user.Gender),
 			Sign:     user.Sign,

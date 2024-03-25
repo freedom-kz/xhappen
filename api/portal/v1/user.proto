@@ -140,7 +140,7 @@ message UpdateProfileRequest {
   string icon = 2;
   int32 gender = 3;
   string sign = 4;
-  google.protobuf.Timestamp birth = 5;
+  string birth = 5;
 }
 
 message UpdateProfileReply {

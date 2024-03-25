@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package basic.v1;
 
-import "google/protobuf/timestamp.proto";
-
 option go_package = "xhappen/api/basic/v1;v1";
 option java_multiple_files = true;
 option java_package = "basic.v1";
@@ -15,7 +13,7 @@ message User{
     string hId = 2;
     string phone = 3;
     string nickName = 4;
-    google.protobuf.Timestamp birth = 5;
+    string birth = 5;
     string icon = 6;
     int32 gender = 7;
     string sign = 8;
@@ -33,5 +31,6 @@ message UserProfile{
     string icon = 3;
     int64 Updated = 4;
     int64 DeleteAt = 5;
+    string birth = 6;
 }
 

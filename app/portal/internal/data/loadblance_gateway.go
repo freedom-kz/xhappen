@@ -15,7 +15,7 @@ import (
 
 const (
 	SERVICE_NAME_GATEWAY      = "gateway"
-	LOAD_BLANCE_CLIENT_PREFIX = "gateway:clientid"
+	LOAD_BLANCE_DEVICE_PREFIX = "gateway:deviceId"
 	LOAD_BLANCE_USER_PREFIX   = "gateway:userid"
 	LOAD_BALANCE_EXPIRE       = 30 * 24 * time.Hour
 	METADATA_PUBLIC_IP        = "public_ip"
@@ -96,10 +96,10 @@ func (repo *LoadBlanceGwRepo) IsAlive(addr string) bool {
 }
 
 // 保存客户端&用户分配的网关信息
-func (repo *LoadBlanceGwRepo) SaveDispatchInfo(ctx context.Context, clientId string, userId string, gwAddr string) error {
-	err := repo.data.rdb.HSet(ctx, LOAD_BLANCE_CLIENT_PREFIX+clientId,
+func (repo *LoadBlanceGwRepo) SaveDispatchInfo(ctx context.Context, deviceId string, userId string, gwAddr string) error {
+	err := repo.data.rdb.HSet(ctx, LOAD_BLANCE_DEVICE_PREFIX+deviceId,
 		biz.DispatchInfo{
-			ClientId: clientId,
+			DeviceId: deviceId,
 			UserId:   userId,
 			GwAddr:   gwAddr,
 		},
@@ -107,14 +107,14 @@ func (repo *LoadBlanceGwRepo) SaveDispatchInfo(ctx context.Context, clientId str
 	if err != nil {
 		return err
 	}
-	err = repo.data.rdb.Expire(ctx, LOAD_BLANCE_CLIENT_PREFIX+clientId, LOAD_BALANCE_EXPIRE).Err()
+	err = repo.data.rdb.Expire(ctx, LOAD_BLANCE_DEVICE_PREFIX+deviceId, LOAD_BALANCE_EXPIRE).Err()
 	if err != nil {
 		return err
 	}
 
 	err = repo.data.rdb.HSet(ctx, LOAD_BLANCE_USER_PREFIX+userId,
 		biz.DispatchInfo{
-			ClientId: clientId,
+			DeviceId: deviceId,
 			GwAddr:   gwAddr,
 		},
 	).Err()
@@ -129,14 +129,14 @@ func (repo *LoadBlanceGwRepo) SaveDispatchInfo(ctx context.Context, clientId str
 }
 
 // 根据客户端为维度查找。
-func (repo *LoadBlanceGwRepo) GetDispatchInfoByClientID(ctx context.Context, clientId string) (*biz.DispatchInfo, bool, error) {
+func (repo *LoadBlanceGwRepo) GetDispatchInfoByDeviceID(ctx context.Context, deviceId string) (*biz.DispatchInfo, bool, error) {
 	var (
 		dispatchInfo biz.DispatchInfo = biz.DispatchInfo{}
 		exist        bool
 		err          error
 	)
 
-	err = repo.data.rdb.HGetAll(ctx, LOAD_BLANCE_CLIENT_PREFIX+clientId).Scan(&dispatchInfo)
+	err = repo.data.rdb.HGetAll(ctx, LOAD_BLANCE_DEVICE_PREFIX+deviceId).Scan(&dispatchInfo)
 	if err == redis.Nil {
 		exist = false
 		err = nil

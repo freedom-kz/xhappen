@@ -25,7 +25,7 @@ service Config {
 }
 
 message GetBasicConfigRequest {
-  string clientId = 1 [(validate.rules).string = {
+  string deviceId = 1 [(validate.rules).string = {
     min_len: 24, 
     max_len: 36
   }];
@@ -37,7 +37,7 @@ message GetBasicConfigReply {
 }
 
 message GetSocketHostConfigRequest {
-  string clientId = 1 [(validate.rules).string = {
+  string deviceId = 1 [(validate.rules).string = {
     min_len: 24, 
     max_len: 36
   }];
