@@ -1,7 +1,9 @@
 package server
 
 import (
+	v1 "xhappen/api/xjob/v1"
 	"xhappen/app/xjob/internal/conf"
+	"xhappen/app/xjob/internal/service"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -9,7 +11,7 @@ import (
 )
 
 // NewGRPCServer new a gRPC server.
-func NewGRPCServer(c *conf.Server, logger log.Logger) *grpc.Server {
+func NewGRPCServer(c *conf.Server, xjobService *service.XJobService, logger log.Logger) *grpc.Server {
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
@@ -25,6 +27,6 @@ func NewGRPCServer(c *conf.Server, logger log.Logger) *grpc.Server {
 		opts = append(opts, grpc.Timeout(c.Grpc.Timeout.AsDuration()))
 	}
 	srv := grpc.NewServer(opts...)
-	// v1.RegisterGreeterServer(srv, greeter)
+	v1.RegisterXJobServer(srv, xjobService)
 	return srv
 }

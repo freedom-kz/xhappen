@@ -14,7 +14,7 @@ option objc_class_prefix = "TransferV1";
 
 
 
-service Job {
+service XJob {
   rpc Notify(NotifyRequest) returns (NotifyReply)  {}
 }
 
