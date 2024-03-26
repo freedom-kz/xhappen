@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package chatnormal.v1;
+
+// import "api/protocol/v1/message.proto";
+// import "api/protocol/v1/common.proto";
+// import "errors/errors.proto";
+// import "google/protobuf/timestamp.proto";
+
+option go_package = "xhappen/api/transfer/v1;v1";
+option java_multiple_files = true;
+option java_package = "transfer.v1";
+option objc_class_prefix = "TransferV1";
+
+
+
+service Job {
+  rpc Notify(NotifyRequest) returns (NotifyReply)  {}
+}
+
+message NotifyRequest {
+}
+
+message NotifyReply {
+}

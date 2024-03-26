@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package chatnormal.v1;
+package transfer.v1;
 
 import "api/protocol/v1/message.proto";
 import "api/protocol/v1/common.proto";

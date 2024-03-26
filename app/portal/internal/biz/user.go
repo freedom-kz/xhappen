@@ -7,7 +7,7 @@ import (
 	basic "xhappen/api/basic/v1"
 	protocol "xhappen/api/protocol/v1"
 
-	"xhappen/app/portal/internal/event"
+	"xhappen/pkg/event"
 	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"

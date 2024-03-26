@@ -13,9 +13,9 @@ import (
 	"xhappen/app/portal/internal/biz"
 	"xhappen/app/portal/internal/conf"
 	"xhappen/app/portal/internal/data"
-	"xhappen/app/portal/internal/event"
 	"xhappen/app/portal/internal/server"
 	"xhappen/app/portal/internal/service"
+	"xhappen/pkg/event"
 )
 
 import (

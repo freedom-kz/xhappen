@@ -7,7 +7,7 @@ import (
 	"time"
 	basic "xhappen/api/basic/v1"
 	"xhappen/app/portal/internal/common"
-	"xhappen/app/portal/internal/event"
+	"xhappen/pkg/event"
 	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"

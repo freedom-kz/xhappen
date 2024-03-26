@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"xhappen/app/portal/internal/conf"
-	"xhappen/app/portal/internal/event"
+	"xhappen/pkg/event"
 
 	"github.com/go-kratos/kratos/contrib/registry/etcd/v2"
 	"github.com/go-kratos/kratos/v2"
@@ -91,7 +91,6 @@ func main() {
 	}
 
 	r := etcd.New(client)
-
 
 	smsCodeSender, err := event.NewKafkaSender([]string{bc.Data.Kafka.Addr}, bc.Data.Kafka.SmsCodeTopic)
 	if err != nil {

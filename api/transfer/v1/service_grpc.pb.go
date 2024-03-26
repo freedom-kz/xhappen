@@ -19,11 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Pass_Bind_FullMethodName   = "/chatnormal.v1.Pass/Bind"
-	Pass_Auth_FullMethodName   = "/chatnormal.v1.Pass/Auth"
-	Pass_Submit_FullMethodName = "/chatnormal.v1.Pass/Submit"
-	Pass_Action_FullMethodName = "/chatnormal.v1.Pass/Action"
-	Pass_Quit_FullMethodName   = "/chatnormal.v1.Pass/Quit"
+	Pass_Bind_FullMethodName   = "/transfer.v1.Pass/Bind"
+	Pass_Auth_FullMethodName   = "/transfer.v1.Pass/Auth"
+	Pass_Submit_FullMethodName = "/transfer.v1.Pass/Submit"
+	Pass_Action_FullMethodName = "/transfer.v1.Pass/Action"
+	Pass_Quit_FullMethodName   = "/transfer.v1.Pass/Quit"
 )
 
 // PassClient is the client API for Pass service.
@@ -228,7 +228,7 @@ func _Pass_Quit_Handler(srv interface{}, ctx context.Context, dec func(interface
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Pass_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "chatnormal.v1.Pass",
+	ServiceName: "transfer.v1.Pass",
 	HandlerType: (*PassServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
