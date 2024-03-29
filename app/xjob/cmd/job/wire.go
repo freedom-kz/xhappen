@@ -6,9 +6,7 @@
 package main
 
 import (
-	"xhappen/app/xjob/internal/biz"
 	"xhappen/app/xjob/internal/conf"
-	"xhappen/app/xjob/internal/data"
 	"xhappen/app/xjob/internal/server"
 	"xhappen/app/xjob/internal/service"
 	"xhappen/pkg/event"
@@ -21,5 +19,6 @@ import (
 
 // wireApp init kratos application.
 func wireApp(*conf.Server, *conf.Data, registry.Registrar, event.Receiver, log.Logger) (*kratos.App, func(), error) {
-	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, newApp))
+	panic(wire.Build(server.ProviderSet, service.ProviderSet, newApp))
+	// panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, newApp))
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"xhappen/pkg/event"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -24,5 +25,15 @@ func NewSmsCodeReceiverService(ctx context.Context, receiver event.Receiver, log
 }
 
 func handler(ctx context.Context, msg event.Event) error {
+
+	data := msg.Value()
+	smsdataMsg := event.SMSCode{}
+	err := json.Unmarshal(data, &smsdataMsg)
+	if err != nil{
+		return err
+	}
+
+	
+
 	return nil
 }

@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"xhappen/app/xjob/internal/conf"
@@ -81,7 +82,8 @@ func newMDB(conf *conf.Bootstrap, logger log.Logger) *mongo.Client {
 	})
 	mongoClient, err := mongo.Connect(context.Background(), opts)
 	if err != nil {
-		log.Fatalf("Mongo DB 初始化错误:%s\n", err.Error())
+		logger.Log(log.LevelError, "Mongo DB 初始化错误:%s\n", err.Error())
+		os.Exit(1)
 	}
 	return mongoClient
 }

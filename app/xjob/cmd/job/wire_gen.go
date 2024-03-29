@@ -7,31 +7,26 @@
 package main
 
 import (
-	"xhappen/app/job/internal/biz"
-	"xhappen/app/job/internal/conf"
-	"xhappen/app/job/internal/data"
-	"xhappen/app/job/internal/server"
-	"xhappen/app/job/internal/service"
-
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-kratos/kratos/v2/registry"
+	"xhappen/app/xjob/internal/conf"
+	"xhappen/app/xjob/internal/server"
+	"xhappen/app/xjob/internal/service"
+	"xhappen/pkg/event"
+)
+
+import (
+	_ "go.uber.org/automaxprocs"
 )
 
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	greeterRepo := data.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, logger)
-	app := newApp(logger, grpcServer, httpServer)
+func wireApp(confServer *conf.Server, data *conf.Data, registrar registry.Registrar, receiver event.Receiver, logger log.Logger) (*kratos.App, func(), error) {
+	xJobService := service.NewXJobService(logger)
+	grpcServer := server.NewGRPCServer(confServer, xJobService, logger)
+	app := newApp(logger, grpcServer, registrar)
 	return app, func() {
-		cleanup()
 	}, nil
 }
