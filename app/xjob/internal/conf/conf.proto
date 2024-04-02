@@ -67,6 +67,8 @@ message INFO {
   message Sms{
     string accessKeyId = 1;
     string accessKeySecret = 2;
+    string signName = 3;
+    string templateCode = 4;
   }
   Sms sms = 1;
 }
