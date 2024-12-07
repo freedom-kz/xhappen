@@ -14,7 +14,7 @@ type Hub struct {
 	boss                   *Boss
 	index                  int
 	deliverToHub           chan *deliverToHub
-	connByCIDFromHub       chan *connByCIDFromHub
+	connByDeviceIdFromHub  chan *connByDeviceIdFromHub
 	syncToHub              chan *syncToHub
 	broadcastToHub         chan *broadcastToHub
 	actionToHub            chan *actionToHub
@@ -49,9 +49,9 @@ type disconnectedforceToHub struct {
 	disconnectForceMessage *pb.DisconnectForceRequest
 }
 
-type connByCIDFromHub struct {
-	ret chan *Connection
-	cid string
+type connByDeviceIdFromHub struct {
+	ret      chan *Connection
+	deviceId string
 }
 
 func newHub(boss *Boss) *Hub {
@@ -59,6 +59,7 @@ func newHub(boss *Boss) *Hub {
 		boss:                   boss,
 		addConn:                make(chan *Connection),
 		removeConn:             make(chan *Connection),
+		connByDeviceIdFromHub:  make(chan *connByDeviceIdFromHub),
 		syncToHub:              make(chan *syncToHub, 1000),
 		deliverToHub:           make(chan *deliverToHub, 1000),
 		broadcastToHub:         make(chan *broadcastToHub, 1000),
@@ -75,8 +76,8 @@ func (h *Hub) Start() {
 				connIndex.Add(connection)
 			case connection := <-h.removeConn:
 				connIndex.Remove(connection)
-			case getConnByCid := <-h.connByCIDFromHub:
-				conn := connIndex.ForDeviceId(getConnByCid.cid)
+			case getConnByCid := <-h.connByDeviceIdFromHub:
+				conn := connIndex.ForDeviceId(getConnByCid.deviceId)
 				getConnByCid.ret <- conn
 			case deliverToHub := <-h.deliverToHub:
 				if deliverToHub.deliverMessage.DeviceId != "" {
@@ -197,13 +198,13 @@ func (h *Hub) RemoveConn(conn *Connection) {
 	}
 }
 
-func (h *Hub) GetConnByCid(cid string) *Connection {
-	req := &connByCIDFromHub{
-		ret: make(chan *Connection),
-		cid: cid,
+func (h *Hub) GetConnByCid(deviceId string) *Connection {
+	req := &connByDeviceIdFromHub{
+		ret:      make(chan *Connection),
+		deviceId: deviceId,
 	}
 	select {
-	case h.connByCIDFromHub <- req:
+	case h.connByDeviceIdFromHub <- req:
 	case <-h.exitCh:
 		return nil
 	}
