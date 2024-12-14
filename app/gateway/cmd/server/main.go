@@ -91,6 +91,7 @@ func main() {
 	client, err := etcdclient.New(etcdclient.Config{
 		Endpoints: []string{bc.Data.Etcd.Addr},
 	})
+
 	if err != nil {
 		log.Fatal(err)
 	}

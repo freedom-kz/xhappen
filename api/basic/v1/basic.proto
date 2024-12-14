@@ -24,7 +24,7 @@ message User{
     int64 DeleteAt = 13;
 }
 
-//用户公开个人信息
+//用户个人公开信息
 message UserProfile{
     int64 id = 1;
     string nickName = 2;

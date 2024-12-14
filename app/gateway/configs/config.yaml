@@ -20,7 +20,7 @@ socket:
     maxKeepAlive: 300s
     readBufferSize: 8192
     writeBufferSize: 8192
-    writeTimeout: 3s
+    writeTimeout: 1s
   queue:
     maxMsgSize: 65535
     maxRdyCount: 100
