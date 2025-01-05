@@ -1,7 +1,6 @@
 xhappen
 
 proto:
-
 	protoc --proto_path=./api --proto_path=./third_party --go_out=paths=source_relative:./api --go-grpc_out=paths=source_relative:./api --go-http_out=paths=source_relative:./api metadata/metadata.proto
 
 	protoc --proto_path=./third_party --go_out=paths=source_relative:./ errors/errors.proto
@@ -100,4 +99,4 @@ docker:
 
   mmuser:mostest
 
-  初始化管理员账号成功,账号名："admin@admin.com"，密码："ymfe.org"
+  yapi:初始化管理员账号成功,账号名："admin@admin.com"，密码："ymfe.org"

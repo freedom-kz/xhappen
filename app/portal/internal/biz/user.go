@@ -24,7 +24,7 @@ type User struct {
 	Id          int64     `db:"id"`
 	UId         string    `db:"uid"`
 	Phone       string    `db:"phone"`
-	Nickname    string    `db:"nickname"`
+	Nick        string    `db:"name"`
 	Icon        string    `db:"icon"`
 	Birth       time.Time `db:"birth"`
 	Gender      int       `db:"gender"`
@@ -33,8 +33,8 @@ type User struct {
 	Roles       string    `db:"roles"`
 	Props       string    `db:"props"`
 	NotifyProps string    `db:"notify_props"`
-	Updated     int64     `db:"updated"`
-	Created     int64     `db:"created"`
+	UpdateAt    int64     `db:"update_at"`
+	CreateAt    int64     `db:"create_at"`
 	DeleteAt    int64     `db:"delete_at"`
 }
 
@@ -87,13 +87,13 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, deviceId
 		now := time.Now().UnixNano()
 		user.Phone = mobile
 		user.UId = utils.GenerateId()
-		user.Nickname = "用户" + mobile[len(mobile)-6:]
+		user.Nick = "用户" + mobile[len(mobile)-6:]
 		user.Gender = 0
 		user.Birth = time.Now()
 		//新用户角色默认普通用户
 		user.Roles = protocol.RoleType_ROLE_NORMAL.String()
-		user.Created = now
-		user.Updated = now
+		user.CreateAt = now
+		user.UpdateAt = now
 		user.DeleteAt = 0
 		user, err = u.userRepo.SaveUser(ctx, user)
 		if err != nil {

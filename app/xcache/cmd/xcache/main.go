@@ -94,10 +94,7 @@ func main() {
 	r := etcd.New(client, etcd.RegisterTTL(3*time.Second))
 
 	/*
-		服务注册于发现逻辑填充，不再用kratos自带业务
-		2.1 尝试加入集群
-		2.2 初始化调用客户端
-		2.3 配置监听
+		服务端进行负载均衡，热备模式，抢占服务
 	*/
 
 	app, cleanup, err := wireApp(&bc, r, logger)

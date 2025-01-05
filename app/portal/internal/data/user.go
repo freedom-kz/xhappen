@@ -23,8 +23,8 @@ func NewUserRepo(data *Data, logger log.Logger) biz.UserRepo {
 }
 
 func (r *userRepo) SaveUser(ctx context.Context, u *biz.User) (*biz.User, error) {
-	insertSql := `INSERT INTO users (uid, phone, nickname, icon, birth, gender, sign, state, roles, props, notify_props, updated, created, delete_at) 
-					VALUES (:uid, :phone, :nickname, :icon, :birth, :gender, :sign, :state, :roles, :props, :notify_props, :updated, :created, :delete_at)`
+	insertSql := `INSERT INTO users (uid, phone, nick, icon, birth, gender, sign, state, roles, props, notify_props, update_at, created_at, delete_at) 
+					VALUES (:uid, :phone, :nick, :icon, :birth, :gender, :sign, :state, :roles, :props, :notify_props, :update_at, :created_at, :delete_at)`
 
 	tx := r.data.db.MustBegin()
 	ret, err := tx.NamedExec(insertSql, u)
@@ -53,7 +53,7 @@ func (r *userRepo) UpdateUserStateByID(ctx context.Context, id int64, state int)
 func (r *userRepo) GetUserByPhone(ctx context.Context, phone string) (*biz.User, bool, error) {
 	user := &biz.User{}
 	selectUserSql := `SELECT
-					id, uid, phone, nickname, icon, birth, gender, sign, state, roles, props, notify_props, updated, created, delete_at 
+					id, uid, phone, nick, icon, birth, gender, sign, state, roles, props, notify_props, updated, created, delete_at 
 				   FROM users WHERE delete_at = 0 and phone= ?`
 
 	err := r.data.db.Get(user,
@@ -71,7 +71,7 @@ func (r *userRepo) GetUserByPhone(ctx context.Context, phone string) (*biz.User,
 func (r *userRepo) GetUserInfoByIDs(ctx context.Context, ids []int64) ([]biz.User, error) {
 	users := []biz.User{}
 	query, args, err := sqlx.In(`SELECT
-									id, uid, phone, nickname, icon, birth, gender, sign, state, roles, props, notify_props, updated, created, delete_at 
+									id, uid, phone, nickname, icon, birth, gender, sign, state, roles, props, notify_props, update_at, create_at, delete_at 
    								FROM users WHERE id in (?)`,
 		ids)
 	if err != nil {
@@ -93,13 +93,13 @@ func (r *userRepo) GetUserInfoByIDs(ctx context.Context, ids []int64) ([]biz.Use
 
 func (r *userRepo) UpdateUserProfile(ctx context.Context, user *biz.User) error {
 	upProfileSql := `UPDATE users set 
-					nickname =?,
+					nick =?,
 					icon =?,
 					birth =?,
 					gender =?,
 					sign =?
 					where id = ?`
-	rs, err := r.data.db.MustExec(upProfileSql, user.Nickname, user.Icon, user.Birth, user.Gender, user.Sign, user.Id).RowsAffected()
+	rs, err := r.data.db.MustExec(upProfileSql, user.Nick, user.Icon, user.Birth, user.Gender, user.Sign, user.Id).RowsAffected()
 	if rs == 1 {
 		return nil
 	} else {
