@@ -79,18 +79,18 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 	return &pb.LoginByMobileReply{
 		Token: tokenStr,
 		User: &v1.User{
-			Id:       user.Id,
-			HId:      user.UId,
+			ID:       user.Id,
+			HID:      user.UId,
 			Phone:    user.Phone,
-			NickName: user.Nickname,
+			Nick:     user.Nick,
 			Birth:    utils.DateToString(user.Birth),
 			Icon:     user.Icon,
 			Gender:   int32(user.Gender),
 			Sign:     user.Sign,
 			State:    int32(user.State),
 			Roles:    strings.Split(user.Roles, " "),
-			Created:  user.Created,
-			Updated:  user.Updated,
+			CreateAt: user.CreateAt,
+			UpdateAt: user.UpdateAt,
 			DeleteAt: user.DeleteAt,
 		},
 	}, nil
@@ -155,13 +155,13 @@ func (s *UserService) GetUserProfile(ctx context.Context, in *pb.GetUserProfileR
 
 	for _, user := range users {
 		u := &v1.UserProfile{
-			Id:       user.Id,
-			NickName: user.Nickname,
+			ID:       user.Id,
+			Nick:     user.Nick,
 			Icon:     user.Icon,
-			Updated:  user.Updated,
+			UpdateAt: user.UpdateAt,
 			DeleteAt: user.DeleteAt,
 		}
-		profiles[u.Id] = u
+		profiles[u.ID] = u
 	}
 
 	// for _, id := range in.Ids {
@@ -191,18 +191,18 @@ func (s *UserService) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileR
 	user := users[0]
 	return &pb.GetSelfProfileReply{
 		User: &v1.User{
-			Id:       user.Id,
-			HId:      user.UId,
+			ID:       user.Id,
+			HID:      user.UId,
 			Phone:    user.Phone,
-			NickName: user.Nickname,
+			Nick:     user.Nick,
 			Birth:    utils.DateToString(user.Birth),
 			Icon:     user.Icon,
 			Gender:   int32(user.Gender),
 			Sign:     user.Sign,
 			State:    int32(user.State),
 			Roles:    strings.Split(user.Roles, " "),
-			Created:  user.Created,
-			Updated:  user.Updated,
+			CreateAt: user.CreateAt,
+			UpdateAt: user.UpdateAt,
 			DeleteAt: user.DeleteAt,
 		},
 	}, nil
@@ -231,7 +231,7 @@ func (s *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRe
 		return &pb.UpdateProfileReply{}, errors.BadRequest("Validator Birth", err.Error()).WithCause(err)
 	}
 	user.Icon = req.Icon
-	user.Nickname = req.NickName
+	user.Nick = req.NickName
 	user.Gender = int(req.Gender)
 	user.Sign = req.Sign
 
@@ -241,18 +241,18 @@ func (s *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRe
 	}
 	return &pb.UpdateProfileReply{
 		User: &v1.User{
-			Id:       user.Id,
-			HId:      user.UId,
+			ID:       user.Id,
+			HID:      user.UId,
 			Phone:    user.Phone,
-			NickName: user.Nickname,
+			Nick:     user.Nick,
 			Birth:    utils.DateToString(user.Birth),
 			Icon:     user.Icon,
 			Gender:   int32(user.Gender),
 			Sign:     user.Sign,
 			State:    int32(user.State),
 			Roles:    strings.Split(user.Roles, " "),
-			Created:  user.Created,
-			Updated:  user.Updated,
+			CreateAt: user.CreateAt,
+			UpdateAt: user.UpdateAt,
 			DeleteAt: user.DeleteAt,
 		},
 	}, nil

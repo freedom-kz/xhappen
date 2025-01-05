@@ -9,27 +9,27 @@ option objc_class_prefix = "BasiclV1";
 
 //用户个人信息
 message User{
-    int64 id = 1;
-    string hId = 2;
+    int64 ID = 1;
+    string hID = 2;
     string phone = 3;
-    string nickName = 4;
+    string nick = 4;
     string birth = 5;
     string icon = 6;
     int32 gender = 7;
     string sign = 8;
     int32 state   = 9 ;
     repeated string roles = 10;
-    int64 Updated = 11;
-    int64 Created = 12;
+    int64 UpdateAt = 11;
+    int64 CreateAt = 12;
     int64 DeleteAt = 13;
 }
 
 //用户个人公开信息
 message UserProfile{
-    int64 id = 1;
-    string nickName = 2;
+    int64 ID = 1;
+    string nick = 2;
     string icon = 3;
-    int64 Updated = 4;
+    int64 UpdateAt = 4;
     int64 DeleteAt = 5;
     string birth = 6;
 }
