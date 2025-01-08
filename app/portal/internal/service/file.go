@@ -22,6 +22,7 @@ func UploadFile(ctx http.Context) error {
 	files := formdata.File["file"]
 
 	for _, v := range files {
+		// fileName := v.Filename
 		file, err := v.Open()
 		if err != nil {
 			return err

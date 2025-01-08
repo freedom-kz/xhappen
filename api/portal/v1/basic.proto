@@ -37,7 +37,7 @@ message GetBasicConfigReply {
 }
 
 message GetSocketHostConfigRequest {
-  string deviceId = 1 [(validate.rules).string = {
+  string deviceID = 1 [(validate.rules).string = {
     min_len: 24, 
     max_len: 36
   }];

@@ -55,7 +55,7 @@ func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConf
 
 // 这里内部调用，仅获取socket软负载数据，不会对数据进行变更
 func (c *ConfigService) GetSocketHostConfig(ctx context.Context, req *pb.GetSocketHostConfigRequest) (*pb.GetSocketHostConfigReply, error) {
-	info, exist, err := c.lbUseCase.GetDispatchInfo(ctx, req.DeviceId)
+	info, exist, err := c.lbUseCase.GetDispatchInfo(ctx, req.DeviceID)
 	if err != nil {
 		return nil, err
 	}

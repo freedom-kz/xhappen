@@ -24,7 +24,7 @@ func NewSMSService(sms *biz.SMSUseCase, logger log.Logger) *SMSService {
 }
 
 func (s *SMSService) SendSMSCode(ctx context.Context, req *pb.SMSCodeRequest) (*pb.SMSCodeReply, error) {
-	err := s.sms.SendSMSCode(ctx, req.Mobile, req.DeviceId)
+	err := s.sms.SendSMSCode(ctx, req.Mobile, req.DeviceID)
 
 	if err != nil {
 		return nil, err

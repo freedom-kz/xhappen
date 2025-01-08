@@ -71,7 +71,7 @@ message LoginByMobileRequest {
     pattern: "^1(3\\d|4[0-14-9]|5[0-35-9]|6[2567]|7[0-8]|8\\d|9[0-35-9])\\d{8}$",
     len: 11, 
   }];
-  string deviceId = 2 [(validate.rules).string = {
+  string deviceID = 2 [(validate.rules).string = {
     min_len: 24, 
     max_len: 36
   }];
@@ -88,7 +88,7 @@ message LoginByMobileReply {
 
 message TokenAuthRequest {
   string token = 1;
-  string deviceId = 2;
+  string deviceID = 2;
   protocol.v1.RoleType roleType = 3;
 }
 
@@ -120,7 +120,7 @@ message DeRegisterReply {
 }
 
 message GetUserProfileRequest {
-  repeated int64 ids = 2;
+  repeated int64 IDs = 2;
 }
 
 message GetUserProfileReply {

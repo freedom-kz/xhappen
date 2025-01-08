@@ -48,7 +48,7 @@ func (s *UserService) TokenAuth(ctx context.Context, req *pb.TokenAuthRequest) (
 // 登录手机号
 func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRequest) (*pb.LoginByMobileReply, error) {
 	//登录或者注册手机号
-	user, err := s.user.LoginByMobile(ctx, req.Mobile, req.DeviceId, req.SmsCode)
+	user, err := s.user.LoginByMobile(ctx, req.Mobile, req.DeviceID, req.SmsCode)
 	if err != nil {
 		return nil, err
 	}
@@ -146,7 +146,7 @@ func (s *UserService) DeRegister(ctx context.Context, req *pb.DeRegisterRequest)
 
 // get user profile
 func (s *UserService) GetUserProfile(ctx context.Context, in *pb.GetUserProfileRequest) (*pb.GetUserProfileReply, error) {
-	users, err := s.user.GetUserInfoByIDs(ctx, in.Ids)
+	users, err := s.user.GetUserInfoByIDs(ctx, in.IDs)
 	if err != nil {
 		return &pb.GetUserProfileReply{}, err
 	}
