@@ -25,7 +25,7 @@ service Router {
 }
 
 message UserDeviceBindInfo{
-  uint64 uid = 1;
+  uint64 UID = 1;
   string deviceID = 2;
   string serverID = 3;
   uint64 connectSequece = 4;
@@ -44,7 +44,7 @@ message UserDeviceBindReply {
 }
 
 message UserDeviceUnBindRequest {
-  uint64 uid = 1;
+  uint64 UID = 1;
   string deviceID = 2;
   string serverID = 3;
   uint64 connectSequece = 4;
@@ -56,7 +56,7 @@ message UserDeviceUnBindReply {
 }
 
 message RoutersByUserIdsRequest {
-  repeated uint64 userIds = 1;
+  repeated uint64 userIDs = 1;
 }
 
 message RoutersByUserIdsReply {
@@ -69,7 +69,7 @@ message RoutersByUserIdsReply {
 }
 
 message RoomRouterBindRequest {
-  uint64 roomId = 1;
+  uint64 roomID = 1;
   string serverID = 2;
 }
 
@@ -79,7 +79,7 @@ message RoomRouterBindReply {
 }
 
 message RoomRouterUnbindRequest {
-  uint64 roomId = 1;
+  uint64 roomID = 1;
   string serverID = 2;
 }
 
@@ -89,12 +89,12 @@ message RoomRouterUnbindReply {
 }
 
 message GetRoomRouterByIDRequest {
-  repeated uint64 roomId = 1;
+  repeated uint64 roomID = 1;
 }
 
 message GetRoomRouterByIDReply {
   message RoomServers{
-    repeated string serverId = 1;
+    repeated string serverID = 1;
   }
 
   bool ret = 1;

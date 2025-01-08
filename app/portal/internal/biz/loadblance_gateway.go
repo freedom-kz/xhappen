@@ -14,17 +14,17 @@ type LoadBlanceUseCase struct {
 }
 
 type DispatchInfo struct {
-	DeviceId string `redis:"did"`
-	UserId   string `redis:"uid"`
+	DeviceID string `redis:"did"`
+	UserID   string `redis:"uid"`
 	GwAddr   string `redis:"gw"`
 }
 
 type LoadBalanceRepo interface {
 	GetGatewayPublicIPs() []string
 	IsAlive(addr string) bool
-	SaveDispatchInfo(ctx context.Context, deviceId string, userId string, gwAddr string) error
-	GetDispatchInfoByDeviceID(ctx context.Context, deviceId string) (*DispatchInfo, bool, error)
-	GetDispatchInfoByUserID(ctx context.Context, uid string) (*DispatchInfo, bool, error)
+	SaveDispatchInfo(ctx context.Context, deviceID string, userID string, gwAddr string) error
+	GetDispatchInfoByDeviceID(ctx context.Context, deviceID string) (*DispatchInfo, bool, error)
+	GetDispatchInfoByUserID(ctx context.Context, uID string) (*DispatchInfo, bool, error)
 }
 
 func NewLoadBlanceUseCase(repo LoadBalanceRepo, logger log.Logger) *LoadBlanceUseCase {
@@ -34,12 +34,12 @@ func NewLoadBlanceUseCase(repo LoadBalanceRepo, logger log.Logger) *LoadBlanceUs
 	}
 }
 
-func (useCase *LoadBlanceUseCase) DispatchUserDevice(ctx context.Context, userID string, deviceId string) (string, error) {
-	dispatchInfo, exist, err := useCase.repo.GetDispatchInfoByDeviceID(ctx, deviceId)
+func (useCase *LoadBlanceUseCase) DispatchUserDevice(ctx context.Context, userID string, deviceID string) (string, error) {
+	dispatchInfo, exist, err := useCase.repo.GetDispatchInfoByDeviceID(ctx, deviceID)
 	if err != nil {
 		return "", err
 	}
-	if exist && dispatchInfo.UserId == userID && useCase.repo.IsAlive(dispatchInfo.GwAddr) {
+	if exist && dispatchInfo.UserID == userID && useCase.repo.IsAlive(dispatchInfo.GwAddr) {
 		return dispatchInfo.GwAddr, nil
 	}
 
@@ -58,7 +58,7 @@ func (useCase *LoadBlanceUseCase) DispatchUserDevice(ctx context.Context, userID
 		}
 	}
 
-	if err = useCase.repo.SaveDispatchInfo(ctx, deviceId, userID, addr); err != nil {
+	if err = useCase.repo.SaveDispatchInfo(ctx, deviceID, userID, addr); err != nil {
 		return "", err
 	}
 

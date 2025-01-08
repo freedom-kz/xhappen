@@ -21,8 +21,8 @@ const (
 )
 
 type User struct {
-	Id          int64     `db:"id"`
-	UId         string    `db:"uid"`
+	ID          int64     `db:"id"`
+	UID         string    `db:"uid"`
 	Phone       string    `db:"phone"`
 	Nick        string    `db:"name"`
 	Icon        string    `db:"icon"`
@@ -86,7 +86,7 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, deviceId
 	if !exist {
 		now := time.Now().UnixNano()
 		user.Phone = mobile
-		user.UId = utils.GenerateId()
+		user.UID = utils.GenerateId()
 		user.Nick = "用户" + mobile[len(mobile)-6:]
 		user.Gender = 0
 		user.Birth = time.Now()

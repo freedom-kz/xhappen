@@ -60,14 +60,14 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 	//注销中用户，变更状态
 	if user.State == biz.USER_STATE_WAIT_CLEAN {
 		user.State = biz.USER_STATE_NORMAL
-		err := s.user.UpdateUserStateByID(ctx, user.Id, user.State)
+		err := s.user.UpdateUserStateByID(ctx, user.ID, user.State)
 		if err != nil {
 			return nil, v1.ErrorUnknown("err: %v", err)
 		}
 
 	}
 	//生成token
-	tokenStr, err := s.jwt.GenerateToken(ctx, user.Id)
+	tokenStr, err := s.jwt.GenerateToken(ctx, user.ID)
 
 	if err != nil {
 		return nil, err
@@ -79,8 +79,8 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 	return &pb.LoginByMobileReply{
 		Token: tokenStr,
 		User: &v1.User{
-			ID:       user.Id,
-			HID:      user.UId,
+			ID:       user.ID,
+			HID:      user.UID,
 			Phone:    user.Phone,
 			Nick:     user.Nick,
 			Birth:    utils.DateToString(user.Birth),
@@ -155,7 +155,7 @@ func (s *UserService) GetUserProfile(ctx context.Context, in *pb.GetUserProfileR
 
 	for _, user := range users {
 		u := &v1.UserProfile{
-			ID:       user.Id,
+			ID:       user.ID,
 			Nick:     user.Nick,
 			Icon:     user.Icon,
 			UpdateAt: user.UpdateAt,
@@ -191,8 +191,8 @@ func (s *UserService) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileR
 	user := users[0]
 	return &pb.GetSelfProfileReply{
 		User: &v1.User{
-			ID:       user.Id,
-			HID:      user.UId,
+			ID:       user.ID,
+			HID:      user.UID,
 			Phone:    user.Phone,
 			Nick:     user.Nick,
 			Birth:    utils.DateToString(user.Birth),
@@ -241,8 +241,8 @@ func (s *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRe
 	}
 	return &pb.UpdateProfileReply{
 		User: &v1.User{
-			ID:       user.Id,
-			HID:      user.UId,
+			ID:       user.ID,
+			HID:      user.UID,
 			Phone:    user.Phone,
 			Nick:     user.Nick,
 			Birth:    utils.DateToString(user.Birth),

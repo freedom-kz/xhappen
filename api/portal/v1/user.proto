@@ -124,7 +124,7 @@ message GetUserProfileRequest {
 }
 
 message GetUserProfileReply {
-  map<int64, basic.v1.UserProfile> users = 1;
+  repeated basic.v1.UserProfile users = 1;
 }
 
 message GetSelfProfileRequest {

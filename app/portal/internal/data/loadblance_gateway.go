@@ -99,8 +99,8 @@ func (repo *LoadBlanceGwRepo) IsAlive(addr string) bool {
 func (repo *LoadBlanceGwRepo) SaveDispatchInfo(ctx context.Context, deviceId string, userId string, gwAddr string) error {
 	err := repo.data.rdb.HSet(ctx, LOAD_BLANCE_DEVICE_PREFIX+deviceId,
 		biz.DispatchInfo{
-			DeviceId: deviceId,
-			UserId:   userId,
+			DeviceID: deviceId,
+			UserID:   userId,
 			GwAddr:   gwAddr,
 		},
 	).Err()
@@ -114,7 +114,7 @@ func (repo *LoadBlanceGwRepo) SaveDispatchInfo(ctx context.Context, deviceId str
 
 	err = repo.data.rdb.HSet(ctx, LOAD_BLANCE_USER_PREFIX+userId,
 		biz.DispatchInfo{
-			DeviceId: deviceId,
+			DeviceID: deviceId,
 			GwAddr:   gwAddr,
 		},
 	).Err()

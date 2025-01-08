@@ -35,7 +35,7 @@ func (r *userRepo) SaveUser(ctx context.Context, u *biz.User) (*biz.User, error)
 	if err := tx.Commit(); err == nil {
 		return u, nil
 	} else {
-		u.Id, _ = ret.LastInsertId()
+		u.ID, _ = ret.LastInsertId()
 		return u, err
 	}
 }
@@ -99,7 +99,7 @@ func (r *userRepo) UpdateUserProfile(ctx context.Context, user *biz.User) error 
 					gender =?,
 					sign =?
 					where id = ?`
-	rs, err := r.data.db.MustExec(upProfileSql, user.Nick, user.Icon, user.Birth, user.Gender, user.Sign, user.Id).RowsAffected()
+	rs, err := r.data.db.MustExec(upProfileSql, user.Nick, user.Icon, user.Birth, user.Gender, user.Sign, user.ID).RowsAffected()
 	if rs == 1 {
 		return nil
 	} else {

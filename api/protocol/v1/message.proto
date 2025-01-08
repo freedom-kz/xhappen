@@ -12,7 +12,7 @@ option objc_class_prefix = "ProtocolV1";
 
 message Bind{
     DeviceType deviceType = 1;      //设备类型
-    string  deviceId = 2;           //客户端ID
+    string  deviceID = 2;           //客户端ID
     LoginType loginType = 3;        //登录类型
     int32 curVersion = 4;           //客户端当前协议版本
     string magic = 5;               //版本魔法数
@@ -34,19 +34,19 @@ message Auth{
 
 message AuthAck{
     bool authRet = 1;               //响应码
-    string uid = 2;                 //用户ID
+    string UID = 2;                 //用户ID
     errors.Status err = 3;          //kratos通用错误
 }
 
 message Sync{
-    uint32 id = 1;                  //同步会话标识ID,单次连接会话中有效
-    uint64 sessionId = 2;           //服务端会话ID，客户端参考使用，可取任意一条消息获取消息收发端状态
+    uint32 ID = 1;                  //同步会话标识ID,单次连接会话中有效
+    uint64 sessionID = 2;           //服务端会话ID，客户端参考使用，可取任意一条消息获取消息收发端状态
     int32 total = 3;                //未读数统计
     repeated Deliver delivers = 4;  //消息数组
 }
 
 message SyncAck{
-    uint32 id = 1;                  //与syncID一一对应
+    uint32 ID = 1;                  //与syncID一一对应
 }
 
 message SyncConfirm{
@@ -66,7 +66,7 @@ message SubmitOption {
 }
 
 message Submit{
-    uint32 id = 1;                  //消息唯一标识
+    uint32 ID = 1;                  //消息唯一标识
     bool dup = 2;                   //重发标识
     string to = 3;                  //接收者
     UserType toType = 4;            //接受者类型
@@ -80,9 +80,9 @@ message Submit{
 
 message SubmitAck{
     bool submitRet = 1;             //响应标识
-    uint32 id = 2;                  //消息唯一标识,一一对应Sumit中id字段, 1-65535，会话期间循环使用，并且在短时间有效时间内（如10分钟）服务端做去重使用
+    uint32 ID = 2;                  //消息唯一标识,一一对应Sumit中id字段, 1-65535，会话期间循环使用，并且在短时间有效时间内（如10分钟）服务端做去重使用
     uint64 sequence = 3;            //CHATROOM APPLICATION类型每一个会话独享，SINGLE、GROUP共享
-    uint64 sessionId = 4;           //服务端会话标识，客户端参考使用
+    uint64 sessionID = 4;           //服务端会话标识，客户端参考使用
     uint64 timestamp = 5;           //服务端时间戳
     errors.Status err = 6;          //kratos通用错误
 }
@@ -90,7 +90,7 @@ message SubmitAck{
 
 message Deliver{
     uint64 sequence = 1;            //消息序列号
-    uint64 sessionId = 2;           //会话ID，客户端参考使用
+    uint64 sessionID = 2;           //会话ID，客户端参考使用
     string from = 3;                //发送者
     UserType fromType = 4;          //发送者类型
     string to = 5;                  //接收者
@@ -105,20 +105,20 @@ message Deliver{
 
 message DeliverAck{
     bool deliverRet = 1;            //响应结果标识
-    uint64 sessionId = 2;           //会话ID，客户端参考使用
+    uint64 sessionID = 2;           //会话ID，客户端参考使用
     uint64 sequence = 3;            //消息序列号
     errors.Status err = 6;          //kratos通用错误
 }
 
 message Action{
-    uint32 id = 1;                  //同submit id释义
+    uint32 ID = 1;                  //同submit id释义
     bool dup = 2;                   //重复标识
     bytes payload = 3;              //负载
 }
 
 message ActionAck{
     bool actionRet = 1;             //响应结果标识
-    uint32 id = 2;                  //与Action结构，id字段一一对应
+    uint32 ID = 2;                  //与Action结构，id字段一一对应
     uint64 timestamp = 3;           //服务端时间戳，客户端发送则忽略
     bytes payload = 4;              //负载
     errors.Status err = 6;          //kratos通用错误
