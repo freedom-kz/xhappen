@@ -25,24 +25,24 @@ service Config {
 }
 
 message GetBasicConfigRequest {
-  string deviceID = 1 [(validate.rules).string = {
+  string deviceID = 1 [json_name = "device_id", (validate.rules).string = {
     min_len: 24, 
     max_len: 36
   }];
 }
 
 message GetBasicConfigReply {
-  string socketHost = 1;
-  string fileServerHost =2;
+  string socketHost = 1 [json_name = "socket_host"];
+  string fileServerHost =2 [json_name = "file_server_host"];
 }
 
 message GetSocketHostConfigRequest {
-  string deviceID = 1 [(validate.rules).string = {
+  string deviceID = 1 [json_name = "device_id", (validate.rules).string = {
     min_len: 24, 
     max_len: 36
   }];
 }
 
 message GetSocketHostConfigReply {
-  string socketHost = 1;
+  string socketHost = 1 [json_name = "socket_host"];
 }

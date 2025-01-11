@@ -9,28 +9,28 @@ option objc_class_prefix = "BasiclV1";
 
 //用户个人信息
 message User{
-    int64 ID = 1;
-    string HID = 2;
-    string phone = 3;
-    string nick = 4;
-    string birth = 5;
-    string icon = 6;
-    int32 gender = 7;
-    string sign = 8;
-    int32 state   = 9 ;
-    repeated string roles = 10;
-    int64 updateAt = 11;
-    int64 createAt = 12;
-    int64 deleteAt = 13;
+    int64 ID = 1 [json_name = "id"];
+    string HID = 2 [json_name = "hid"];
+    string phone = 3 [json_name = "phone"];
+    string nick = 4 [json_name = "nick"];
+    string birth = 5 [json_name = "birth"];
+    string icon = 6 [json_name = "icon"];
+    int32 gender = 7 [json_name = "gender"];
+    string sign = 8 [json_name = "sign"];
+    int32 state   = 9 [json_name = "state"];
+    repeated string roles = 10 [json_name = "roles"];
+    int64 updateAt = 11 [json_name = "update_at"];
+    int64 createAt = 12 [json_name = "create_at"];
+    int64 deleteAt = 13 [json_name = "delete_at"];
 }
 
 //用户个人公开信息
 message UserProfile{
-    int64 ID = 1;
-    string nick = 2;
-    string icon = 3;
-    int64 updateAt = 4;
-    int64 deleteAt = 5;
-    string birth = 6;
+    int64 ID = 1 [json_name = "id"];
+    string nick = 2 [json_name = "nick"];
+    string icon = 3 [json_name = "icon"];
+    int64 updateAt = 4 [json_name = "update_at"];
+    int64 deleteAt = 5 [json_name = "delete_at"];
+    string birth = 6 [json_name = "birth"];
 }
 

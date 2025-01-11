@@ -216,12 +216,12 @@ func (boss *Boss) GetConnFromHub(clientId string) *Connection {
 }
 
 func (boss *Boss) SendDeliverToHubConn(done chan *errors.Error, deliver *pb.DeliverRequest) {
-	hub := boss.getHubForUserId(deliver.Userid)
+	hub := boss.getHubForUserId(deliver.UserID)
 	hub.SendDeliverToConn(done, deliver)
 }
 
 func (boss *Boss) SendSyncToHubConn(done chan *errors.Error, sync *pb.SyncRequest) {
-	hub := boss.getHubForUserId(sync.Userid)
+	hub := boss.getHubForUserId(sync.UserID)
 	hub.SendSyncToConn(done, sync)
 }
 
@@ -232,12 +232,12 @@ func (boss *Boss) SendBroadcastToHubConn(done chan *errors.Error, broadcast *pb.
 }
 
 func (boss *Boss) SendActionToHubConn(done chan *errors.Error, action *pb.ActionRequest) {
-	hub := boss.getHubForUserId(action.Uid)
+	hub := boss.getHubForUserId(action.UID)
 	hub.SendActionToConn(done, action)
 }
 
 func (boss *Boss) DisconnectedConn(done chan *errors.Error, disconnectForce *pb.DisconnectForceRequest) {
-	hub := boss.getHubForUserId(disconnectForce.Userid)
+	hub := boss.getHubForUserId(disconnectForce.UserID)
 	hub.DisconnectedConn(done, disconnectForce)
 }
 

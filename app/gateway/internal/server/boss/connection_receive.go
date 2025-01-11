@@ -121,9 +121,9 @@ func (connection *Connection) processBind() error {
 		}
 	}
 	//客户端ID校验
-	if IsValidDeviceId(bind.DeviceId) {
+	if IsValidDeviceId(bind.DeviceID) {
 		bindAck.BindRet = false
-		bindAck.Err = &basic.ErrorClientidRejected("invalid deviceId:%s.", bind.DeviceId).Status
+		bindAck.Err = &basic.ErrorClientidRejected("invalid deviceId:%s.", bind.DeviceID).Status
 
 		err = connection.Write(bindAck)
 		if err != nil {
@@ -165,7 +165,7 @@ func (connection *Connection) processBind() error {
 		return fmt.Errorf(bindAck.Err.Reason)
 	}
 	//填充信息
-	connection.DeviceId = bind.DeviceId
+	connection.DeviceId = bind.DeviceID
 	connection.KeepAlive = time.Duration(bind.KeepAlive)
 	connection.Version = int(bind.CurVersion)
 	connection.Os = bind.DeviceType
@@ -208,7 +208,7 @@ func (connection *Connection) processAuth() error {
 	}
 
 	in := &pb.AuthRequest{
-		DeviceId:       connection.DeviceId,
+		DeviceID:       connection.DeviceId,
 		ServerID:       connection.Boss.serverId,
 		ConnectSequece: connection.connectSequence,
 		LoginType:      connection.LoginType,
@@ -224,7 +224,7 @@ func (connection *Connection) processAuth() error {
 		ack.Err = &errors.FromError(err).Status
 	} else {
 		ack.AuthRet = reply.Ret
-		ack.Uid = reply.Uid
+		ack.UID = reply.UID
 		ack.Err = reply.Err
 	}
 
@@ -241,7 +241,7 @@ func (connection *Connection) processAuth() error {
 		return fmt.Errorf(ack.Err.Reason)
 	}
 	//信息填充
-	connection.UserId = reply.Uid
+	connection.UserId = reply.UID
 	connection.RoleType = auth.RoleType //用户认证角色
 	connection.UserType = reply.UType
 	connection.tokenExpire = reply.TokenExpire.AsTime()
@@ -266,8 +266,8 @@ func (connection *Connection) processAuth() error {
 
 func (connection *Connection) processSubmit(submit *protocol.Submit) error {
 	in := &pb.SubmitRequest{
-		Userid:   connection.UserId,
-		DeviceId: connection.DeviceId,
+		UserID:   connection.UserId,
+		DeviceID: connection.DeviceId,
 		Submit:   submit,
 	}
 	reply, err := connection.Boss.passClient.Submit(context.Background(), in)
@@ -276,7 +276,7 @@ func (connection *Connection) processSubmit(submit *protocol.Submit) error {
 		FixedHeader: packets.FixedHeader{MessageType: packets.SUBMITACK},
 		SubmitAck: protocol.SubmitAck{
 			SubmitRet: true,
-			Id:        submit.Id,
+			ID:        submit.ID,
 			Timestamp: uint64(time.Now().UnixMilli()),
 		},
 	}
@@ -289,7 +289,7 @@ func (connection *Connection) processSubmit(submit *protocol.Submit) error {
 	} else {
 		ack.SubmitRet = reply.Ret
 		ack.Sequence = reply.Sequence
-		ack.SessionId = reply.SessionId
+		ack.SessionID = reply.SessionID
 	}
 
 	//响应数据进行抢占写入
@@ -312,8 +312,8 @@ func (connection *Connection) processSubmit(submit *protocol.Submit) error {
 }
 
 func (connection *Connection) processSyncAck(syncAck *protocol.SyncAck) error {
-	connection.logger.Log(log.LevelDebug, "msg", "process SyncAck", "id", syncAck.Id)
-	delete(connection.syncSessions, uint64(syncAck.Id))
+	connection.logger.Log(log.LevelDebug, "msg", "process SyncAck", "id", syncAck.ID)
+	delete(connection.syncSessions, uint64(syncAck.ID))
 	if len(connection.syncSessions) == 0 {
 		packet := &packets.SyncConfirmPacket{FixedHeader: packets.FixedHeader{MessageType: packets.SYNCCONFIRM}}
 		err := connection.Write(packet)
@@ -352,13 +352,13 @@ func (connection *Connection) processAction(action *protocol.Action) error {
 
 func (connection *Connection) processActionAck(actionAck *protocol.ActionAck) error {
 	connection.logger.Log(log.LevelDebug, "msg", "process action ack")
-	err := connection.FinishAction(uint64(actionAck.Id))
+	err := connection.FinishAction(uint64(actionAck.ID))
 	if err != nil {
 		//错误仅打印日志，非业务影响
 		connection.logger.Log(log.LevelError,
 			"msg", "process action ack",
 			"userId", connection.UserId,
-			"ackMsgId", actionAck.Id,
+			"ackMsgId", actionAck.ID,
 			"error", err)
 	}
 

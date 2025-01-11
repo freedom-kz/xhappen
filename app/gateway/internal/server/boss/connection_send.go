@@ -263,7 +263,7 @@ func (connection *Connection) WriteDeliver(message *Message) error {
 	if message.Attempts > 1 {
 		connection.logger.Log(log.LevelInfo,
 			"msg", "message retry",
-			"sessionId", message.SessionId,
+			"sessionId", message.SessionID,
 			"", message.Sequence)
 	}
 

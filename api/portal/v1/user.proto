@@ -67,39 +67,39 @@ service User {
 }
 
 message LoginByMobileRequest {
-  string mobile = 1 [(validate.rules).string = {
+  string mobile = 1 [json_name = "mobile", (validate.rules).string = {
     pattern: "^1(3\\d|4[0-14-9]|5[0-35-9]|6[2567]|7[0-8]|8\\d|9[0-35-9])\\d{8}$",
     len: 11, 
   }];
-  string deviceID = 2 [(validate.rules).string = {
+  string deviceID = 2 [json_name = "device_id", (validate.rules).string = {
     min_len: 24, 
     max_len: 36
   }];
-  string smsCode = 3 [(validate.rules).string = {
+  string smsCode = 3 [json_name = "sms_code", (validate.rules).string = {
     pattern: "^\\d{6}$",
     len: 6, 
   }];
 }
 
 message LoginByMobileReply {
-  string token = 1;
-  basic.v1.User user = 2;
+  string token = 1 [json_name = "token"];
+  basic.v1.User user = 2 [json_name = "user"];
 }
 
 message TokenAuthRequest {
-  string token = 1;
-  string deviceID = 2;
-  protocol.v1.RoleType roleType = 3;
+  string token = 1 [json_name = "token"];
+  string deviceID = 2 [json_name = "device_id"];
+  protocol.v1.RoleType roleType = 3 [json_name = "role_type"];
 }
 
 message TokenAuthReply {
-  bool ret = 1;
-  string deviceId = 2;
-  string uid = 3; 
-  google.protobuf.Timestamp token_expire = 4;
-  protocol.v1.UserType uType = 5;
-  string gwHost = 6;
-  errors.Status err = 7;          //kratos通用错误 
+  bool ret = 1 [json_name = "ret"];
+  string deviceID = 2 [json_name = "device_id"];
+  string uid = 3 [json_name = "uid"]; 
+  google.protobuf.Timestamp tokenExpire = 4 [json_name = "token_expire"];
+  protocol.v1.UserType uType = 5 [json_name = "u_type"];
+  string gwHost = 6 [json_name = "gw_host"];
+  errors.Status err = 7 [json_name = "err"];          //kratos通用错误 
 }
 
 message LogoutRequest {
@@ -112,7 +112,7 @@ message LogoutReply {
 
 
 message DeRegisterRequest {
-  string smsCode = 1;
+  string smsCode = 1 [json_name = "sms_code"];
 }
 
 message DeRegisterReply {
@@ -120,11 +120,11 @@ message DeRegisterReply {
 }
 
 message GetUserProfileRequest {
-  repeated int64 IDs = 2;
+  repeated int64 IDs = 2 [json_name = "ids"];
 }
 
 message GetUserProfileReply {
-  repeated basic.v1.UserProfile users = 1;
+  repeated basic.v1.UserProfile users = 1 [json_name = "users"];
 }
 
 message GetSelfProfileRequest {
@@ -132,17 +132,17 @@ message GetSelfProfileRequest {
 }
 
 message GetSelfProfileReply {
-  basic.v1.User user = 1;
+  basic.v1.User user = 1 [json_name = "user"];
 }
 
 message UpdateProfileRequest {
-  string nickName = 1;
-  string icon = 2;
-  int32 gender = 3;
-  string sign = 4;
-  string birth = 5;
+  string nickName = 1 [json_name = "nick_name"];
+  string icon = 2 [json_name = "icon"];
+  int32 gender = 3 [json_name = "gender"];
+  string sign = 4 [json_name = "sign"];
+  string birth = 5 [json_name = "birth"];
 }
 
 message UpdateProfileReply {
-  basic.v1.User user = 1;
+  basic.v1.User user = 1 [json_name = "user"];
 }

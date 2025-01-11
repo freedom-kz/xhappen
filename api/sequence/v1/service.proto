@@ -24,41 +24,41 @@ service Sequence {
 }
 
 message GenSequenceByUserIdsRequest {
-    repeated string ID = 1;
+    repeated string ID = 1 [json_name = "id"];
 }
 
 message GenSequenceByUserIdsReply {
-    bool ret = 1;
-    map<uint64,uint64> IDs = 2;
-    errors.Status err = 3;          //kratos通用错误
+    bool ret = 1 [json_name = "ret"];
+    map<uint64,uint64> IDs = 2 [json_name = "ids"];
+    errors.Status err = 3 [json_name = "err"];          //kratos通用错误
 }
 
 message GetCurrentSequenceByUserIdsRequest {
-    repeated string ID = 1;
+    repeated string ID = 1 [json_name = "id"];
 }
   
 message GetCurrentSequenceByUserIdsReply {
-    bool ret = 1;
-    map<uint64,uint64> IDs = 2;
-    errors.Status err = 3;          //kratos通用错误
+    bool ret = 1 [json_name = "ret"];
+    map<uint64,uint64> IDs = 2 [json_name = "ids"];
+    errors.Status err = 3 [json_name = "err"];          //kratos通用错误
 }
 
 message GenRoomSequenceByRoomIdsRequest {
-    repeated string ID = 1;
+    repeated string ID = 1 [json_name = "id"];
 }
 
 message GenRoomSequenceByRoomIdsReply {
-    bool ret = 1;
-    map<uint64,uint64> IDs = 2;
-    errors.Status err = 3;          //kratos通用错误
+    bool ret = 1 [json_name = "ret"];
+    map<uint64,uint64> IDs = 2 [json_name = "ids"];
+    errors.Status err = 3 [json_name = "err"];          //kratos通用错误
 }
 
 message GetCurrentSequenceByRoomIdsRequest {
-    repeated string ID = 1;
+    repeated string ID = 1 [json_name = "id"];
 }
 
 message GetCurrentSequenceByRoomIdsReply {
-    bool ret = 1;
-    map<uint64,uint64> IDs = 2;
-    errors.Status err = 3;          //kratos通用错误
+    bool ret = 1 [json_name = "ret"];
+    map<uint64,uint64> IDs = 2 [json_name = "ids"];
+    errors.Status err = 3 [json_name = "err"];          //kratos通用错误
 }

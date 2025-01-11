@@ -25,80 +25,80 @@ service Router {
 }
 
 message UserDeviceBindInfo{
-  uint64 UID = 1;
-  string deviceID = 2;
-  string serverID = 3;
-  uint64 connectSequece = 4;
-  int32 curVersion = 5;
-  protocol.v1.DeviceType deviceType = 6;
+  uint64 UID = 1 [json_name = "uid"];
+  string deviceID = 2 [json_name = "device_id"];
+  string serverID = 3 [json_name = "server_id"];
+  uint64 connectSequece = 4 [json_name = "connect_sequece"];
+  int32 curVersion = 5 [json_name = "cur_version"];
+  protocol.v1.DeviceType deviceType = 6 [json_name = "device_type"];
 }
 
 message UserDeviceBindRequest {
-  UserDeviceBindInfo userDeviceBindInfo = 1;
+  UserDeviceBindInfo userDeviceBindInfo = 1 [json_name = "user_device_bind_info"];
 }
 
 message UserDeviceBindReply {
-  bool ret = 1;
-  UserDeviceBindInfo exist = 2;
-  errors.Status err = 3;          //kratos通用错误
+  bool ret = 1 [json_name = "ret"];
+  UserDeviceBindInfo exist = 2 [json_name = "exist"];
+  errors.Status err = 3 [json_name = "err"];          //kratos通用错误
 }
 
 message UserDeviceUnBindRequest {
-  uint64 UID = 1;
-  string deviceID = 2;
-  string serverID = 3;
-  uint64 connectSequece = 4;
+  uint64 UID = 1 [json_name = "uid"];
+  string deviceID = 2 [json_name = "device_id"];
+  string serverID = 3 [json_name = "server_id"];
+  uint64 connectSequece = 4 [json_name = "connect_sequece"];
 }
 
 message UserDeviceUnBindReply {
-  bool ret = 1;
-  errors.Status err = 2;          //kratos通用错误
+  bool ret = 1 [json_name = "ret"];
+  errors.Status err = 2 [json_name = "err"];          //kratos通用错误
 }
 
 message RoutersByUserIdsRequest {
-  repeated uint64 userIDs = 1;
+  repeated uint64 userIDs = 1 [json_name = "user_ids"];
 }
 
 message RoutersByUserIdsReply {
   message UserDeviceRouters{
-    repeated UserDeviceBindInfo userDeviceBindInfos = 1;
+    repeated UserDeviceBindInfo userDeviceBindInfos = 1 [json_name = "user_device_bind_infos"];
   }
   bool ret = 1;
-  map<string, UserDeviceRouters> userDevicesRouter = 2; 
-  errors.Status err = 3;          //kratos通用错误
+  map<string, UserDeviceRouters> userDevicesRouter = 2 [json_name = "user_devices_router"]; 
+  errors.Status err = 3 [json_name = "err"];          //kratos通用错误
 }
 
 message RoomRouterBindRequest {
-  uint64 roomID = 1;
-  string serverID = 2;
+  uint64 roomID = 1 [json_name = "room_id"];
+  string serverID = 2 [json_name = "server_id"];
 }
 
 message RoomRouterBindReply {
-  bool ret = 1;
-  errors.Status err = 2;          //kratos通用错误
+  bool ret = 1 [json_name = "ret"];
+  errors.Status err = 2 [json_name = "err"];          //kratos通用错误
 }
 
 message RoomRouterUnbindRequest {
-  uint64 roomID = 1;
-  string serverID = 2;
+  uint64 roomID = 1 [json_name = "room_id"];
+  string serverID = 2 [json_name = "server_id"];
 }
 
 message RoomRouterUnbindReply {
-  bool ret = 1;
-  errors.Status err = 2;          //kratos通用错误
+  bool ret = 1 [json_name = "ret"];
+  errors.Status err = 2 [json_name = "err"];          //kratos通用错误
 }
 
 message GetRoomRouterByIDRequest {
-  repeated uint64 roomID = 1;
+  repeated uint64 roomID = 1 [json_name = "room_id"];
 }
 
 message GetRoomRouterByIDReply {
   message RoomServers{
-    repeated string serverID = 1;
+    repeated string serverID = 1 [json_name = "server_id"];
   }
 
   bool ret = 1;
-  map<uint64, RoomServers> roomRouters = 2;
-  errors.Status err = 3;          //kratos通用错误
+  map<uint64, RoomServers> roomRouters = 2 [json_name = "room_routers"];
+  errors.Status err = 3 [json_name = "err"];          //kratos通用错误
 }
 

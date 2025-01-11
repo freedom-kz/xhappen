@@ -148,12 +148,12 @@ func (connection *Connection) removeActionFromInFlight(msg *AMessage) {
 
 func (connection *Connection) pushActionInFlightMessage(msg *AMessage) error {
 	connection.inFlightAMutex.Lock()
-	_, ok := connection.inFlightMessages[uint64(msg.Id)]
+	_, ok := connection.inFlightMessages[uint64(msg.ID)]
 	if ok {
 		connection.inFlightAMutex.Unlock()
 		return fmt.Errorf("action id already in flight")
 	}
-	connection.inFlightAMessages[uint64(msg.Id)] = msg
+	connection.inFlightAMessages[uint64(msg.ID)] = msg
 	connection.inFlightAMutex.Unlock()
 	return nil
 }

@@ -40,7 +40,7 @@ func NewPassService(
 func (s *PassService) Bind(ctx context.Context, in *pb_transfer.BindRequest) (*pb_transfer.BindReply, error) {
 	//1. 进行终端绑定网关信息验证
 	getSocketHostConfigRequest := &pb_portal.GetSocketHostConfigRequest{
-		DeviceID: in.BindInfo.DeviceId,
+		DeviceID: in.BindInfo.DeviceID,
 	}
 
 	replyHost, err := s.portalClient.GetSocketHostConfig(ctx, getSocketHostConfigRequest)
@@ -65,7 +65,7 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 	//1. 验证用户
 	tokenAuthRequest := &pb_portal.TokenAuthRequest{
 		Token:    in.AuthInfo.Token,
-		DeviceID: in.DeviceId,
+		DeviceID: in.DeviceID,
 		RoleType: in.AuthInfo.RoleType,
 	}
 
@@ -94,7 +94,7 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 	if err != nil {
 		return &pb_transfer.AuthReply{
 			Ret:         true,
-			Uid:         authReply.Uid,
+			UID:         authReply.Uid,
 			TokenExpire: authReply.TokenExpire,
 			UType:       uType,
 		}, nil
@@ -107,7 +107,7 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 	//3. 路由数据存放
 	deviceBindReq := &pb_router.UserDeviceBindRequest{
 		UserDeviceBindInfo: &pb_router.UserDeviceBindInfo{
-			DeviceID:       in.DeviceId,
+			DeviceID:       in.DeviceID,
 			ServerID:       in.ServerID,
 			ConnectSequece: in.ConnectSequece,
 			CurVersion:     in.CurVersion,
@@ -127,7 +127,7 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 
 	return &pb_transfer.AuthReply{
 		Ret:         true,
-		Uid:         authReply.Uid,
+		UID:         authReply.Uid,
 		TokenExpire: authReply.TokenExpire,
 		UType:       uType,
 		Sessions:    sids,

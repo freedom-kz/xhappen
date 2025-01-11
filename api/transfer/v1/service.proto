@@ -23,69 +23,69 @@ service Pass {
 }
 
 message BindRequest {
-  protocol.v1.Bind bindInfo = 1;
-  string serverID = 2;
+  protocol.v1.Bind bindInfo = 1 [json_name = "bind_info"];
+  string serverID = 2 [json_name = "server_id"];
 }
 
 message BindReply {
-  bool ret = 1;
-  errors.Status err = 3;          //kratos通用错误
+  bool ret = 1 [json_name = "ret"];
+  errors.Status err = 2 [json_name = "err"];          //kratos通用错误
 }
 
 message AuthRequest {
-  string deviceID = 1;
-  string serverID = 2;
-  uint64 connectSequece = 3;
-  protocol.v1.LoginType loginType = 4;
-  protocol.v1.DeviceType deviceType = 5;
-  int32 curVersion = 6;
-  protocol.v1.Auth authInfo = 7;
+  string deviceID = 1 [json_name = "device_id"];
+  string serverID = 2 [json_name = "server_id"];
+  uint64 connectSequece = 3 [json_name = "connect_sequece"];
+  protocol.v1.LoginType loginType = 4 [json_name = "login_type"];
+  protocol.v1.DeviceType deviceType = 5 [json_name = "device_type"];
+  int32 curVersion = 6 [json_name = "cur_version"];
+  protocol.v1.Auth authInfo = 7 [json_name = "auth_info"];
 }
 
 message AuthReply {
-  bool ret = 1;
-  string UID = 2;
-  google.protobuf.Timestamp token_expire = 3;
-  repeated uint64 sessions = 4;
-  protocol.v1.UserType uType = 5;
-  errors.Status err = 6;          //kratos通用错误
+  bool ret = 1 [json_name = "ret"];
+  string UID = 2 [json_name = "uid"];
+  google.protobuf.Timestamp tokenExpire = 3 [json_name = "token_expire"];
+  repeated uint64 sessions = 4 [json_name = "sessions"];
+  protocol.v1.UserType uType = 5 [json_name = "u_type"];
+  errors.Status err = 6 [json_name = "err"];          //kratos通用错误
 }
 
 message SubmitRequest {
-  string userID = 1; //用户ID
-  string deviceID = 2; //设备ID
-  protocol.v1.Submit submit = 3;
+  string userID = 1 [json_name = "user_id"]; //用户ID
+  string deviceID = 2 [json_name = "device_id"]; //设备ID
+  protocol.v1.Submit submit = 3 [json_name = "submit"];
 }
 
 message SubmitReply {
-  bool ret = 1;
-  errors.Status err = 2;          //kratos通用错误
-  uint64 sessionID = 3;
-  uint64 sequence = 4;
-  uint64 timestamp = 5;
+  bool ret = 1 [json_name = "ret"];
+  errors.Status err = 2 [json_name = "err"];          //kratos通用错误
+  uint64 sessionID = 3 [json_name = "session_id"];
+  uint64 sequence = 4 [json_name = "sequence"];
+  uint64 timestamp = 5 [json_name = "timestamp"];
 }
 
 
 message ActionRequest {
-  string UID = 1;
-  string deviceId = 2;
-  protocol.v1.Action action = 3;
+  string UID = 1 [json_name = "uid"];
+  string deviceID = 2 [json_name = "device_id"];
+  protocol.v1.Action action = 3 [json_name = "action"];
 }
 
 message ActionReply {
-  bool ret = 1;
-  errors.Status err = 2;          //kratos通用错误
-  uint64 timestamp = 3;
-  bytes payload =4;
+  bool ret = 1 [json_name = "ret"];
+  errors.Status err = 2 [json_name = "err"];          //kratos通用错误
+  uint64 timestamp = 3 [json_name = "timestamp"];
+  bytes payload =4 [json_name = "payload"];
 }
 
 message QuitRequest {
-  string userID = 1;
-  string deviceID = 2;
-  protocol.v1.DeviceType deviceType = 3;
+  string userID = 1 [json_name = "user_id"];
+  string deviceID = 2 [json_name = "device_id"];
+  protocol.v1.DeviceType deviceType = 3 [json_name = "device_type"];
 }
 
 message QuitReply {
-  bool ret = 1;
-  errors.Status err = 2;          //kratos通用错误
+  bool ret = 1 [json_name = "ret"];
+  errors.Status err = 2 [json_name = "err"];          //kratos通用错误
 }

@@ -151,7 +151,7 @@ func (s *UserService) GetUserProfile(ctx context.Context, in *pb.GetUserProfileR
 		return &pb.GetUserProfileReply{}, err
 	}
 
-	profiles := make(map[int64]*v1.UserProfile, len(users))
+	profiles := make([]*v1.UserProfile, len(users))
 
 	for _, user := range users {
 		u := &v1.UserProfile{
@@ -161,14 +161,8 @@ func (s *UserService) GetUserProfile(ctx context.Context, in *pb.GetUserProfileR
 			UpdateAt: user.UpdateAt,
 			DeleteAt: user.DeleteAt,
 		}
-		profiles[u.ID] = u
+		profiles = append(profiles, u)
 	}
-
-	// for _, id := range in.Ids {
-	// 	if _, ok := profiles[id]; !ok {
-	// 		profiles[id] = &v1.UserProfile{}
-	// 	}
-	// }
 
 	return &pb.GetUserProfileReply{
 		Users: profiles,

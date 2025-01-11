@@ -11,42 +11,42 @@ option java_package = "protocol.v1";
 option objc_class_prefix = "ProtocolV1";
 
 message Bind{
-    DeviceType deviceType = 1;      //设备类型
-    string  deviceID = 2;           //客户端ID
-    LoginType loginType = 3;        //登录类型
-    int32 curVersion = 4;           //客户端当前协议版本
-    string magic = 5;               //版本魔法数
-    uint64 keepAlive = 6;           //心跳超时
-    uint32 queueSize = 7;           //最大消息缓存池大小
+    DeviceType deviceType = 1 [json_name = "device_type"];      //设备类型
+    string  deviceID = 2 [json_name = "device_id"];           //客户端ID
+    LoginType loginType = 3 [json_name = "login_type"];        //登录类型
+    int32 curVersion = 4 [json_name = "cur_version"];           //客户端当前协议版本
+    string magic = 5 [json_name = "magic"];               //版本魔法数
+    uint64 keepAlive = 6 [json_name = "keep_alive"];           //心跳超时
+    uint32 queueSize = 7 [json_name = "queue_size"];           //最大消息缓存池大小
 }
 
 message BindAck{
-    bool bindRet = 1;               //响应码
-    uint64 serverTimeStamp = 2;     //服务器时间戳
-    errors.Status err = 3;          //kratos通用错误
+    bool bindRet = 1 [json_name = "bind_ret"];               //响应码
+    uint64 serverTimeStamp = 2 [json_name = "server_timestamp"];     //服务器时间戳
+    errors.Status err = 3 [json_name = "err"];          //kratos通用错误
 }
 
 message Auth{
-    RoleType roleType = 1;          //角色类型
-    string token  = 2;              //验证token
-    uint64 sequence = 3;            //客户端当前消息序列号
+    RoleType roleType = 1 [json_name = "role_type"];          //角色类型
+    string token  = 2 [json_name = "token"];              //验证token
+    uint64 sequence = 3 [json_name = "sequence"];            //客户端当前消息序列号
 }
 
 message AuthAck{
-    bool authRet = 1;               //响应码
-    string UID = 2;                 //用户ID
-    errors.Status err = 3;          //kratos通用错误
+    bool authRet = 1 [json_name = "auth_ret"];               //响应码
+    string UID = 2 [json_name = "uid"];                 //用户ID
+    errors.Status err = 3 [json_name = "err"];          //kratos通用错误
 }
 
 message Sync{
-    uint32 ID = 1;                  //同步会话标识ID,单次连接会话中有效
-    uint64 sessionID = 2;           //服务端会话ID，客户端参考使用，可取任意一条消息获取消息收发端状态
-    int32 total = 3;                //未读数统计
-    repeated Deliver delivers = 4;  //消息数组
+    uint32 ID = 1 [json_name = "id"];                  //同步会话标识ID,单次连接会话中有效
+    uint64 sessionID = 2 [json_name = "session_id"];           //服务端会话ID，客户端参考使用，可取任意一条消息获取消息收发端状态
+    int32 total = 3 [json_name = "total"];                //未读数统计
+    repeated Deliver delivers = 4 [json_name = "delivers"];  //消息数组
 }
 
 message SyncAck{
-    uint32 ID = 1;                  //与syncID一一对应
+    uint32 ID = 1 [json_name = "id"];                  //与syncID一一对应
 }
 
 message SyncConfirm{
@@ -54,74 +54,74 @@ message SyncConfirm{
 }
 
 message SubmitOption {
-    bool roam = 1;                  //漫游
-    bool history = 2;               //保存历史
-    bool sync = 3;                  //发送端多端同步
-    bool notify = 4;                //需要离线通知
-    bool badge = 5;                 //离线通知是否需要计数
-    bool persistent = 6;            //离线是否需要持久化
-    bool sessionUpdate = 7;         //更新会话最后一条消息
-    bool markRead = 8;              //是否需要阅读标记
-    bool checkFriend = 9;           //是否需要检查好友关系
+    bool roam = 1 [json_name = "roam"];                  //漫游
+    bool history = 2 [json_name = "history"];               //保存历史
+    bool sync = 3 [json_name = "sync"];                  //发送端多端同步
+    bool notify = 4 [json_name = "notify"];                //需要离线通知
+    bool badge = 5 [json_name = "badge"];                 //离线通知是否需要计数
+    bool persistent = 6 [json_name = "persistent"];            //离线是否需要持久化
+    bool sessionUpdate = 7 [json_name = "session_update"];         //更新会话最后一条消息
+    bool markRead = 8 [json_name = "mark_read"];              //是否需要阅读标记
+    bool checkFriend = 9 [json_name = "check_friend"];           //是否需要检查好友关系
 }
 
 message Submit{
-    uint32 ID = 1;                  //消息唯一标识
-    bool dup = 2;                   //重发标识
-    string to = 3;                  //接收者
-    UserType toType = 4;            //接受者类型
-    MsgType msgType = 5;            //消息类型
-    bytes payload = 6;              //消息正文
-    repeated string ats = 7;        //@列表
-    bool atAll = 8;                 //是否为@all，为true时，ats不再生效
-    string notifyContent = 9;       //自定义通知正文
-    SubmitOption option = 10;       //发送选项参数设定
+    uint32 ID = 1 [json_name = "id"];                  //消息唯一标识
+    bool dup = 2 [json_name = "dup"];                   //重发标识
+    string to = 3 [json_name = "to"];                  //接收者
+    UserType toType = 4 [json_name = "to_type"];            //接受者类型
+    MsgType msgType = 5 [json_name = "msg_type"];            //消息类型
+    bytes payload = 6 [json_name = "payload"];              //消息正文
+    repeated string ats = 7 [json_name = "ats"];        //@列表
+    bool atAll = 8 [json_name = "at_all"];                 //是否为@all，为true时，ats不再生效
+    string notifyContent = 9 [json_name = "notify_content"];       //自定义通知正文
+    SubmitOption option = 10 [json_name = "option"];       //发送选项参数设定
 }
 
 message SubmitAck{
-    bool submitRet = 1;             //响应标识
-    uint32 ID = 2;                  //消息唯一标识,一一对应Sumit中id字段, 1-65535，会话期间循环使用，并且在短时间有效时间内（如10分钟）服务端做去重使用
-    uint64 sequence = 3;            //CHATROOM APPLICATION类型每一个会话独享，SINGLE、GROUP共享
-    uint64 sessionID = 4;           //服务端会话标识，客户端参考使用
-    uint64 timestamp = 5;           //服务端时间戳
-    errors.Status err = 6;          //kratos通用错误
+    bool submitRet = 1 [json_name = "submit_ret"];             //响应标识
+    uint32 ID = 2 [json_name = "id"];                  //消息唯一标识,一一对应Sumit中id字段, 1-65535，会话期间循环使用，并且在短时间有效时间内（如10分钟）服务端做去重使用
+    uint64 sequence = 3 [json_name = "sequence"];            //CHATROOM APPLICATION类型每一个会话独享，SINGLE、GROUP共享
+    uint64 sessionID = 4 [json_name = "session_id"];           //服务端会话标识，客户端参考使用
+    uint64 timestamp = 5 [json_name = "timestamp"];           //服务端时间戳
+    errors.Status err = 6 [json_name = "err"];          //kratos通用错误
 }
 
 
 message Deliver{
-    uint64 sequence = 1;            //消息序列号
-    uint64 sessionID = 2;           //会话ID，客户端参考使用
-    string from = 3;                //发送者
-    UserType fromType = 4;          //发送者类型
-    string to = 5;                  //接收者
-    UserType toType = 6;            //接收者类型
-    MsgType msgType = 7;            //消息类型
-    bytes payload = 8;              //消息负载，内包含json类型的消息业务类型
-    uint64 sendTime = 9;            //发送时间
-    uint64 editTime = 10;           //编辑时间
-    uint64 deleteTime = 11;         //删除时间戳
-    uint64 lastReadtime = 12;       //最后阅读时间
+    uint64 sequence = 1 [json_name = "sequence"];            //消息序列号
+    uint64 sessionID = 2 [json_name = "session_id"];           //会话ID，客户端参考使用
+    string from = 3 [json_name = "from"];                //发送者
+    UserType fromType = 4 [json_name = "from_type"];          //发送者类型
+    string to = 5 [json_name = "to"];                  //接收者
+    UserType toType = 6 [json_name = "to_type"];            //接收者类型
+    MsgType msgType = 7 [json_name = "msg_type"];            //消息类型
+    bytes payload = 8 [json_name = "payload"];              //消息负载，内包含json类型的消息业务类型
+    uint64 sendTime = 9 [json_name = "send_time"];            //发送时间
+    uint64 editTime = 10 [json_name = "edit_time"];           //编辑时间
+    uint64 deleteTime = 11 [json_name = "delete_time"];         //删除时间戳
+    uint64 lastReadtime = 12 [json_name = "last_read_time"];       //最后阅读时间
 }
 
 message DeliverAck{
-    bool deliverRet = 1;            //响应结果标识
-    uint64 sessionID = 2;           //会话ID，客户端参考使用
-    uint64 sequence = 3;            //消息序列号
-    errors.Status err = 6;          //kratos通用错误
+    bool deliverRet = 1 [json_name = "deliver_ret"];            //响应结果标识
+    uint64 sessionID = 2 [json_name = "session_id"];           //会话ID，客户端参考使用
+    uint64 sequence = 3 [json_name = "sequence"];            //消息序列号
+    errors.Status err = 6 [json_name = "err"];          //kratos通用错误
 }
 
 message Action{
-    uint32 ID = 1;                  //同submit id释义
-    bool dup = 2;                   //重复标识
-    bytes payload = 3;              //负载
+    uint32 ID = 1 [json_name = "id"];                  //同submit id释义
+    bool dup = 2 [json_name = "dup"];                   //重复标识
+    bytes payload = 3 [json_name = "payload"];              //负载
 }
 
 message ActionAck{
-    bool actionRet = 1;             //响应结果标识
-    uint32 ID = 2;                  //与Action结构，id字段一一对应
-    uint64 timestamp = 3;           //服务端时间戳，客户端发送则忽略
-    bytes payload = 4;              //负载
-    errors.Status err = 6;          //kratos通用错误
+    bool actionRet = 1 [json_name = "action_ret"];             //响应结果标识
+    uint32 ID = 2 [json_name = "id"];                  //与Action结构，id字段一一对应
+    uint64 timestamp = 3 [json_name = "timestamp"];           //服务端时间戳，客户端发送则忽略
+    bytes payload = 4 [json_name = "payload"];              //负载
+    errors.Status err = 5[json_name = "err"];          //kratos通用错误
 }
 
 message Ping{

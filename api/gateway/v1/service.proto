@@ -38,63 +38,63 @@ service GatewaySrv {
 }
 
 message SyncRequest {
-    string userID = 1;          //接收用户ID
-    string deviceID = 2;        //接收的客户端标志
-    uint64 bindVersion = 3;     //连接时间戳，作为连接版本过滤重复登录同步数据
-    protocol.v1.Sync sync = 4;  //数据包
+    string userID = 1 [json_name = "user_id"];          //接收用户ID
+    string deviceID = 2 [json_name = "device_id"];        //接收的客户端标志
+    uint64 bindVersion = 3 [json_name = "bind_version"];     //连接时间戳，作为连接版本过滤重复登录同步数据
+    protocol.v1.Sync sync = 4 [json_name = "sync"];  //数据包
 }
 
 message SyncReply {
-    bool ret = 1;           //结果
-    errors.Status err = 2;          //kratos通用错误
+    bool ret = 1 [json_name = "ret"];           //结果
+    errors.Status err = 2 [json_name = "err"];          //kratos通用错误
 }
 
 message BroadcastRequest {
-    repeated string omitDeviceIDs = 1; //忽略设备ID
-    repeated string omitUserIDs = 2; //忽略设备ID
-    protocol.v1.Deliver deliver = 3; //消息
+    repeated string omitDeviceIDs = 1 [json_name = "omit_device_ids"]; //忽略设备ID
+    repeated string omitUserIDs = 2 [json_name = "omit_user_ids"]; //忽略设备ID
+    protocol.v1.Deliver deliver = 3 [json_name = "deliver"]; //消息
 }
 
 message BroadcastReply {
-    bool ret = 1;           //结果
-    errors.Status err = 2;          //kratos通用错误
+    bool ret = 1 [json_name = "ret"];           //结果
+    errors.Status err = 2 [json_name = "err"];          //kratos通用错误
 }
 
 message DeliverRequest {
-    string userID = 1; //用户ID
-    string deviceID = 2; //设备ID
-    repeated string omitDeviceIDs = 3; //忽略设备ID
-    protocol.v1.Deliver deliver = 4; //消息
+    string userID = 1[json_name = "user_id"]; //用户ID
+    string deviceID = 2 [json_name = "device_id"]; //设备ID
+    repeated string omitDeviceIDs = 3 [json_name = "omit_device_ids"]; //忽略设备ID
+    protocol.v1.Deliver deliver = 4 [json_name = "deliver"]; //消息
 }
 
 message DeliverReply {
-    bool ret = 1; //结果
-    errors.Status err = 2;          //kratos通用错误
+    bool ret = 1 [json_name = "ret"]; //结果
+    errors.Status err = 2 [json_name = "err"];          //kratos通用错误
 }
 
 message ActionRequest {
-  string UID = 1;
-  string deviceID = 2;
-  repeated string omitDeviceIDs = 3; //忽略设备ID
-  protocol.v1.Action action = 4;
+  string UID = 1 [json_name = "uid"];
+  string deviceID = 2 [json_name = "device_id"];
+  repeated string omitDeviceIDs = 3 [json_name = "omit_device_ids"]; //忽略设备ID
+  protocol.v1.Action action = 4 [json_name = "action"];
 }
 
 message ActionReply {
-  bool ret = 1;
-  errors.Status err = 2;          //kratos通用错误
-  uint64 timestamp = 3;
-  bytes payload =4;
+  bool ret = 1 [json_name = "ret"];
+  errors.Status err = 2 [json_name = "err"];          //kratos通用错误
+  uint64 timestamp = 3 [json_name = "timestamp"];
+  bytes payload =4 [json_name = "payload"];
 }
 
 message DisconnectForceRequest {
-    string userID = 1; //用户ID
-    string deviceID = 2; //设备ID
-    protocol.v1.DeviceType deviceType = 3; //设备类型
+    string userID = 1 [json_name = "user_id"]; //用户ID
+    string deviceID = 2 [json_name = "device_id"]; //设备ID
+    protocol.v1.DeviceType deviceType = 3 [json_name = "device_type"]; //设备类型
 }
 
 message DisconnectForceReply {
-    bool ret = 1;           //结果 
-    errors.Status err = 2;          //kratos通用错误
+    bool ret = 1 [json_name = "ret"];           //结果 
+    errors.Status err = 2 [json_name = "err"];          //kratos通用错误
 }
 
 

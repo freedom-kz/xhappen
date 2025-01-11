@@ -14,21 +14,21 @@ auth:
 data:
   database:
     driver: mysql
-    source: root:pwd9527@tcp(172.16.49.239:3306)/xhappen?charset=utf8mb4&parseTime=True
+    source: root:pwd9527@tcp(127.0.0.1:3306)/xhappen?charset=utf8mb4&parseTime=True
   redis:
-    addr: 172.16.49.239:6379
+    addr: 127.0.0.1:6379
     password: pwd9527
     db: 1
     dialTimeout: 0.3s
     readTimeout: 0.3s
     writeTimeout: 0.3s
   etcd:
-    addr: 172.16.49.239:2379
+    addr: 127.0.0.1:2379
     dialTimeout: 1s
     readTimeout: 1s
     writeTimeout: 1s
   kafka:
-    addr: 172.16.49.239:9092
+    addr: 127.0.0.1:9092
     smsCodeTopic: smscode
 info:
   fileServer: https://xhappen.com/
