@@ -18,10 +18,12 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 		reSendChan    <-chan time.Time
 		timeoutChan   <-chan time.Time
 		timeoutTicker *time.Ticker
-		dChan         chan *protocol.Deliver = nil
-		aChan         chan *protocol.Action  = nil
-		sChan                                = connection.syncCh
+		dChan         chan *protocol.Deliver
+		aChan         chan *protocol.Action
+		sChan         chan *protocol.Sync
 	)
+
+	sChan = connection.syncCh
 
 	reSendTicker := time.NewTicker(DEFAULT_RESEND_TICKER)
 	outputBufferTicker := time.NewTicker(connection.FlushEvery)

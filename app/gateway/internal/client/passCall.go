@@ -16,7 +16,7 @@ import (
 	srcgrpc "google.golang.org/grpc"
 )
 
-const endpoint = "discovery:///business"
+const endpoint = "discovery:///transfer"
 
 type PassClient struct {
 	conn *srcgrpc.ClientConn

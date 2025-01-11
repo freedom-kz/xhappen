@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"os"
 	"strconv"
 
 	"xhappen/app/gateway/internal/conf"
@@ -17,6 +16,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/google/uuid"
 	etcdclient "go.etcd.io/etcd/client/v3"
 	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
@@ -32,7 +32,7 @@ var (
 	// flagconf is the config flag.
 	flagconf string
 
-	id, _ = os.Hostname()
+	id, _ = uuid.NewUUID()
 )
 
 func init() {
@@ -43,7 +43,7 @@ func init() {
 
 func newApp(bootstrap *conf.Bootstrap, logger log.Logger, gs *grpc.Server, bs *boss.Boss, r registry.Registrar) *kratos.App {
 	return kratos.New(
-		kratos.ID(id),
+		kratos.ID(id.String()),
 		kratos.Name(Name),
 		kratos.Version(Version),
 		kratos.Metadata(map[string]string{

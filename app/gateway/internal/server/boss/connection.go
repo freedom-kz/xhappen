@@ -14,9 +14,10 @@ import (
 
 const (
 	DEFAULT_DAIL_TIMEOUT  = 3 * time.Second
-	DEFAULT_RESEND_TICKER = 5 * time.Second
-	DEFAULT_READ_TIMEOUT  = 10 * time.Second //默认读超时
-	HandshakeTimeout      = 3 * time.Second  //websocket握手超时
+	DEFAULT_RESEND_TICKER = 3 * time.Second
+	DEFAULT_READ_TIMEOUT  = 10 * time.Second  //默认读超时
+	DEFAULT_KEEP_ALIVE    = 180 * time.Second //默认读超时
+	HandshakeTimeout      = 3 * time.Second   //websocket握手超时
 
 	MESSAGE_ATTEMPTS_MAX = 3
 )
@@ -118,7 +119,7 @@ func newConnection(conn net.Conn, boss *Boss) *Connection {
 		WriteTimeout:      conf.Main.WriteTimeout.AsDuration(),
 		ReadTimeout:       conf.Main.MinKeepAlive.AsDuration(),
 		MsgTimeout:        conf.Queue.MsgTimeout.AsDuration(),
-		FlushEvery:        conf.Queue.MsgTimeout.AsDuration(),
+		FlushEvery:        conf.Queue.SyncEvery.AsDuration(),
 		StateChan:         make(chan int),
 		ReadyStateChan:    make(chan int),
 	}

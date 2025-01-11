@@ -24,7 +24,7 @@ socket:
   queue:
     maxMsgSize: 65535
     maxRdyCount: 100
-    syncEvery: 1
+    syncEvery: 0.1s
     msgTimeout: 5s
 data:
   etcd:

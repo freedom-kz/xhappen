@@ -23,6 +23,13 @@ func (connection *Connection) packetProcess() error {
 			break
 		}
 		//走到这里的一定是经过bind和auth业务的
+
+		if connection.KeepAlive > 0 {
+			connection.SetReadDeadline(time.Now().Add(connection.KeepAlive))
+		} else {
+			connection.SetReadDeadline(time.Now().Add(DEFAULT_KEEP_ALIVE))
+		}
+
 		packet, err = connection.ReadPacket()
 		if err != nil {
 			break
@@ -106,8 +113,7 @@ func (connection *Connection) processBind() error {
 	//版本校验
 	if bind.CurVersion < connection.Boss.minSupportProtoVersion {
 		bindAck.BindRet = false
-		bindAck.Err = &basic.ErrorUpgrade("version %d not support,current version:%d.",
-			bind.CurVersion, connection.Boss.protoVersion).Status
+		bindAck.Err = &basic.ErrorUpgrade("version %d not support.", bind.CurVersion).Status
 
 		err = connection.Write(bindAck)
 		if err != nil {
@@ -254,7 +260,7 @@ func (connection *Connection) processAuth() error {
 		}
 		connection.sendConnState(STATE_SYNC)
 	}
-
+	//尝试关闭已有连接
 	if conn := connection.Boss.GetConnFromHub(connection.DeviceId); conn != nil {
 		conn.Close()
 	}

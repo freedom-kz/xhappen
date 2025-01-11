@@ -59,7 +59,8 @@ message Socket {
   message Queue {
     uint32 maxMsgSize = 1;
     uint32 maxRdyCount = 2;
-    google.protobuf.Duration msgTimeout = 3;
+    google.protobuf.Duration syncEvery = 3;
+    google.protobuf.Duration msgTimeout = 4;
   }
 
   Main main = 1;

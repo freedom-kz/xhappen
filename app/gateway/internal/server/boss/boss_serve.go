@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	ReadBufferSize  = 1024 * 4 //ws读缓冲大小
-	WriteBufferSize = 1024 * 4 //ws写缓冲大小
+	ReadBufferSize  = 1024 * 8 //ws读缓冲大小
+	WriteBufferSize = 1024 * 8 //ws写缓冲大小
 )
 
 type ConnHandler interface {

@@ -63,7 +63,11 @@ func (s *GatewaySrvService) Deliver(ctx context.Context, req *pb.DeliverRequest)
 	case <-ctx.Done():
 		return &pb.DeliverReply{
 			Ret: false,
-			Err: &errors.New(413, "DELIVAE_HANDLE_TIME_OUT", "ctx deadline").Status,
+			Err: &errors.Status{
+				Code:    413,
+				Reason:  "DELIVAE_HANDLE_TIME_OUT",
+				Message: "ctx deadline",
+			},
 		}, nil
 	}
 }
@@ -87,7 +91,11 @@ func (s *GatewaySrvService) Broadcast(ctx context.Context, req *pb.BroadcastRequ
 	case <-ctx.Done():
 		return &pb.BroadcastReply{
 			Ret: false,
-			Err: &errors.New(413, "BROADCAST_HANDLE_TIME_OUT", "ctx deadline").Status,
+			Err: &errors.Status{
+				Code:    413,
+				Reason:  "BROADCAST_HANDLE_TIME_OUT",
+				Message: "ctx deadline",
+			},
 		}, nil
 	}
 }
@@ -111,7 +119,11 @@ func (s *GatewaySrvService) Action(ctx context.Context, req *pb.ActionRequest) (
 	case <-ctx.Done():
 		return &pb.ActionReply{
 			Ret: false,
-			Err: &errors.New(413, "ACTION_HANDLE_TIME_OUT", "ctx deadline").Status,
+			Err: &errors.Status{
+				Code:    413,
+				Reason:  "ACTION_HANDLE_TIME_OUT",
+				Message: "ctx deadline",
+			},
 		}, nil
 	}
 }
@@ -135,7 +147,11 @@ func (s *GatewaySrvService) Disconnectedforce(ctx context.Context, req *pb.Disco
 	case <-ctx.Done():
 		return &pb.DisconnectForceReply{
 			Ret: false,
-			Err: &errors.New(413, "DISCONNECT_HANDLE_TIME_OUT", "ctx deadline").Status,
+			Err: &errors.Status{
+				Code:    413,
+				Reason:  "DISCONNECT_HANDLE_TIME_OUT",
+				Message: "ctx deadline",
+			},
 		}, nil
 	}
 }

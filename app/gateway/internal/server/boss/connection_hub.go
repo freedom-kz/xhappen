@@ -63,7 +63,7 @@ func newHub(boss *Boss) *Hub {
 		syncToHub:              make(chan *syncToHub, 1000),
 		deliverToHub:           make(chan *deliverToHub, 1000),
 		broadcastToHub:         make(chan *broadcastToHub, 1000),
-		disconnectedforceToHub: make(chan *disconnectedforceToHub, 1000),
+		disconnectedforceToHub: make(chan *disconnectedforceToHub),
 	}
 }
 
