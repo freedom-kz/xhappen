@@ -82,7 +82,7 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 			ID:       user.ID,
 			HID:      user.UID,
 			Phone:    user.Phone,
-			Nick:     user.Nick,
+			Nick:     user.NickName,
 			Birth:    utils.DateToString(user.Birth),
 			Icon:     user.Icon,
 			Gender:   int32(user.Gender),
@@ -156,7 +156,7 @@ func (s *UserService) GetUserProfile(ctx context.Context, in *pb.GetUserProfileR
 	for _, user := range users {
 		u := &v1.UserProfile{
 			ID:       user.ID,
-			Nick:     user.Nick,
+			Nick:     user.NickName,
 			Icon:     user.Icon,
 			UpdateAt: user.UpdateAt,
 			DeleteAt: user.DeleteAt,
@@ -188,7 +188,7 @@ func (s *UserService) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileR
 			ID:       user.ID,
 			HID:      user.UID,
 			Phone:    user.Phone,
-			Nick:     user.Nick,
+			Nick:     user.NickName,
 			Birth:    utils.DateToString(user.Birth),
 			Icon:     user.Icon,
 			Gender:   int32(user.Gender),
@@ -225,11 +225,11 @@ func (s *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRe
 		return &pb.UpdateProfileReply{}, errors.BadRequest("Validator Birth", err.Error()).WithCause(err)
 	}
 	user.Icon = req.Icon
-	user.Nick = req.NickName
+	user.NickName = req.NickName
 	user.Gender = int(req.Gender)
 	user.Sign = req.Sign
 
-	err = s.user.UpdateUserProfile(ctx, &user)
+	err = s.user.UpdateUserProfile(ctx, user)
 	if err != nil {
 		return &pb.UpdateProfileReply{}, err
 	}
@@ -238,7 +238,7 @@ func (s *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRe
 			ID:       user.ID,
 			HID:      user.UID,
 			Phone:    user.Phone,
-			Nick:     user.Nick,
+			Nick:     user.NickName,
 			Birth:    utils.DateToString(user.Birth),
 			Icon:     user.Icon,
 			Gender:   int32(user.Gender),

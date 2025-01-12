@@ -11,6 +11,7 @@ import (
 	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"gorm.io/gorm"
 )
 
 const (
@@ -21,28 +22,28 @@ const (
 )
 
 type User struct {
-	ID          int64     `db:"id"`
-	UID         string    `db:"uid"`
-	Phone       string    `db:"phone"`
-	Nick        string    `db:"name"`
-	Icon        string    `db:"icon"`
-	Birth       time.Time `db:"birth"`
-	Gender      int       `db:"gender"`
-	Sign        string    `db:"sign"`
-	State       int       `db:"state"`
-	Roles       string    `db:"roles"`
-	Props       string    `db:"props"`
-	NotifyProps string    `db:"notify_props"`
-	UpdateAt    int64     `db:"update_at"`
-	CreateAt    int64     `db:"create_at"`
-	DeleteAt    int64     `db:"delete_at"`
+	ID          int64
+	UID         string
+	Phone       string
+	NickName    string
+	Icon        string
+	Birth       time.Time
+	Gender      int
+	Sign        string
+	State       int
+	Roles       string
+	Props       string
+	NotifyProps string
+	UpdateAt    int64
+	CreateAt    int64
+	DeleteAt    int64
 }
 
 type UserRepo interface {
-	GetUserByPhone(ctx context.Context, phone string) (*User, bool, error)
-	SaveUser(ctx context.Context, g *User) (*User, error)
+	GetUserByPhone(ctx context.Context, phone string) (*User, error)
+	SaveUser(ctx context.Context, g *User) (int64, error)
 	UpdateUserStateByID(ctx context.Context, id int64, state int) (bool, error)
-	GetUserInfoByIDs(ctx context.Context, ids []int64) ([]User, error)
+	GetUserInfoByIDs(ctx context.Context, ids []int64) ([]*User, error)
 	UpdateUserProfile(ctx context.Context, user *User) error
 }
 
@@ -74,20 +75,12 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, deviceId
 	}
 
 	//查找用户，不存在则新建返回
-	user, exist, err := u.userRepo.GetUserByPhone(ctx, mobile)
-	if err != nil {
-		return nil, err
-	}
-
-	if exist {
-		return user, nil
-	}
-
-	if !exist {
+	user, err := u.userRepo.GetUserByPhone(ctx, mobile)
+	if err == gorm.ErrRecordNotFound {
 		now := time.Now().UnixNano()
 		user.Phone = mobile
 		user.UID = utils.GenerateId()
-		user.Nick = "用户" + mobile[len(mobile)-6:]
+		user.NickName = "用户" + mobile[len(mobile)-6:]
 		user.Gender = 0
 		user.Birth = time.Now()
 		//新用户角色默认普通用户
@@ -95,12 +88,17 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, deviceId
 		user.CreateAt = now
 		user.UpdateAt = now
 		user.DeleteAt = 0
-		user, err = u.userRepo.SaveUser(ctx, user)
+		id, err := u.userRepo.SaveUser(ctx, user)
 		if err != nil {
 			return user, err
 		} else {
+			user.ID = id
 			return user, nil
 		}
+	}
+
+	if err != nil {
+		return nil, err
 	}
 
 	return user, nil
@@ -115,7 +113,7 @@ func (u *UserUseCase) UpdateUserStateByID(ctx context.Context, id int64, state i
 	return err
 }
 
-func (u *UserUseCase) GetUserInfoByIDs(ctx context.Context, ids []int64) ([]User, error) {
+func (u *UserUseCase) GetUserInfoByIDs(ctx context.Context, ids []int64) ([]*User, error) {
 	return u.userRepo.GetUserInfoByIDs(ctx, ids)
 }
 

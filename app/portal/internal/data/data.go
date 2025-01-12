@@ -1,40 +1,74 @@
 package data
 
 import (
+	"context"
+	"database/sql"
 	"time"
 
+	"xhappen/app/portal/internal/biz"
 	"xhappen/app/portal/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/wire"
-	"github.com/jmoiron/sqlx"
 	"github.com/redis/go-redis/extra/redisotel/v9"
 	"github.com/redis/go-redis/v9"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 var ProviderSet = wire.NewSet(NewData, NewUserRepo, NewJwtRepo, NewSMSRepo, NewLoadBlanceGwRepo)
 
 type Data struct {
-	db  *sqlx.DB
+	db  *gorm.DB
 	rdb *redis.Client
 
 	log *log.Helper
 }
 
-func newDB(conf *conf.Bootstrap, logger log.Logger) *sqlx.DB {
+type contextTxKey struct{}
+
+func (d *Data) InTx(ctx context.Context, fn func(ctx context.Context) error) error {
+	return d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		ctx = context.WithValue(ctx, contextTxKey{}, tx)
+		return fn(ctx)
+	})
+}
+
+func (d *Data) DB(ctx context.Context) *gorm.DB {
+	tx, ok := ctx.Value(contextTxKey{}).(*gorm.DB)
+	if ok {
+		return tx
+	}
+	return d.db
+}
+
+// NewTransaction .
+func NewTransaction(d *Data) biz.Transaction {
+	return d
+}
+
+func newDB(conf *conf.Bootstrap, logger log.Logger) *gorm.DB {
 	log := log.NewHelper(log.With(logger, "module", "portal/data/gorm"))
 
-	db, err := sqlx.Connect("mysql", conf.Data.Database.Source)
+	sqlDB, err := sql.Open("mysql", conf.Data.Database.Source)
+	if err != nil {
+		log.Fatalf("failed opening connection to mysql: %v", err)
+	}
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+	sqlDB.SetConnMaxIdleTime(10 * time.Minute)
+
+	gormDB, err := gorm.Open(mysql.New(mysql.Config{
+		Conn: sqlDB,
+	}), &gorm.Config{})
+
 	if err != nil {
 		log.Fatalf("failed opening connection to mysql: %v", err)
 	}
 
-	db.SetMaxIdleConns(10)
-	db.SetMaxOpenConns(100)
-	db.SetConnMaxLifetime(time.Hour)
-	db.SetConnMaxIdleTime(10 * time.Minute)
-	return db
+	return gormDB
 }
 
 func newRDB(conf *conf.Bootstrap, logger log.Logger) *redis.Client {
