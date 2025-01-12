@@ -56,9 +56,9 @@ func (r *userRepo) SaveUser(ctx context.Context, u *biz.User) (int64, error) {
 		Roles:       u.Roles,
 		Props:       u.Props,
 		NotifyProps: u.NotifyProps,
-		CreateAt:    u.CreateAt,
-		UpdateAt:    u.UpdateAt,
-		DeleteAt:    u.DeleteAt,
+		CreateAt:    time.Now().UnixNano(),
+		UpdateAt:    time.Now().UnixNano(),
+		DeleteAt:    0,
 	}
 
 	result := r.data.DB(ctx).Create(user)
@@ -146,20 +146,6 @@ func (r *userRepo) GetUserInfoByIDs(ctx context.Context, ids []int64) ([]*biz.Us
 }
 
 func (r *userRepo) UpdateUserProfile(ctx context.Context, u *biz.User) error {
-	// upProfileSql := `UPDATE users set
-	// 				nick =?,
-	// 				icon =?,
-	// 				birth =?,
-	// 				gender =?,
-	// 				sign =?
-	// 				where id = ?`
-	// rs, err := r.data.db.MustExec(upProfileSql, user.Nick, user.Icon, user.Birth, user.Gender, user.Sign, user.ID).RowsAffected()
-	// if rs == 1 {
-	// 	return nil
-	// } else {
-	// 	return err
-	// }
-
 	var err error
 	var user User
 
