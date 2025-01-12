@@ -25,7 +25,7 @@ service Router {
 }
 
 message UserDeviceBindInfo{
-  uint64 UID = 1 [json_name = "uid"];
+  uint64 userID = 1 [json_name = "user_id"];
   string deviceID = 2 [json_name = "device_id"];
   string serverID = 3 [json_name = "server_id"];
   uint64 connectSequece = 4 [json_name = "connect_sequece"];
@@ -44,7 +44,7 @@ message UserDeviceBindReply {
 }
 
 message UserDeviceUnBindRequest {
-  uint64 UID = 1 [json_name = "uid"];
+  uint64 userID = 1 [json_name = "user_id"];
   string deviceID = 2 [json_name = "device_id"];
   string serverID = 3 [json_name = "server_id"];
   uint64 connectSequece = 4 [json_name = "connect_sequece"];

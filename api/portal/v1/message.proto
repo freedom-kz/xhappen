@@ -8,7 +8,7 @@ import "validate/validate.proto";
 option go_package = "xhappen/api/portal/v1;v1";
 option java_multiple_files = true;
 option java_package = "follows.v1";
-option objc_class_prefix = FollowsV1";
+option objc_class_prefix = "FollowsV1";
 
 
 service Message {
@@ -29,7 +29,7 @@ service Message {
   }
 
   //撤回
-  rpc RevokeMessage(EditMessageRequest) returns (EditMessageReply)  {
+  rpc RevokeMessage(RevokeMessageRequest) returns (RevokeMessageReply)  {
     option (google.api.http) = {
       post: "/auth/message/send",
       body: "*",
@@ -37,7 +37,7 @@ service Message {
   }
 
   //查询
-  rpc ListMessage(EditMessageRequest) returns (EditMessageReply)  {
+  rpc ListMessage(ListMessageRequest) returns (ListMessageReply)  {
     option (google.api.http) = {
       post: "/auth/message/send",
       body: "*",
@@ -45,7 +45,7 @@ service Message {
   }
 
   //收藏
-  rpc FavoriteMessage(EditMessageRequest) returns (EditMessageReply)  {
+  rpc MarkMessage(MarkMessageRequest) returns (MarkMessageReply)  {
     option (google.api.http) = {
       post: "/auth/message/send",
       body: "*",
@@ -58,4 +58,28 @@ message SendMessageRequest {
 }
 
 message SendMessageReply {
+}
+
+message EditMessageRequest {
+}
+
+message EditMessageReply {
+}
+
+message RevokeMessageRequest {
+}
+
+message RevokeMessageReply {
+}
+
+message ListMessageRequest {
+}
+
+message ListMessageReply {
+}
+
+message MarkMessageRequest {
+}
+
+message MarkMessageReply {
 }

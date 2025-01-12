@@ -34,7 +34,7 @@ message Auth{
 
 message AuthAck{
     bool authRet = 1 [json_name = "auth_ret"];               //响应码
-    string UID = 2 [json_name = "uid"];                 //用户ID
+    string userID = 2 [json_name = "user_id"];                 //用户ID
     errors.Status err = 3 [json_name = "err"];          //kratos通用错误
 }
 

@@ -94,7 +94,7 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 	if err != nil {
 		return &pb_transfer.AuthReply{
 			Ret:         true,
-			UID:         authReply.Uid,
+			UserID:      authReply.UserID,
 			TokenExpire: authReply.TokenExpire,
 			UType:       uType,
 		}, nil
@@ -127,7 +127,7 @@ func (service *PassService) Auth(ctx context.Context, in *pb_transfer.AuthReques
 
 	return &pb_transfer.AuthReply{
 		Ret:         true,
-		UID:         authReply.Uid,
+		UserID:      authReply.UserID,
 		TokenExpire: authReply.TokenExpire,
 		UType:       uType,
 		Sessions:    sids,

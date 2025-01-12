@@ -235,7 +235,7 @@ func (connection *Connection) processAuth() error {
 		ack.Err = &errors.FromError(err).Status
 	} else {
 		ack.AuthRet = reply.Ret
-		ack.UID = reply.UID
+		ack.UserID = reply.UserID
 		ack.Err = reply.Err
 	}
 
@@ -252,7 +252,7 @@ func (connection *Connection) processAuth() error {
 		return fmt.Errorf(ack.Err.Reason)
 	}
 	//信息填充
-	connection.UserId = reply.UID
+	connection.UserId = reply.UserID
 	connection.RoleType = auth.RoleType //用户认证角色
 	connection.UserType = reply.UType
 	connection.tokenExpire = reply.TokenExpire.AsTime()

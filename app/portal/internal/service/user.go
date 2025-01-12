@@ -32,7 +32,7 @@ func NewUserService(user *biz.UserUseCase, jwt *biz.JwtUseCase, logger log.Logge
 // token换取用户信息
 func (s *UserService) TokenAuth(ctx context.Context, req *pb.TokenAuthRequest) (*pb.TokenAuthReply, error) {
 	//1. 验证token
-	uid, err := s.VerifyToken(ctx, req.Token)
+	userID, err := s.VerifyToken(ctx, req.Token)
 
 	if err != nil {
 		return &pb.TokenAuthReply{
@@ -40,7 +40,7 @@ func (s *UserService) TokenAuth(ctx context.Context, req *pb.TokenAuthRequest) (
 		}, nil
 	} else {
 		return &pb.TokenAuthReply{
-			Uid: uid,
+			UserID: userID,
 		}, nil
 	}
 }
@@ -82,7 +82,7 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 			ID:       user.ID,
 			HID:      user.UID,
 			Phone:    user.Phone,
-			Nick:     user.NickName,
+			NickName: user.NickName,
 			Birth:    utils.DateToString(user.Birth),
 			Icon:     user.Icon,
 			Gender:   int32(user.Gender),
@@ -156,7 +156,7 @@ func (s *UserService) GetUserProfile(ctx context.Context, in *pb.GetUserProfileR
 	for _, user := range users {
 		u := &v1.UserProfile{
 			ID:       user.ID,
-			Nick:     user.NickName,
+			NickName: user.NickName,
 			Icon:     user.Icon,
 			UpdateAt: user.UpdateAt,
 			DeleteAt: user.DeleteAt,
@@ -188,7 +188,7 @@ func (s *UserService) GetSelfProfile(ctx context.Context, in *pb.GetSelfProfileR
 			ID:       user.ID,
 			HID:      user.UID,
 			Phone:    user.Phone,
-			Nick:     user.NickName,
+			NickName: user.NickName,
 			Birth:    utils.DateToString(user.Birth),
 			Icon:     user.Icon,
 			Gender:   int32(user.Gender),
@@ -238,7 +238,7 @@ func (s *UserService) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRe
 			ID:       user.ID,
 			HID:      user.UID,
 			Phone:    user.Phone,
-			Nick:     user.NickName,
+			NickName: user.NickName,
 			Birth:    utils.DateToString(user.Birth),
 			Icon:     user.Icon,
 			Gender:   int32(user.Gender),

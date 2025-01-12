@@ -8,7 +8,7 @@ import "validate/validate.proto";
 option go_package = "xhappen/api/portal/v1;v1";
 option java_multiple_files = true;
 option java_package = "room.v1";
-option objc_class_prefix = RoomV1";
+option objc_class_prefix = "RoomV1";
 
 service Room {
   // 获取基础配置

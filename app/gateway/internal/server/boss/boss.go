@@ -232,7 +232,7 @@ func (boss *Boss) SendBroadcastToHubConn(done chan *errors.Error, broadcast *pb.
 }
 
 func (boss *Boss) SendActionToHubConn(done chan *errors.Error, action *pb.ActionRequest) {
-	hub := boss.getHubForUserId(action.UID)
+	hub := boss.getHubForUserId(action.UserID)
 	hub.SendActionToConn(done, action)
 }
 

@@ -95,7 +95,7 @@ message TokenAuthRequest {
 message TokenAuthReply {
   bool ret = 1 [json_name = "ret"];
   string deviceID = 2 [json_name = "device_id"];
-  string uid = 3 [json_name = "uid"]; 
+  string userID = 3 [json_name = "user_id"]; 
   google.protobuf.Timestamp tokenExpire = 4 [json_name = "token_expire"];
   protocol.v1.UserType uType = 5 [json_name = "u_type"];
   string gwHost = 6 [json_name = "gw_host"];

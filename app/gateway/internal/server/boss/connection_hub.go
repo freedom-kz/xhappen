@@ -117,7 +117,7 @@ func (h *Hub) Start() {
 				if actionToHub.actionMessage.DeviceID != "" {
 					//设备下发
 					conn := connIndex.ForDeviceId(actionToHub.actionMessage.DeviceID)
-					if conn == nil || conn.UserId != actionToHub.actionMessage.UID {
+					if conn == nil || conn.UserId != actionToHub.actionMessage.UserID {
 						actionToHub.done <- errors.New(460, "NO_DEVICE_ONLINE", "NO_DEVICE_ONLINE")
 					} else {
 						conn.SendActionCh(actionToHub.actionMessage.Action)
@@ -125,7 +125,7 @@ func (h *Hub) Start() {
 					}
 				} else {
 					//用户下发
-					conns := connIndex.ForUser(actionToHub.actionMessage.UID)
+					conns := connIndex.ForUser(actionToHub.actionMessage.UserID)
 					if len(conns) == 0 {
 						actionToHub.done <- errors.New(460, "NO_DEVICE_ONLINE", "NO_DEVICE_ONLINE")
 					} else {

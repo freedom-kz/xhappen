@@ -12,7 +12,7 @@ message User{
     int64 ID = 1 [json_name = "id"];
     string HID = 2 [json_name = "hid"];
     string phone = 3 [json_name = "phone"];
-    string nick = 4 [json_name = "nick"];
+    string nickName = 4 [json_name = "nick_name"];
     string birth = 5 [json_name = "birth"];
     string icon = 6 [json_name = "icon"];
     int32 gender = 7 [json_name = "gender"];
@@ -27,7 +27,7 @@ message User{
 //用户个人公开信息
 message UserProfile{
     int64 ID = 1 [json_name = "id"];
-    string nick = 2 [json_name = "nick"];
+    string nickName = 2 [json_name = "nick_name"];
     string icon = 3 [json_name = "icon"];
     int64 updateAt = 4 [json_name = "update_at"];
     int64 deleteAt = 5 [json_name = "delete_at"];
