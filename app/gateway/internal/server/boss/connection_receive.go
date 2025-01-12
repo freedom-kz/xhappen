@@ -172,7 +172,11 @@ func (connection *Connection) processBind() error {
 	}
 	//填充信息
 	connection.DeviceId = bind.DeviceID
-	connection.KeepAlive = time.Duration(bind.KeepAlive)
+
+	if bind.KeepAlive > uint64(connection.Boss.GetConfig().Main.MinKeepAlive.Seconds) &&
+		bind.KeepAlive < uint64(connection.Boss.GetConfig().Main.MaxKeepAlive.Seconds) {
+		connection.KeepAlive = time.Duration(bind.KeepAlive)
+	}
 	connection.Version = int(bind.CurVersion)
 	connection.Os = bind.DeviceType
 	if bind.QueueSize > connection.Boss.GetConfig().Queue.MaxRdyCount {
@@ -390,6 +394,7 @@ func (connection *Connection) processPing(ping *protocol.Ping) error {
 
 // 标准退出
 func (connection *Connection) processQuit(quit *protocol.Quit) error {
+	connection.sendConnState(STATE_QUIT)
 	return fmt.Errorf("standard exit")
 }
 

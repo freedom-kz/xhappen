@@ -86,14 +86,11 @@ type Connection struct {
 }
 
 func newConnection(conn net.Conn, boss *Boss) *Connection {
-
 	conf := boss.GetConfig()
-
 	var host string
 	if conn != nil {
 		host, _, _ = net.SplitHostPort(conn.RemoteAddr().String())
 	}
-
 	connectSequence := atomic.AddUint64(&boss.GlobalConnectionSequence, 1)
 
 	connection := &Connection{
@@ -114,7 +111,7 @@ func newConnection(conn net.Conn, boss *Boss) *Connection {
 		toFlightPQ:        newInFlightPqueue(100),
 		inFlightAMessages: make(map[uint64]*AMessage),
 		inFlightAPQ:       newInFlightAPqueue(100),
-		KeepAlive:         conf.Main.MinKeepAlive.AsDuration(),
+		KeepAlive:         DEFAULT_KEEP_ALIVE,
 		DailTimeout:       DEFAULT_DAIL_TIMEOUT,
 		WriteTimeout:      conf.Main.WriteTimeout.AsDuration(),
 		ReadTimeout:       conf.Main.MinKeepAlive.AsDuration(),

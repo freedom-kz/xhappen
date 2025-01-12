@@ -13,6 +13,8 @@ require (
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gobwas/ws v1.2.1
 	github.com/golang-jwt/jwt/v4 v4.4.1
+	github.com/golang/protobuf v1.5.4
+	github.com/google/uuid v1.3.0
 	github.com/google/wire v0.5.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/jmoiron/sqlx v1.3.5
@@ -54,9 +56,7 @@ require (
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
