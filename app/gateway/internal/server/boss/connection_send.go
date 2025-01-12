@@ -25,8 +25,8 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 
 	sChan = connection.syncCh
 
-	reSendTicker := time.NewTicker(DEFAULT_RESEND_TICKER)
 	outputBufferTicker := time.NewTicker(connection.FlushEvery)
+	reSendTicker := time.NewTicker(DEFAULT_RESEND_TICKER)
 	reSendChan = reSendTicker.C
 	flushed := true
 	close(startedChan)
@@ -35,27 +35,36 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 		if !connection.IsReadyForMessages() {
 			dChan = nil
 			aChan = nil
-		}
-		if flushed {
-			flusherChan = nil
-			if connection.state == STATE_NORMAL {
-				dChan = connection.deliverCh
-				aChan = connection.actionCh
-			}
 		} else {
-			flusherChan = outputBufferTicker.C
-			if connection.state == STATE_NORMAL {
-				dChan = connection.deliverCh
-				aChan = connection.actionCh
+			if flushed {
+				flusherChan = nil
+				if connection.state == STATE_NORMAL {
+					dChan = connection.deliverCh
+					aChan = connection.actionCh
+				} else {
+					dChan = nil
+					aChan = nil
+				}
+			} else {
+				flusherChan = outputBufferTicker.C
+				if connection.state == STATE_NORMAL {
+					dChan = connection.deliverCh
+					aChan = connection.actionCh
+				} else {
+					dChan = nil
+					aChan = nil
+				}
 			}
-
 		}
 
 		select {
 		case <-flusherChan:
 			err = connection.Flush()
 			flushed = true
-			connection.logger.Log(log.LevelError, "msg", "socket flush err")
+			if err != nil {
+				connection.logger.Log(log.LevelError, "msg", "socket flush err")
+				goto exit
+			}
 		case d := <-dChan:
 			//如果是期待sequence，则进行发送处理，否则进入等待队列
 			if d.Sequence == connection.expectNextSequence {
@@ -66,6 +75,7 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 					connection.SendingMessage()
 					if err != nil {
 						connection.logger.Log(log.LevelError, "msg", "in startInflight", "err", err)
+						goto exit
 					}
 					err = connection.WriteDeliver(msg)
 					if err != nil {
@@ -133,10 +143,12 @@ func (connection *Connection) messagePump(startedChan chan bool) {
 				}
 			}
 		case a := <-aChan:
+			//acioton消息暂未实现排序逻辑
 			msg := NewAMessage(a, time.Now().UnixNano())
 			err := connection.StartActionInflight(msg)
 			if err != nil {
 				connection.logger.Log(log.LevelError, "msg", "in startInflight", "err", err)
+				goto exit
 			}
 			connection.SendingMessage()
 			err = connection.WriteAction(msg)
@@ -205,14 +217,13 @@ exit:
 
 func (connection *Connection) processDeliverReSend() error {
 	var msgs []*Message
-	var err error
 	//遍历获取所有待重发的消息
 	for i := 0; ; i++ {
 		msg, _ := connection.inFlightPQ.PeekAndShift(math.MaxInt64)
 		if msg == nil {
 			break
 		}
-		if msg.deliveryTS.Add(connection.MsgTimeout).Before(time.Now()) {
+		if msg.deliveryTS.Add(connection.MsgTimeout).After(time.Now()) {
 			break
 		}
 		msgs = append(msgs, msg)
@@ -220,39 +231,47 @@ func (connection *Connection) processDeliverReSend() error {
 	if len(msgs) != 0 {
 		for _, msg := range msgs {
 			connection.inFlightPQ.Push(msg)
-			err = connection.WriteDeliver(msg)
+			err := connection.WriteDeliver(msg)
 			if err != nil {
-				break
+				return err
 			}
 		}
+		err := connection.Flush()
+		if err != nil {
+			return err
+		}
 	}
-	return err
+	return nil
 }
 
 func (connection *Connection) processActionReSend() error {
 	var msgs []*AMessage
-	var err error
 	for i := 0; ; i++ {
 		msg, _ := connection.inFlightAPQ.PeekAndShift(math.MaxInt64)
 		if msg == nil {
 			break
 		}
-		if msg.deliveryTS.Add(connection.MsgTimeout).Before(time.Now()) {
+		if msg.deliveryTS.Add(connection.MsgTimeout).After(time.Now()) {
 			break
 		}
+		msgs = append(msgs, msg)
 	}
 	if len(msgs) != 0 {
 		for _, msg := range msgs {
 			//重新设置优先级
 			msg.pri = time.Now().UnixNano()
 			connection.inFlightAPQ.Push(msg)
-			err = connection.WriteAction(msg)
+			err := connection.WriteAction(msg)
 			if err != nil {
-				break
+				return err
 			}
 		}
+		err := connection.Flush()
+		if err != nil {
+			return err
+		}
 	}
-	return err
+	return nil
 }
 
 func (connection *Connection) WriteDeliver(message *Message) error {

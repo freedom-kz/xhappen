@@ -138,7 +138,13 @@ func (connection *Connection) IOLoop() error {
 		return err
 	}
 
+	//进入循环
 	err = connection.packetProcess()
+	//循环结束
+	//先移除终端业务逻辑处理
+	connection.Boss.RemoveConnFromHub(connection)
+	//然后正常关闭
+	connection.Shutdown(true)
 	return err
 }
 

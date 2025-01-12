@@ -23,7 +23,6 @@ func (connection *Connection) packetProcess() error {
 			break
 		}
 		//走到这里的一定是经过bind和auth业务的
-
 		if connection.KeepAlive > 0 {
 			connection.SetReadDeadline(time.Now().Add(connection.KeepAlive))
 		} else {
@@ -175,12 +174,14 @@ func (connection *Connection) processBind() error {
 
 	if bind.KeepAlive > uint64(connection.Boss.GetConfig().Main.MinKeepAlive.Seconds) &&
 		bind.KeepAlive < uint64(connection.Boss.GetConfig().Main.MaxKeepAlive.Seconds) {
-		connection.KeepAlive = time.Duration(bind.KeepAlive)
+		connection.KeepAlive = time.Duration(bind.KeepAlive) * time.Second
 	}
 	connection.Version = int(bind.CurVersion)
 	connection.Os = bind.DeviceType
 	if bind.QueueSize > connection.Boss.GetConfig().Queue.MaxRdyCount {
-		bind.QueueSize = connection.Boss.GetConfig().Queue.MaxRdyCount
+		connection.ReadyCount = int64(connection.Boss.GetConfig().Queue.MaxRdyCount)
+	} else {
+		connection.ReadyCount = int64(bind.QueueSize)
 	}
 	connection.ReadyCount = int64(bind.QueueSize)
 	connection.LoginType = bind.LoginType
@@ -307,6 +308,11 @@ func (connection *Connection) processSubmit(submit *protocol.Submit) error {
 	if err != nil {
 		return err
 	}
+	err = connection.Flush()
+
+	if err != nil {
+		return err
+	}
 	//这里的失败为业务失败，不做处理，对当前业务无影响
 	if !ack.SubmitAck.SubmitRet {
 		return nil
@@ -394,7 +400,6 @@ func (connection *Connection) processPing(ping *protocol.Ping) error {
 
 // 标准退出
 func (connection *Connection) processQuit(quit *protocol.Quit) error {
-	connection.sendConnState(STATE_QUIT)
 	return fmt.Errorf("standard exit")
 }
 
