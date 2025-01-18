@@ -3,15 +3,19 @@ package biz
 import (
 	"context"
 	"encoding/json"
-	"strconv"
 	"time"
 	basic "xhappen/api/basic/v1"
-	"xhappen/app/portal/internal/common"
 	"xhappen/pkg/event"
 	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
+
+type SMSInfo struct {
+	DeviceID string `redis:"device_id"`
+	SMSCode  string `redis:"sms_code"`
+	Expire   int    `redis:"expire"`
+}
 
 type SMSUseCase struct {
 	repo   SMSRepo
@@ -29,28 +33,21 @@ func NewSMSUseCase(repo SMSRepo, sender event.Sender, logger log.Logger) *SMSUse
 
 type SMSRepo interface {
 	SaveLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (err error)
-	GetAuthInfo(ctx context.Context, mobile string) (map[string]string, error)
+	GetAuthInfo(ctx context.Context, mobile string) (*SMSInfo, error)
 	VerifyLoginAuthCode(ctx context.Context, mobile string, clientId string, smsCode string) (bool, error)
 	VerifyDayLimit(ctx context.Context, mobile string) (bool, error)
 }
 
 func (useCase *SMSUseCase) SendSMSCode(ctx context.Context, mobile string, clientId string) error {
 	//尝试获取authcode信息
-	kvs, err := useCase.repo.GetAuthInfo(ctx, mobile)
+	smsInfo, err := useCase.repo.GetAuthInfo(ctx, mobile)
 	if err != nil {
 		return err
 	}
-	//如果存在，验证是否发送时间在1分钟内
-	if len(kvs) != 0 {
-		expire := kvs[common.EXPIRE_KEY]
 
-		createAt, err := strconv.Atoi(expire)
-		if err != nil {
-			return err
-		}
-		if time.Now().Add(4 * time.Minute).Before(utils.TimeFromMillis(int64(createAt))) {
-			return basic.ErrorRequestTooFast("mobile %s request too fast", mobile)
-		}
+	//如果存在，验证是否发送时间在1分钟内
+	if time.Now().Add(4 * time.Minute).Before(utils.TimeFromMillis(int64(smsInfo.Expire))) {
+		return basic.ErrorRequestTooFast("mobile %s request too fast", mobile)
 	}
 
 	ok, err := useCase.repo.VerifyDayLimit(ctx, mobile)

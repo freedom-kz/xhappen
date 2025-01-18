@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"strconv"
 	pb "xhappen/api/portal/v1"
 	"xhappen/app/portal/internal/biz"
 	"xhappen/app/portal/internal/conf"
+	"xhappen/pkg/utils"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -27,25 +29,24 @@ func NewConfigService(conf *conf.Bootstrap, lbUseCase *biz.LoadBlanceUseCase, lo
 // 基础数据获取，包含动态和静态配置
 func (c *ConfigService) GetBasicConfig(ctx context.Context, req *pb.GetBasicConfigRequest) (*pb.GetBasicConfigReply, error) {
 	//1. 获取或分配sockethost
-	// var (
-	// 	addr   string
-	// 	userID uint64
-	// 	err    error
-	// )
+	var (
+		addr   string
+		userID uint64
+		err    error
+	)
 
-	// if userID, err = GetUserID(ctx); err != nil {
-	// 	//无用户，生成对应设备默认匿名用户
-	// 	userID = utils.Hash(req.DeviceID)
-	// }
+	if userID, err = GetUserID(ctx); err != nil {
+		//无用户，生成对应设备默认匿名用户
+		userID = utils.Hash(req.DeviceID)
+	}
 
-	// idStr := strconv.FormatUint(uint64(userID), 10)
-	// addr, err = c.lbUseCase.DispatchUserDevice(ctx, req.DeviceID, idStr)
-	var err error = nil
+	idStr := strconv.FormatUint(uint64(userID), 10)
+	addr, err = c.lbUseCase.DispatchUserDevice(ctx, req.DeviceID, idStr)
 	if err != nil {
 		return nil, err
 	} else {
 		return &pb.GetBasicConfigReply{
-			SocketHost:     "addr",
+			SocketHost:     addr,
 			FileServerHost: c.conf.Info.FileServer,
 		}, nil
 	}

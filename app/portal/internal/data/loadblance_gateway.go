@@ -23,12 +23,12 @@ const (
 
 type LoadBlanceGwRepo struct {
 	sync.RWMutex
-	ctx              context.Context
-	log              *log.Helper
-	data             *Data
-	discovery        registry.Discovery
-	watcher          registry.Watcher
-	gateway_publicIP []string
+	ctx             context.Context
+	log             *log.Helper
+	data            *Data
+	discovery       registry.Discovery
+	watcher         registry.Watcher
+	gatewayPublicIP []string
 }
 
 func NewLoadBlanceGwRepo(data *Data, discovery registry.Discovery, logger log.Logger) biz.LoadBalanceRepo {
@@ -44,12 +44,12 @@ func NewLoadBlanceGwRepo(data *Data, discovery registry.Discovery, logger log.Lo
 	}
 
 	repo := &LoadBlanceGwRepo{
-		ctx:              ctx,
-		data:             data,
-		gateway_publicIP: make([]string, 0),
-		discovery:        discovery,
-		watcher:          watcher,
-		log:              log.NewHelper(log.With(logger, "biz", "usecase/cluster")),
+		ctx:             ctx,
+		data:            data,
+		gatewayPublicIP: make([]string, 0),
+		discovery:       discovery,
+		watcher:         watcher,
+		log:             log.NewHelper(log.With(logger, "biz", "usecase/cluster")),
 	}
 
 	repo.update(services)
@@ -82,13 +82,13 @@ func (repo *LoadBlanceGwRepo) update(services []*registry.ServiceInstance) {
 			publicIPs = append(publicIPs, ip)
 		}
 	}
-	repo.gateway_publicIP = publicIPs
+	repo.gatewayPublicIP = publicIPs
 }
 
 func (repo *LoadBlanceGwRepo) GetGatewayPublicIPs() []string {
 	repo.RLock()
 	defer repo.RUnlock()
-	return repo.gateway_publicIP
+	return repo.gatewayPublicIP
 }
 
 func (repo *LoadBlanceGwRepo) IsAlive(addr string) bool {
@@ -96,32 +96,32 @@ func (repo *LoadBlanceGwRepo) IsAlive(addr string) bool {
 }
 
 // 保存客户端&用户分配的网关信息
-func (repo *LoadBlanceGwRepo) SaveDispatchInfo(ctx context.Context, deviceId string, userId string, gwAddr string) error {
-	err := repo.data.rdb.HSet(ctx, LOAD_BLANCE_DEVICE_PREFIX+deviceId,
+func (repo *LoadBlanceGwRepo) SaveDispatchInfo(ctx context.Context, deviceID string, userID string, gwAddr string) error {
+	err := repo.data.cache.HSet(ctx, LOAD_BLANCE_DEVICE_PREFIX+deviceID,
 		biz.DispatchInfo{
-			DeviceID: deviceId,
-			UserID:   userId,
+			DeviceID: deviceID,
+			UserID:   userID,
 			GwAddr:   gwAddr,
 		},
 	).Err()
 	if err != nil {
 		return err
 	}
-	err = repo.data.rdb.Expire(ctx, LOAD_BLANCE_DEVICE_PREFIX+deviceId, LOAD_BALANCE_EXPIRE).Err()
+	err = repo.data.cache.Expire(ctx, LOAD_BLANCE_DEVICE_PREFIX+deviceID, LOAD_BALANCE_EXPIRE).Err()
 	if err != nil {
 		return err
 	}
 
-	err = repo.data.rdb.HSet(ctx, LOAD_BLANCE_USER_PREFIX+userId,
+	err = repo.data.cache.HSet(ctx, LOAD_BLANCE_USER_PREFIX+userID,
 		biz.DispatchInfo{
-			DeviceID: deviceId,
+			DeviceID: deviceID,
 			GwAddr:   gwAddr,
 		},
 	).Err()
 	if err != nil {
 		return err
 	}
-	err = repo.data.rdb.Expire(ctx, LOAD_BLANCE_USER_PREFIX+userId, LOAD_BALANCE_EXPIRE).Err()
+	err = repo.data.cache.Expire(ctx, LOAD_BLANCE_USER_PREFIX+userID, LOAD_BALANCE_EXPIRE).Err()
 	if err != nil {
 		return err
 	}
@@ -129,14 +129,14 @@ func (repo *LoadBlanceGwRepo) SaveDispatchInfo(ctx context.Context, deviceId str
 }
 
 // 根据客户端为维度查找。
-func (repo *LoadBlanceGwRepo) GetDispatchInfoByDeviceID(ctx context.Context, deviceId string) (*biz.DispatchInfo, bool, error) {
+func (repo *LoadBlanceGwRepo) GetDispatchInfoByDeviceID(ctx context.Context, deviceID string) (*biz.DispatchInfo, bool, error) {
 	var (
 		dispatchInfo biz.DispatchInfo = biz.DispatchInfo{}
 		exist        bool
 		err          error
 	)
 
-	err = repo.data.rdb.HGetAll(ctx, LOAD_BLANCE_DEVICE_PREFIX+deviceId).Scan(&dispatchInfo)
+	err = repo.data.cache.HGetAll(ctx, LOAD_BLANCE_DEVICE_PREFIX+deviceID).Scan(&dispatchInfo)
 	if err == redis.Nil {
 		exist = false
 		err = nil
@@ -149,14 +149,14 @@ func (repo *LoadBlanceGwRepo) GetDispatchInfoByDeviceID(ctx context.Context, dev
 }
 
 // 根据客户端为维度查找。
-func (repo *LoadBlanceGwRepo) GetDispatchInfoByUserID(ctx context.Context, uid string) (*biz.DispatchInfo, bool, error) {
+func (repo *LoadBlanceGwRepo) GetDispatchInfoByUserID(ctx context.Context, UID string) (*biz.DispatchInfo, bool, error) {
 	var (
 		dispatchInfo biz.DispatchInfo = biz.DispatchInfo{}
 		exist        bool
 		err          error
 	)
 
-	err = repo.data.rdb.HGetAll(ctx, LOAD_BLANCE_USER_PREFIX+uid).Scan(&dispatchInfo)
+	err = repo.data.cache.HGetAll(ctx, LOAD_BLANCE_USER_PREFIX+UID).Scan(&dispatchInfo)
 	if err == redis.Nil {
 		exist = false
 		err = nil

@@ -20,10 +20,9 @@ import (
 var ProviderSet = wire.NewSet(NewData, NewUserRepo, NewJwtRepo, NewSMSRepo, NewLoadBlanceGwRepo)
 
 type Data struct {
-	db  *gorm.DB
-	rdb *redis.Client
-
-	log *log.Helper
+	db    *gorm.DB
+	cache *redis.Client
+	log   *log.Helper
 }
 
 type contextTxKey struct{}
@@ -91,14 +90,14 @@ func NewData(conf *conf.Bootstrap, logger log.Logger) (*Data, func(), error) {
 	loggger := log.NewHelper(log.With(logger, "module", "portal/data"))
 
 	d := &Data{
-		db:  newDB(conf, logger),
-		rdb: newRDB(conf, logger),
-		log: loggger,
+		db:    newDB(conf, logger),
+		cache: newRDB(conf, logger),
+		log:   loggger,
 	}
 
 	cleanup := func() {
 		logger.Log(log.LevelInfo, "msg", "closing the data resources")
-		if err := d.rdb.Close(); err != nil {
+		if err := d.cache.Close(); err != nil {
 			log.Error(err)
 		}
 	}

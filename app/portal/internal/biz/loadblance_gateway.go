@@ -14,9 +14,9 @@ type LoadBlanceUseCase struct {
 }
 
 type DispatchInfo struct {
-	DeviceID string `redis:"did"`
-	UserID   string `redis:"uid"`
-	GwAddr   string `redis:"gw"`
+	DeviceID string `redis:"device_id"`
+	UserID   string `redis:"user_id"`
+	GwAddr   string `redis:"gw_addr"`
 }
 
 type LoadBalanceRepo interface {
@@ -24,7 +24,7 @@ type LoadBalanceRepo interface {
 	IsAlive(addr string) bool
 	SaveDispatchInfo(ctx context.Context, deviceID string, userID string, gwAddr string) error
 	GetDispatchInfoByDeviceID(ctx context.Context, deviceID string) (*DispatchInfo, bool, error)
-	GetDispatchInfoByUserID(ctx context.Context, uID string) (*DispatchInfo, bool, error)
+	GetDispatchInfoByUserID(ctx context.Context, UID string) (*DispatchInfo, bool, error)
 }
 
 func NewLoadBlanceUseCase(repo LoadBalanceRepo, logger log.Logger) *LoadBlanceUseCase {

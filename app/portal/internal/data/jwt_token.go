@@ -25,16 +25,16 @@ func NewJwtRepo(data *Data, logger log.Logger) biz.JWTRepo {
 }
 
 func (j *jwtRepo) SaveToken(ctx context.Context, token string, id string) error {
-	cmd := j.data.rdb.HSet(ctx, JWT_TOKEN_PREFIX+token, "id", id)
+	cmd := j.data.cache.HSet(ctx, JWT_TOKEN_PREFIX+token, "id", id)
 	return cmd.Err()
 }
 
 func (j *jwtRepo) VerifyToken(ctx context.Context, token string) (string, error) {
-	cmd := j.data.rdb.HGet(ctx, JWT_TOKEN_PREFIX+token, "id")
+	cmd := j.data.cache.HGet(ctx, JWT_TOKEN_PREFIX+token, "id")
 	return cmd.Result()
 }
 
 func (j *jwtRepo) RemoveToken(ctx context.Context, token string) error {
-	cmd := j.data.rdb.Del(ctx, JWT_TOKEN_PREFIX+token)
+	cmd := j.data.cache.Del(ctx, JWT_TOKEN_PREFIX+token)
 	return cmd.Err()
 }
