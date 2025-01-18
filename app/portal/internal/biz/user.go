@@ -77,6 +77,7 @@ func (u *UserUseCase) LoginByMobile(ctx context.Context, mobile string, deviceId
 	//查找用户，不存在则新建返回
 	user, err := u.userRepo.GetUserByPhone(ctx, mobile)
 	if err == gorm.ErrRecordNotFound {
+		user = &User{}
 		now := time.Now().UnixNano()
 		user.Phone = mobile
 		user.UID = utils.GenerateId()

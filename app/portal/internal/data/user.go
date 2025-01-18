@@ -87,16 +87,19 @@ func (r *userRepo) UpdateUserStateByID(ctx context.Context, id int64, state int)
 }
 
 func (r *userRepo) GetUserByPhone(ctx context.Context, phone string) (*biz.User, error) {
-	user := &User{
+	user := User{
 		DeleteAt: 0,
 		Phone:    phone,
 	}
-	err := r.data.db.First(user).Error
+	err := r.data.db.First(&user).Error
 	if err != nil {
 		return nil, err
 	}
 
+	r.log.Info("userRepo.GetUserByPhone id =%d\n", user.ID)
+
 	return &biz.User{
+		ID:          user.ID,
 		UID:         user.UID,
 		Phone:       user.Phone,
 		NickName:    user.NickName,
@@ -116,12 +119,12 @@ func (r *userRepo) GetUserByPhone(ctx context.Context, phone string) (*biz.User,
 
 func (r *userRepo) GetUserInfoByIDs(ctx context.Context, ids []int64) ([]*biz.User, error) {
 	var users []User
-	err := r.data.db.Find(users, ids).Error
+	err := r.data.db.Find(&users, ids).Error
 	if err != nil {
 		return nil, err
 	}
 
-	ret := make([]*biz.User, len(users))
+	ret := make([]*biz.User, 0, len(users))
 	for _, u := range users {
 		user := &biz.User{}
 		user.ID = u.ID

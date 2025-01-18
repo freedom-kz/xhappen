@@ -33,7 +33,6 @@ func NewUserService(user *biz.UserUseCase, jwt *biz.JwtUseCase, logger log.Logge
 func (s *UserService) TokenAuth(ctx context.Context, req *pb.TokenAuthRequest) (*pb.TokenAuthReply, error) {
 	//1. 验证token
 	userID, err := s.VerifyToken(ctx, req.Token)
-
 	if err != nil {
 		return &pb.TokenAuthReply{
 			Err: &v1.ErrorTokenExpire("info %v", err).Status,
@@ -49,6 +48,7 @@ func (s *UserService) TokenAuth(ctx context.Context, req *pb.TokenAuthRequest) (
 func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRequest) (*pb.LoginByMobileReply, error) {
 	//登录或者注册手机号
 	user, err := s.user.LoginByMobile(ctx, req.Mobile, req.DeviceID, req.SmsCode)
+	log.Infof("UserService/LoginByMobile user id:%d\n", user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,6 @@ func (s *UserService) LoginByMobile(ctx context.Context, req *pb.LoginByMobileRe
 	}
 
 	//TODO,设备上的其他长连接需要踢下线
-
 	//返回信息
 	return &pb.LoginByMobileReply{
 		Token: tokenStr,
@@ -151,7 +150,7 @@ func (s *UserService) GetUserProfile(ctx context.Context, in *pb.GetUserProfileR
 		return &pb.GetUserProfileReply{}, err
 	}
 
-	profiles := make([]*v1.UserProfile, len(users))
+	profiles := make([]*v1.UserProfile, 0, len(users))
 
 	for _, user := range users {
 		u := &v1.UserProfile{

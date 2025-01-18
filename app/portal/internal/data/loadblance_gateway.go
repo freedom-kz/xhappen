@@ -148,7 +148,7 @@ func (repo *LoadBlanceGwRepo) GetDispatchInfoByDeviceID(ctx context.Context, dev
 	return &dispatchInfo, exist, err
 }
 
-// 根据客户端为维度查找。
+// 根据用户为维度查找。
 func (repo *LoadBlanceGwRepo) GetDispatchInfoByUserID(ctx context.Context, UID string) (*biz.DispatchInfo, bool, error) {
 	var (
 		dispatchInfo biz.DispatchInfo = biz.DispatchInfo{}

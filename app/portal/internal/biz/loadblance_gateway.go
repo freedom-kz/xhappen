@@ -43,25 +43,23 @@ func (useCase *LoadBlanceUseCase) DispatchUserDevice(ctx context.Context, userID
 		return dispatchInfo.GwAddr, nil
 	}
 
-	var addr string
 	dispatchInfo, exist, err = useCase.repo.GetDispatchInfoByUserID(ctx, userID)
 	if err != nil {
 		return "", basic.ErrorUnknown("server err:%v", err)
 	}
 
 	if exist && useCase.repo.IsAlive(dispatchInfo.GwAddr) {
-		addr = dispatchInfo.GwAddr
-	} else {
-		addr, err = useCase.strategyRandom()
-		if err != nil {
-			return "", err
-		}
+		return dispatchInfo.GwAddr, nil
+	}
+
+	addr, err := useCase.strategyRandom()
+	if err != nil {
+		return "", err
 	}
 
 	if err = useCase.repo.SaveDispatchInfo(ctx, deviceID, userID, addr); err != nil {
 		return "", err
 	}
-
 	//客户端bind关系发生变化，踢出原绑定关系下客户端
 	return addr, nil
 }
