@@ -11,12 +11,36 @@ option java_package = "group.v1";
 option objc_class_prefix = GroupV1";
 
 service Group {
-  // 获取基础配置
-  rpc CreateGroup (GetBasicConfigRequest) returns (GetBasicConfigReply)  {
+  // 创建群组
+  rpc CreateGroup (CreateGroupRequest) returns (CreateGroupReply)  {
         option (google.api.http) = {
           post: "/auth/group/create",
           body: "*",
         };
+  }
+
+  // 解散群组
+  rpc DissolveGroup (DissolveGroupRequest) returns (DissolveGroupReply)  {
+    option (google.api.http) = {
+      post: "/auth/group/dissolve",
+      body: "*",
+    };
+  }
+
+  // 根据群组ID获取群组信息
+  rpc GetGroupsByIDs (GetGroupsByIDsRequest) returns (GetGroupsByIDsReply)  {
+    option (google.api.http) = {
+      post: "/auth/group/byids",
+      body: "*",
+    };
+  }
+
+  // 根据群组名称搜索群组
+  rpc SearchGroupsByName (SearchGroupsByNameRequest) returns (SearchGroupsByNameReply)  {
+    option (google.api.http) = {
+      post: "/auth/group/searchbyname",
+      body: "*",
+    };
   }
 }
 
@@ -24,4 +48,10 @@ message CreateGroupRequest {
 }
 
 message CreateGroupReply {
+}
+
+message DissolveGroupRequest {
+}
+
+message DissolveGroupReply {
 }
